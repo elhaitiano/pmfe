@@ -1,0 +1,2 @@
+"use strict";
+document.getElementById("helpPreviewButton").addEventListener("click",()=>{const lines=[];for(const field of document.querySelectorAll(".help-step")){if(field.querySelector('input[type="checkbox"]').checked)continue;const text=field.querySelector("textarea").value.trim();if(text)lines.push((lines.length+1)+". "+text);}document.getElementById("helpPreview").textContent=lines.join("\n\n")||"Ainda não existem passos preenchidos.";});

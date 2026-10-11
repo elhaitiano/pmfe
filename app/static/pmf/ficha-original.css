@@ -1,0 +1,278 @@
+#viewFicha{
+    color: #e1e3e4;
+}
+#viewFicha .ficha-shell{
+    width: 100%;
+}
+#viewFicha .glass-panel{
+    background: rgba(25, 28, 29, 0.60);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+#viewFicha .text-gradient{
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+#viewFicha .progress-bar{
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.10);
+    overflow: hidden;
+}
+#viewFicha .progress-fill{
+    height: 100%;
+    background: linear-gradient(90deg, #007bff 0%, #00d4ff 100%);
+    border-radius: 4px;
+}
+#viewFicha .ficha-section{
+    margin-bottom: 2rem;
+}
+#viewFicha .ficha-profile{
+    min-height: 170px;
+}
+#viewFicha .ficha-kpis{
+    margin-bottom: 2rem;
+}
+#viewFicha .ficha-charts{
+    margin-bottom: 2rem;
+}
+#viewFicha .ficha-action{
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,.08);
+}
+#viewFicha .journey-line{
+    position: relative;
+    margin-left: 8px;
+}
+#viewFicha .journey-line::before{
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 9px;
+    bottom: 9px;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(65,228,192,.65), rgba(255,255,255,.08));
+}
+#viewFicha .journey-item{
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 18px;
+}
+#viewFicha .journey-item:last-child{
+    margin-bottom: 0;
+}
+#viewFicha .journey-dot{
+    position: absolute;
+    left: 1px;
+    top: 4px;
+    width: 13px;
+    height: 13px;
+    border-radius: 999px;
+    background: #0d1922;
+    border: 2px solid #41e4c0;
+    box-shadow: 0 0 0 4px rgba(65,228,192,.08);
+}
+#viewFicha .ficha-action:hover{
+    background: rgba(255,255,255,.14);
+}
+@media (max-width: 900px){#viewFicha .grid-cols-2{
+        grid-template-columns: 1fr !important;
+    }
+#viewFicha .grid-cols-4{
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+#viewFicha .grid-cols-3{
+        grid-template-columns: 1fr !important;
+    }}
+@media print{#viewFicha{
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+#viewFicha .glass-panel{
+        background: #ffffff !important;
+        color: #111827 !important;
+        border: 1px solid #d1d5db !important;
+        box-shadow: none !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }}
+#viewFicha .institutional-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    padding:18px 22px;
+    margin-bottom:22px;
+    border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+    border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+#viewFicha .institutional-brand{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+#viewFicha .institutional-logo{
+    height:46px;
+    width:auto;
+    max-width:150px;
+    object-fit:contain;
+    display:block;
+}
+#viewFicha .institutional-divider{
+    width:1px;
+    height:42px;
+    background:rgba(255,255,255,.18);
+}
+#viewFicha .institutional-title{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#e2e2e2;
+}
+#viewFicha .institutional-subtitle{
+    margin-top:4px;
+    font-size:11px;
+    color:#94a3b8;
+}
+#viewFicha .pdf-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+#viewFicha .btn-pdf{
+    border:1px solid rgba(65,228,192,.35);
+    background:linear-gradient(135deg,#005bc0,#4a8eff);
+    color:white;
+    padding:10px 16px;
+    border-radius:9px;
+    font-size:12px;
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(0,91,192,.22);
+    transition:.2s;
+}
+#viewFicha .btn-pdf:hover{
+    filter:brightness(1.08);
+    transform:translateY(-1px);
+}
+@media (max-width:900px){#viewFicha .institutional-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+#viewFicha .institutional-brand{
+        flex-wrap:wrap;
+    }}
+@media print{#viewFicha{
+        display:block !important;
+        padding:0 !important;
+        margin:0 !important;
+    }
+#fichaContainer{
+        display:block !important;
+        width:100% !important;
+        padding:0 !important;
+        margin:0 !important;
+    }
+#viewFicha .institutional-header{
+        display:flex !important;
+        background:#fff !important;
+        color:#172033 !important;
+        border:1px solid #d9dee8 !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+        margin:0 0 8mm 0 !important;
+        padding:5mm 4mm !important;
+        page-break-inside:avoid;
+    }
+#viewFicha .institutional-title{
+        color:#172033 !important;
+        font-size:12px !important;
+    }
+#viewFicha .institutional-subtitle{
+        color:#64748b !important;
+    }
+#viewFicha .institutional-divider{
+        background:#cbd5e1 !important;
+    }
+#viewFicha .institutional-logo{
+        max-height:42px !important;
+    }
+#viewFicha .institutional-header{
+        page-break-inside:avoid;
+    }}
+#viewFicha .chart-hover{cursor:pointer;transition:filter .18s ease,opacity .18s ease,transform .18s ease}
+#viewFicha .chart-hover:hover{filter:brightness(1.18)}
+#viewFicha .chart-hover-row{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+#viewFicha .chart-hover-row:hover{background:rgba(65,228,192,.055);border-color:rgba(65,228,192,.2);transform:translateX(2px)}
+.pmf-chart-tooltip{position:fixed;z-index:99999;max-width:330px;min-width:235px;padding:14px 15px;border-radius:14px;background:linear-gradient(145deg,rgba(7,26,50,.98),rgba(10,32,56,.98));border:1px solid rgba(65,228,192,.26);box-shadow:0 18px 50px rgba(0,0,0,.38),0 0 28px rgba(65,228,192,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#eaf4ff;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(7px) scale(.985);transition:opacity .14s ease,transform .14s ease,visibility .14s;line-height:1.35}
+.pmf-chart-tooltip.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.pmf-chart-tooltip .tt-kicker{font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#41e4c0;margin-bottom:5px}
+.pmf-chart-tooltip .tt-title{font-size:14px;font-weight:800;color:#fff;margin-bottom:9px}
+.pmf-chart-tooltip .tt-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:11px}
+.pmf-chart-tooltip .tt-label{color:#8398b1;white-space:nowrap}
+.pmf-chart-tooltip .tt-value{color:#dfeaf6;font-weight:700;text-align:right;overflow-wrap:anywhere}
+.pmf-chart-tooltip .tt-note{margin-top:9px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:#90a4bc}
+#viewFicha .pmf-donut-segment{transform-origin:50% 50%;transition:opacity .18s ease,stroke-width .18s ease,filter .18s ease}
+#viewFicha .pmf-donut-segment:hover{opacity:1!important;stroke-width:16!important;filter:drop-shadow(0 0 7px rgba(65,228,192,.35))}
+@media (max-width:700px){.pmf-chart-tooltip{max-width:calc(100vw - 24px);min-width:210px}}
+@media (prefers-reduced-motion:reduce){#viewFicha .chart-hover,#viewFicha .chart-hover-row,.pmf-chart-tooltip,#viewFicha .pmf-donut-segment{transition:none!important}}
+#viewFicha{padding-top:24px!important;gap:18px!important}
+#viewFicha .institutional-header{padding:14px 18px;margin-bottom:16px;min-height:76px}
+#viewFicha .institutional-logo{height:40px;max-width:125px}
+#viewFicha .institutional-title{font-size:12px;letter-spacing:.09em;white-space:nowrap}
+#viewFicha .institutional-subtitle{font-size:10px}
+#viewFicha .btn-pdf{padding:9px 14px;font-size:11px}
+#viewFicha #fichaContainer{width:100%;margin:0 auto}
+#viewFicha #fichaContainer>.ficha-shell,#viewFicha #fichaContainer>div{max-width:100%!important}
+#viewFicha .ficha-section{margin-bottom:1.25rem}
+#viewFicha .ficha-kpis,#viewFicha .ficha-charts{margin-bottom:1.25rem}
+#viewFicha .ficha-profile{min-height:145px}
+#viewFicha .p-8{padding:1.5rem!important}
+#viewFicha .p-6{padding:1.25rem!important}
+#viewFicha .gap-8{gap:1.5rem!important}
+#viewFicha .gap-6{gap:1.15rem!important}
+#viewFicha .space-y-8>:not([hidden])~:not([hidden]){margin-top:1.5rem!important}
+#viewFicha .text-5xl{font-size:2.4rem!important;line-height:1.05!important}
+#viewFicha .text-4xl{font-size:2.1rem!important}
+#viewFicha .text-3xl{font-size:1.75rem!important}
+#viewFicha .text-2xl{font-size:1.35rem!important}
+@media (max-width:1366px){#viewFicha .institutional-brand{gap:12px}
+#viewFicha .institutional-title{white-space:normal!important}}
+@media (max-width:820px){#viewFicha .institutional-header{align-items:stretch!important}
+#viewFicha .pdf-actions{width:100%}
+#viewFicha .btn-pdf{width:100%;justify-content:center}}
+#viewFicha table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:820px){#viewFicha{padding:14px!important}
+#viewFicha .institutional-header{padding:14px!important;gap:12px!important}
+#viewFicha .institutional-brand{width:100%}
+#viewFicha .institutional-title{white-space:normal!important}
+#viewFicha .pdf-actions{width:100%;display:grid!important;grid-template-columns:1fr!important}
+#viewFicha .btn-pdf{width:100%;justify-content:center}}
+@media (max-width:560px){#viewFicha{padding:10px!important}
+#viewFicha .grid-cols-4,#viewFicha .grid-cols-3,#viewFicha .grid-cols-2{grid-template-columns:1fr!important}
+#viewFicha .p-8,#viewFicha .p-6{padding:1rem!important}
+#viewFicha .text-5xl{font-size:clamp(1.55rem,8vw,2rem)!important}
+#viewFicha .institutional-logo{height:34px!important;max-width:95px!important}
+.pmf-chart-tooltip{left:10px!important;right:10px!important;bottom:10px!important;top:auto!important;max-width:none!important;width:auto!important;min-width:0!important}}
+/* Adaptation: reuse the reference layout without changing the other platform pages. */
+#viewFicha.content{width:min(100%,1480px);margin-inline:auto;padding:26px 30px!important}
+#viewFicha .profile-detail-grid>div{overflow-wrap:anywhere}
+#viewFicha .ficha-history table{table-layout:fixed;min-width:1020px}
+#viewFicha .ficha-history th,#viewFicha .ficha-history td{padding-right:14px;overflow-wrap:anywhere}
+#viewFicha .ficha-history .period{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}
+#viewFicha a.btn-pdf{text-decoration:none}
+#viewFicha .ficha-action{text-decoration:none}
+@media(max-width:1366px){#viewFicha.content{padding:20px!important}}
+@media(max-width:768px){#viewFicha.content{padding:14px!important}}
+@media(max-width:560px){#viewFicha.content{padding:10px!important}}

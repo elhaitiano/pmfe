@@ -1,0 +1,13 @@
+**
+!app/
+!app/**
+!docker/
+!docker/**
+!backend.Dockerfile
+!frontend.Dockerfile
+app/**/__pycache__/
+app/**/*.pyc
+app/**/.env
+app/**/secret.key
+app/**/*.sqlite3
+app/**/data/
