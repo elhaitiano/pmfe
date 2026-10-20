@@ -1,0 +1,33 @@
+{% extends 'base.html' %}{% block content %}<section class="content p-10 space-y-6" id="viewGestao">
+<section class="gf-hero">
+<div class="flex flex-wrap items-center justify-between gap-5">
+<div>
+<div class="text-[10px] uppercase tracking-[.22em] text-secondary font-bold">EPAL · Gestão Integrada de Formação</div>
+<h2 class="text-3xl font-black text-white mt-2">Colaboradores &amp; Formação</h2>
+<p class="text-sm text-slate-400 mt-2 max-w-3xl">Consulte todo o universo de funcionários EPAL, identifique quem já possui formação e registe novas acções sem duplicar o cadastro do colaborador.</p>
+</div>
+{% if user.is_staff and employee %}<a class="gf-btn" href="{% if employee %}{% url 'training_create' employee.pk %}{% endif %}" id="gfNewTrainingTop"><span class="material-symbols-outlined text-base">add_circle</span>Nova Formação</a>{% endif %}<a href="{% url 'planning' %}" class="gf-btn alt"><span class="material-symbols-outlined">event_note</span>Planeamento e Grupos</a>{% if user.is_staff %}<a href="{% url 'batch_index' %}" class="gf-btn alt">Atualizar grupo</a><a href="{% url 'employee_create' %}" class="gf-btn alt"><span class="material-symbols-outlined text-base">person_add</span>Novo funcionário</a>{% endif %}
+</div>
+</section>
+<div class="gf-kpis">
+<div class="gf-kpi"><b id="gfTotalEmployees">{{ employee_count }}</b><span>Funcionários EPAL</span></div>
+<div class="gf-kpi"><b id="gfTrainedEmployees">{{ trained_count }}</b><span>Com histórico registado</span></div>
+<div class="gf-kpi"><b id="gfUntrainedEmployees">{{ untrained_count }}</b><span>Sem histórico registado</span></div>
+<div class="gf-kpi"><b id="gfCoverage">{{ coverage|floatformat:1 }}%</b><span>Cobertura do histórico</span></div>
+</div>
+<div class="gf-layout">
+<section class="gf-panel">
+<div class="gf-head">
+<form class="flex flex-wrap gap-3 items-center" method="get">
+<div class="flex-1 min-w-[240px]"><input aria-label="Nome ou número mecanográfico" class="gf-field" id="gfSearch" name="q" placeholder="Pesquisar funcionário por nome ou N.º mecanográfico" value="{{ q }}"/></div>
+<select aria-label="Situação formativa" class="gf-field !w-auto" id="gfStatusFilter" name="status"><option value="">Todos</option><option value="trained" {% if status == 'trained' %}selected{% endif %}>Com histórico</option><option value="untrained" {% if status == 'untrained' %}selected{% endif %}>Sem histórico</option></select>
+<select class="gf-field" name="direction" aria-label="Direcção"><option value="">Todas as direcções</option>{% for d in directions %}<option {% if d == direction %}selected{% endif %}>{{ d }}</option>{% endfor %}</select><button class="gf-btn">Pesquisar</button><a class="gf-btn alt" href="{% url 'home' %}">Limpar</a></form>
+</div>
+<div class="gf-body space-y-2 max-h-[650px] overflow-y-auto scroll" id="gfResults">{% for e in page %}<a class="gf-result {% if employee.pk == e.pk %}active{% endif %}" href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;status={{ status }}&amp;page={{ page.number }}&amp;employee={{ e.pk }}"><div class="flex items-start justify-between gap-3"><div><div class="font-bold text-white text-sm">{{ e.name }}</div><div class="text-[10px] text-slate-500 mt-1">N.º Mec. {{ e.number }} · {{ e.category|default:'—' }}</div><div class="text-[10px] text-slate-500 mt-1">{{ e.direction|default:'—' }}</div></div><span class="gf-status {% if e.training_count %}gf-trained{% else %}gf-untrained{% endif %}">{% if e.training_count %}{{ e.training_count }} {% if e.training_count == 1 %}formação{% else %}formações{% endif %}{% else %}Sem formação{% endif %}</span></div></a>{% empty %}<div class="gf-empty">Nenhum funcionário encontrado.</div>{% endfor %}{% include 'pagination.html' %}</div>
+</section>
+<section class="gf-panel">
+<div class="gf-head"><h3 class="font-bold text-white">Funcionário seleccionado</h3><p class="text-xs text-slate-500 mt-1">Cadastro provisório da EPAL</p></div>
+<div class="gf-body" id="gfEmployeeDetail">{% if employee %}{% include 'employee_summary.html' %}{% else %}<div class="gf-empty">Seleccione um funcionário para consultar a situação formativa.</div>{% endif %}</div>
+</section>
+</div>
+</section>{% endblock %}

@@ -1,0 +1,7 @@
+{% for group in historical_editions %}
+<details open><summary>Fases documentadas — {{ group.edition.display_id }}</summary>
+<p>Código aprovado: {{ group.edition.approved_code|default:'Por confirmar' }} · Código de origem: {{ group.edition.source_code|default:'Não indicado' }}.</p>
+<ul>{% for id,phase in group.edition.phase_details.items %}<li>{{ phase.label }} ({{ id }}) — {{ phase.start }} a {{ phase.end }} · {{ phase.days }} dias efectivos · {{ phase.daily_hours }} H/dia na fonte.</li>{% endfor %}</ul>
+<p class="plan-note">As fases documentadas não comprovam, por si só, a decomposição integral da duração padrão do catálogo. As correspondências prováveis não foram promovidas a confirmadas.</p>
+</details>
+{% endfor %}

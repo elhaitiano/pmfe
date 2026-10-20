@@ -1,0 +1,9 @@
+<form method="get" action="{% url 'historical_index' %}" class="history-filters" aria-label="Filtros históricos">
+<label>Ano<select name="year"><option value="">Todos</option>{% for y in years %}<option value="{{ y }}"{% if filters.year == y|stringformat:'s' %} selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+<label>Direcção<select name="direction"><option value="">Todas</option>{% for d in directions %}<option{% if filters.direction == d %} selected{% endif %}>{{ d }}</option>{% endfor %}</select></label>
+<label>Acção<select name="action"><option value="">Todas</option>{% for id,title in actions %}<option value="{{ id }}"{% if filters.action == id %} selected{% endif %}>{{ id }} — {{ title }}</option>{% endfor %}</select></label>
+<label>Edição<select name="edition"><option value="">Todas</option>{% for g in edition_choices %}<option value="{{ g.edition.id }}"{% if filters.edition == g.edition.id %} selected{% endif %}>{{ g.edition.documented_group|default:'Edição histórica' }} — {{ g.edition.title }}</option>{% endfor %}</select></label>
+<label>Faixa etária<select name="age_band"><option value="">Todas</option>{% for key,label in age_bands %}<option value="{{ key }}"{% if filters.age_band == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+<label>Evidência<select name="level"><option value="">Todos os níveis</option><option value="confirmed"{% if filters.level == 'confirmed' %} selected{% endif %}>Confirmada</option><option value="probable"{% if filters.level == 'probable' %} selected{% endif %}>Provável</option><option value="unmatched"{% if filters.level == 'unmatched' %} selected{% endif %}>Sem correspondência</option></select></label>
+<div><button class="gf-btn">Filtrar</button> <a class="gf-btn alt" href="{% url 'historical_index' %}">Limpar filtros</a></div>
+</form>

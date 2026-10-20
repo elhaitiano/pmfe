@@ -1,0 +1,8 @@
+<section class="plan-technical{% if technical.core_verified %} plan-technical--verified{% endif %}" aria-label="Verificação técnica documental">
+<p class="plan-technical-title"><span class="material-symbols-outlined" aria-hidden="true">{% if technical.core_verified %}fact_check{% else %}pending_actions{% endif %}</span><strong>{{ technical.label }}</strong></p>
+<p>Estado formal registado: <strong>{{ technical.formal_state }}</strong>. Aprovação administrativa oficial: <strong>não comprovada nesta verificação</strong>.</p>
+{% if technical.duration_verified %}<p>Duração documentada: {{ technical.duration_days }} dias × {{ technical.duration_hours|floatformat:'-2' }} H = {{ technical.duration_total|floatformat:'-2' }} H. Auditoria #{{ technical.event_id }}.</p>{% endif %}
+{% if technical.pending %}<ul aria-label="Campos ainda por confirmar">{% for item in technical.pending %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+<p class="plan-note">{{ technical.warning }}</p>
+{% if technical.reference %}<details><summary>Fundamentação técnica</summary><p>{{ technical.reference }}</p><p>As notas originais de importação permanecem preservadas; a evidência de duração apresentada corresponde ao evento de auditoria indicado.</p></details>{% endif %}
+</section>

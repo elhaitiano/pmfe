@@ -1,0 +1,62 @@
+{% if document_archive_enabled %}
+<section class="doc-management" aria-labelledby="doc-management-title">
+  <header class="doc-section-heading">
+    <span class="doc-heading-icon material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+    <div><h2 id="doc-management-title">GESTÃO DE CERTIFICADOS E AVALIAÇÕES</h2><p>Participação, resultados e acompanhamento documental de cada formação. Os dados não confirmados permanecem identificados.</p></div>
+    <span class="doc-count">Formações: <strong>{{ document_rows|length }}</strong></span>
+  </header>
+  <div class="doc-training-list">
+  {% for row in document_rows %}
+    <details class="doc-training-card"{% if forloop.first %} open{% endif %}>
+      <summary class="doc-training-summary">
+        <span class="doc-course-icon material-symbols-outlined" aria-hidden="true">school</span>
+        <span class="doc-course-overview"><strong>{{ row.training.title }}</strong><span class="doc-course-meta"><span>{{ row.training.start|date:'d/m/Y' }} — {{ row.training.end|date:'d/m/Y' }}</span><span>{{ row.training.planned_hours|floatformat:'-2' }} H previstas</span><span>{{ row.training.status }}</span></span></span>
+        <span class="doc-summary-status"><span class="doc-small-label">Emissão</span>{% include 'documents/status.html' with value=row.issued only %}</span>
+        <span class="doc-chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
+      </summary>
+      <div class="doc-card-body">
+        <div class="doc-block-grid">
+          <section class="doc-info-block" aria-label="Participação comprovada">
+            <h3><span class="material-symbols-outlined" aria-hidden="true">fact_check</span>Participação comprovada</h3>
+            {% include 'documents/status.html' with value=row.participation only %}
+            <p class="doc-muted">{% if row.training.attendance_confirmed %}Presenças confirmadas: {{ row.training.attendance }} / {{ row.training.days }} dia(s). Ausências: {% if row.verified_absences is not None %}{{ row.verified_absences }}{% else %}Por confirmar{% endif %}.{% else %}Presenças e ausências por confirmar; os valores desconhecidos não são contados como zero.{% endif %}</p>
+          </section>
+          <section class="doc-info-block" aria-label="Nota e resultado">
+            <h3><span class="material-symbols-outlined" aria-hidden="true">grade</span>Nota e resultado</h3>
+            <div class="doc-grade-row"><span class="doc-grade">{% if row.grade is not None %}{{ row.grade|floatformat:'-2' }} <small>/ 20</small>{% else %}{% include 'evaluation_value.html' with t=row.training %}{% endif %}</span>{% include 'documents/status.html' with value=row.training.result only %}</div>
+            {% if row.achievement %}<p class="doc-muted">Aproveitamento na fonte: {% if row.achievement.percentage is not None %}{{ row.achievement.percentage|floatformat:'-2' }}%{% elif row.achievement.qualitative %}{{ row.achievement.raw }} (avaliação qualitativa){% else %}{{ row.achievement.raw }} (escala por confirmar){% endif %}. {% if row.training.evaluation.calculated %}Equivalência /20 calculada; original preservado.{% else %}Escala original preservada.{% endif %}</p>{% endif %}
+          </section>
+          <section class="doc-info-block" aria-label="Emissão do certificado">
+            <h3><span class="material-symbols-outlined" aria-hidden="true">verified</span>Emissão do certificado</h3>
+            {% include 'documents/status.html' with value=row.issued only %}
+            {% if row.state.observations %}<p class="doc-muted">{{ row.state.observations }}</p>{% endif %}
+            {% if row.training.certificate_reference %}<p class="doc-muted">Referência: {{ row.training.certificate_reference }}</p>{% endif %}
+          </section>
+          <section class="doc-info-block" aria-label="Entrega dos exemplares">
+            <h3><span class="material-symbols-outlined" aria-hidden="true">assignment_turned_in</span>Entrega dos exemplares</h3>
+            <div class="doc-delivery"><h4>Ao formando</h4>{% include 'documents/status.html' with value=row.learner only %}{% if row.state.learner_date %}<p>{{ row.state.learner_date|date:'d/m/Y' }} · {{ row.state.learner_responsible }}</p>{% endif %}</div>
+            <div class="doc-delivery"><h4>Aos Recursos Humanos da EPAL</h4>{% include 'documents/status.html' with value=row.hr only %}{% if row.state.hr_date %}<p>{{ row.state.hr_date|date:'d/m/Y' }} · {{ row.state.hr_responsible }}</p>{% endif %}</div>
+          </section>
+        </div>
+        <footer class="doc-card-footer">
+          {% url 'evaluation_correct' row.training.pk as evaluation_correct_url %}{% if evaluation_correct_url and user.is_staff and perms.training.change_training and perms.training.view_training and perms.training.view_employee %}<a class="doc-action doc-action-secondary" href="{{ evaluation_correct_url }}">Corrigir avaliação</a>{% endif %}
+          {% if row.state %}<details class="doc-evidence"><summary>Referência e observações</summary><p>{{ row.state.reference }}</p>{% if row.state.observations %}<p class="doc-preserve-lines">{{ row.state.observations }}</p>{% endif %}</details>{% endif %}
+          {% if can_manage_deliveries %}<a class="doc-action" href="{% url 'document_delivery' row.training.pk %}"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span>Registar estados<span class="doc-sr-only"> — {{ row.training.title }}</span></a>{% endif %}
+        </footer>
+      </div>
+    </details>
+  {% empty %}<p class="doc-empty">Sem participações registadas para este formando.</p>{% endfor %}
+  </div>
+</section>
+<section class="doc-management doc-archive" aria-labelledby="doc-archive-title">
+  <header class="doc-section-heading"><span class="doc-heading-icon material-symbols-outlined" aria-hidden="true">folder</span><div><h2 id="doc-archive-title">ARQUIVO DIGITAL PRIVADO</h2><p>Certificados e Curriculum Vitae. Arquivar um ficheiro não confirma emissão, entrega ou aprovação.</p></div></header>
+  <div class="doc-archive-actions">{% if can_upload_documents %}<a class="doc-action" href="{% url 'document_upload' employee.pk %}"><span class="material-symbols-outlined" aria-hidden="true">upload_file</span>Arquivar certificado ou CV PDF</a>{% endif %}{% if can_correct_professional %}<a class="doc-action doc-action-secondary" href="{% url 'professional_correct' employee.pk %}"><span class="material-symbols-outlined" aria-hidden="true">manage_accounts</span>Corrigir categoria e função</a>{% endif %}</div>
+  {% if can_view_documents %}
+  <details class="doc-archive-details"><summary><span class="material-symbols-outlined" aria-hidden="true">description</span>Consultar documentos privados <span class="doc-count">{{ private_documents|length }}</span></summary>
+    {% regroup private_documents|dictsort:'kind' by kind as document_groups %}
+    {% for group in document_groups %}<section class="doc-file-group" aria-label="{% if group.grouper == 'cv' %}Curriculum Vitae{% else %}Certificados{% endif %}"><h3>{% if group.grouper == 'cv' %}Curriculum Vitae{% else %}Certificados{% endif %}<span class="doc-count">{{ group.list|length }}</span></h3><ul class="doc-file-grid">
+    {% for document in group.list %}<li class="doc-file-card"><span class="doc-file-icon material-symbols-outlined" aria-hidden="true">picture_as_pdf</span><div><h4>{% if document.training %}{{ document.training.title }}{% else %}{{ document.get_kind_display }}{% endif %}</h4><p class="doc-muted">Arquivado em {{ document.created|date:'d/m/Y' }}</p><p class="doc-file-reference">{{ document.reference }}</p><div class="doc-file-actions"><a href="{% url 'document_download' document.pk %}?view=1">Consultar<span class="doc-sr-only"> — {{ document.get_kind_display }}{% if document.training %}: {{ document.training.title }}{% endif %}</span></a><a href="{% url 'document_download' document.pk %}">Descarregar PDF<span class="doc-sr-only"> — {{ document.get_kind_display }}{% if document.training %}: {{ document.training.title }}{% endif %}</span></a></div></div></li>{% endfor %}
+    </ul></section>{% empty %}<p class="doc-empty">Nenhum documento arquivado.</p>{% endfor %}
+  </details>{% endif %}
+</section>
+{% endif %}

@@ -1,0 +1,120 @@
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+build/
+dist/
+
+# Local settings and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+secret.key
+
+# Runtime data, database snapshots and exports
+/data/
+/app/data/
+backups/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+*.sql
+*.sql.gz
+*.log
+
+# Source archives and legacy copy (Docker uses app/)
+/*.zip
+/pmf_local/
+
+# Business workbooks may contain personal data.
+# Keep the attendance template required by the application.
+*.xls
+*.xlsm
+*.xlsx
+!app/training/resources/attendance_template.xlsx
+~$*
+
+# Frontend dependencies; keep compiled CSS, fonts and app assets
+node_modules/
+.npm/
+
+# Editor/OS temporary files and local screenshots
+.idea/
+.vscode/
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+/Pasted image*.png
+
+# Documentação Markdown: publicar apenas o README.md da raiz
+*.[mM][dD]
+!/README.md
+
+# Private historical indexes: never publish real participant mappings/results.
+/app/training/data/historical_editions.json
+/app/training/data/pilar_achievement.json
+private/
+private_documents/
+private_data/
+diagnostics/
+snapshots/
+uploads/
+media/
+exports/
+*.pdf
+*.doc
+*.docx
+*.pem
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+
+# Operational receipts, plans, diagnostics and local code backups.
+/app/code-backups/
+/app/catalogue-test-*/
+*.backup*
+*.bak
+/app/*-2026*/
+/app/catalogue-technical-review/
+/app/phase9-diagnostic/
+/app/visual-doc-cards/
+/app/PHASE8_*.json
+/app/*plan*.json
+/app/*-2026*.json
+/app/catalogue-decisions-*.json
+/app/diagnostic-*.txt
+
+# One-off operations against the operator's private environment.
+/app/audit_*.py
+/app/backup_*.py
+/app/build_*.py
+/app/inspect_*.py
+/app/plan_*.py
+/app/prepare_pilar_backup.py
+/app/reconcile_*.py
+/app/review_*.py
+/app/run_*.py
+/app/simulate_*.py
+/app/simplify_presentation.py
+/app/update_*templates.py
+/app/verify_*.py
+/app/finalize_executive_report.py

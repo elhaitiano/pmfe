@@ -1,0 +1,45 @@
+{% extends 'planning/base.html' %}{% load static %}
+{% block plan_content %}
+<section class="plan-panel">
+<div class="plan-heading"><h2>{{ title }}</h2><p>{{ course.title }}</p></div>
+{% if technical %}{% include 'planning/technical_status.html' %}{% endif %}
+{% if can_correct_course %}<div class="plan-actions"><a class="gf-btn alt" href="{% url 'course_correct' course.pk %}">Corrigir dados</a><span class="plan-note">Decisões documentadas com pré-visualização, confirmação e auditoria.</span></div>{% endif %}
+{% if form.dates %}<details class="plan-calendar-builder"><summary>Preencher rapidamente os dias do calendário</summary><div class="plan-search"><label>Primeiro dia<input id="planFirstDay" class="gf-field" type="date"></label><label>Número de dias<input id="planDayCount" class="gf-field" type="number" min="1" max="366" value="{{ course.default_days|default_if_none:'' }}"></label><label><input id="planWeekdaysOnly" type="checkbox" checked> Apenas segunda a sexta</label><button type="button" id="planBuildCalendar" class="gf-btn alt">Preencher calendário</button></div><p class="plan-note" id="planCalendarMessage" aria-live="polite">Depois de preencher, reveja as datas e ajuste feriados ou dias específicos.</p></details>{% endif %}
+{% if course.source_metadata %}
+<section class="plan-source-panel" aria-labelledby="planSourceTitle">
+<h3 id="planSourceTitle">Valores originais preservados</h3>
+<dl class="plan-source-values">
+<div><dt>Dias na origem</dt><dd>{{ course.source_metadata.days|default_if_none:'Por confirmar'|default:'Por confirmar' }}</dd></div>
+<div><dt>Valor de horas na origem</dt><dd>{{ course.source_metadata.hours|default_if_none:'Por confirmar'|default:'Por confirmar' }}</dd></div>
+<div class="plan-source-wide"><dt>Título original</dt><dd>{{ course.source_metadata.title|default:'Não indicado' }}</dd></div>
+<div><dt>Código de origem</dt><dd>{% if course.source_internal_code %}{{ course.source_internal_code }}{% else %}{{ course.source_metadata.code|default:'Não indicado' }}{% endif %}</dd></div>
+<div><dt>ID da acção na origem</dt><dd>{{ course.source_action_id|default:'Não indicado' }}</dd></div>
+<div><dt>Fonte documental</dt><dd>{{ course.source_metadata.origin|default:'Não indicada' }}</dd></div>
+<div><dt>Sistema de origem</dt><dd>{{ course.source_system|default:'Não indicado' }}</dd></div>
+</dl>
+<p class="plan-note">O valor de horas é transcrito da origem; esta apresentação não o classifica como diário ou total. Os valores originais permanecem preservados.</p>
+{% if course.source_action_id == 'AC-2026-015' %}<p class="plan-warning"><strong>Divergência de duração a rever:</strong> o título original indica «30h, 5 dias», enquanto o campo de horas da origem contém {{ course.source_metadata.hours|default_if_none:'Por confirmar' }}. A indicação de 30 horas em cinco dias corresponde a 6 horas por dia; o valor original não foi alterado.</p>{% endif %}
+</section>
+{% endif %}
+<form method="post" id="planDurationForm">
+{% csrf_token %}{{ form.non_field_errors }}{% for f in form.hidden_fields %}{{ f }}{{ f.errors }}{% endfor %}
+<fieldset class="plan-duration-panel"><legend>Duração da formação</legend>
+<div class="plan-form-grid">
+{% for field in form.visible_fields %}{% if field.name == 'default_days' or field.name == 'default_hours' or field.name == 'dates' or field.name == 'hours_per_day' %}
+<label for="{{ field.id_for_label }}"><span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</label>
+{% endif %}{% endfor %}
+</div>
+<div class="plan-duration-total" role="status" aria-live="polite" aria-atomic="true"><span>Carga horária total calculada</span><output id="planTotalHours">{% if form.total_hours is not None %}{{ form.total_hours|floatformat:'-2' }} H{% else %}Por confirmar{% endif %}</output><small>Dias efectivos × horas de formação por dia.</small></div>
+</fieldset>
+<div class="plan-form-grid">
+{% for field in form.visible_fields %}{% if field.name != 'default_days' and field.name != 'default_hours' and field.name != 'dates' and field.name != 'hours_per_day' %}
+{% if field.name == 'active' %}<div class="plan-availability-field"><label for="{{ field.id_for_label }}">{{ field }}<span>{{ field.label }}</span></label>{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>
+{% else %}<label for="{{ field.id_for_label }}"><span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</label>{% endif %}
+{% endif %}{% endfor %}
+</div>
+<div class="plan-actions"><button class="gf-btn">Guardar</button><a class="gf-btn alt" href="{% url 'planning' %}">Cancelar</a></div>
+</form>
+<p class="plan-note">O catálogo pode ser reutilizado depois do projecto. Ao criar um grupo, o título e a área ficam guardados nessa edição; editar o catálogo não altera grupos anteriores.</p>
+</section>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'pmf/planning.js' %}" defer></script>{% endblock %}

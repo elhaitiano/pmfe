@@ -1,0 +1,24 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel">
+  <h2>Eliminar formação — {{ course.title }}</h2>
+  {% if imported_protected %}
+  <div class="plan-warning">Acção importada protegida: a identidade de origem e a rastreabilidade do catálogo devem ser conservadas. Esta acção não pode ser eliminada.</div>
+  <p class="plan-note">Para retirar a acção da oferta, abra Editar acção e desmarque Disponível no catálogo. Arquivar não altera o estado de validação nem apaga o histórico.</p>
+  <div class="plan-actions"><a class="gf-btn" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'planning' %}">Voltar ao catálogo</a></div>
+  {% elif can_delete %}
+  <div class="plan-warning">Esta operação elimina definitivamente esta acção do catálogo. Os técnicos, as outras formações e a auditoria são conservados.</div>
+  <p class="plan-note">Faça uma cópia de segurança antes de eliminar. Para retirar a formação da oferta sem apagar o catálogo, desmarque Disponível no catálogo em Editar acção.</p>
+  <form method="post" class="plan-inline-form">
+    {% csrf_token %}
+    <input type="hidden" name="revision" value="{{ course.revision }}">
+    <label>Motivo<input class="gf-field" name="reason" maxlength="1000" required></label>
+    <label>Escreva ELIMINAR para confirmar<input class="gf-field" name="confirm" required autocomplete="off" pattern="ELIMINAR"></label>
+    <div class="plan-actions"><button class="gf-btn" type="submit">Eliminar definitivamente esta formação</button><a class="gf-btn alt" href="{% url 'planning' %}">Voltar sem eliminar</a></div>
+  </form>
+  {% else %}
+  <div class="plan-warning">Esta formação tem grupos ou histórico associado, incluindo títulos anteriores. Não pode ser eliminada. Existem {{ group_count }} grupo(s) associados. Grupos preparatórios elegíveis devem ser revistos e eliminados individualmente primeiro. Se existir histórico, arquive a formação.</div>
+  <div class="plan-actions"><a class="gf-btn" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'planning' %}">Voltar ao catálogo</a></div>
+  {% endif %}
+</section>
+{% endblock %}

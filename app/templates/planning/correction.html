@@ -1,0 +1,27 @@
+{% extends 'planning/base.html' %}{% load static %}
+{% block plan_content %}
+<section class="plan-panel">
+<div class="plan-heading"><h2>{% if reverse %}Reverter correcção{% else %}Corrigir dados{% endif %}</h2><p>{{ course.title }} · {{ course.source_action_id }} · Revisão {{ course.revision }}</p></div>
+<section class="plan-source-panel" aria-labelledby="correctionSource"><h3 id="correctionSource">Valores originais preservados</h3>
+<dl class="plan-source-values"><div class="plan-source-wide"><dt>Título original</dt><dd>{{ course.source_metadata.title|default:'Não indicado' }}</dd></div><div><dt>Dias da origem</dt><dd>{{ course.source_metadata.days|default_if_none:'Por confirmar' }}</dd></div><div><dt>Valor de horas da origem</dt><dd>{{ course.source_metadata.hours|default_if_none:'Por confirmar' }}</dd></div><div><dt>Código de origem</dt><dd>{{ course.source_internal_code|default:'Não indicado' }}</dd></div><div><dt>Fonte</dt><dd>{{ course.source_metadata.origin|default:'Não indicada' }}</dd></div></dl>
+<p class="plan-note">A indicação original de horas é preservada sem reinterpretação automática.</p></section>
+<p class="plan-warning"><strong>Decisão documentada sobre o padrão.</strong> {{ documentary_warning }} A GIRH e as restantes acções fora do âmbito permanecem suspensas.</p>
+<section class="plan-duration-panel"><h3>Valores actuais</h3><p>{{ course.default_days|default_if_none:'Por confirmar' }} dias · {{ course.default_hours|default_if_none:'Por confirmar' }} H/dia · Total: {% if course.total_hours is not None %}{{ course.total_hours|floatformat:'-2' }} H{% else %}Por confirmar{% endif %}</p></section>
+{% if confirmation.errors %}<div class="plan-warning" role="alert">{{ confirmation.errors }} Reabra e reveja a proposta antes de confirmar.</div>{% endif %}
+{% if preview %}
+<section class="plan-correction-review" aria-labelledby="correctionReview"><h3 id="correctionReview">Pré-visualização das diferenças — ainda não gravadas</h3>
+<table class="plan-correction-table"><thead><tr><th>Campo</th><th>Actual</th><th>Proposto</th></tr></thead><tbody><tr><th>Dias</th><td>{{ preview.before.default_days|default_if_none:'Por confirmar' }}</td><td>{{ preview.after.default_days|default_if_none:'Por confirmar' }}</td></tr><tr><th>Horas diárias</th><td>{{ preview.before.default_hours|default_if_none:'Por confirmar' }}</td><td>{{ preview.after.default_hours|default_if_none:'Por confirmar' }}</td></tr><tr><th>Total calculado</th><td>{{ preview.total_before|default_if_none:'Por confirmar' }}</td><td>{{ preview.total_after|default_if_none:'Por confirmar' }}</td></tr><tr><th>Revisão</th><td>{{ preview.before.revision }}</td><td>{{ preview.after.revision }}</td></tr></tbody></table>
+<p><strong>Tipo:</strong> Decisão documentada sobre o padrão</p><p><strong>Justificação:</strong> {{ preview.justification }}</p><p><strong>Referência:</strong> {{ preview.reference }}</p>
+<p class="plan-note">Título, códigos, área, disponibilidade, validação, metadados, histórico e grupos existentes permanecem intactos. A confirmação expira em 20 minutos.</p>
+<form method="post">{% csrf_token %}{{ confirmation.token }}<label class="plan-correction-confirm">{{ confirmation.confirmed }} {{ confirmation.confirmed.label }}</label>{{ confirmation.confirmed.errors }}<div class="plan-actions"><button class="gf-btn" name="action" value="confirm">Confirmar {% if reverse %}reversão{% else %}correcção{% endif %}</button><a class="gf-btn alt" href="{% if reverse %}{{ request.path }}{% else %}{% url 'course_correct' course.pk %}{% endif %}">Voltar à proposta</a></div></form>
+</section>
+{% else %}
+<form method="post" id="correctionProposal">{% csrf_token %}{{ form.non_field_errors }}{% for field in form.hidden_fields %}{{ field }}{{ field.errors }}{% endfor %}<div class="plan-form-grid">{% for field in form.visible_fields %}<label for="{{ field.id_for_label }}"><span>{{ field.label }} *</span>{{ field }}{{ field.errors }}</label>{% endfor %}</div>
+{% if not reverse %}<div class="plan-duration-total" role="status" aria-live="polite" aria-atomic="true"><span>Total proposto</span><output id="correctionTotal">{% if form.total_hours is not None %}{{ form.total_hours|floatformat:'-2' }} H{% else %}Por confirmar{% endif %}</output></div>{% endif %}
+<div class="plan-actions"><button class="gf-btn" name="action" value="review">Pré-visualizar {% if reverse %}reversão{% else %}alterações{% endif %}</button></div></form>
+{% endif %}
+<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Cancelar e voltar à acção</a>
+{% if history %}<section class="plan-source-panel"><h3>Histórico de correcções</h3>{% for item in history %}<p>Evento #{{ item.event.pk }} · {{ item.event.created|date:'d/m/Y H:i' }} · {{ item.event.actor }} · {% if item.detail.mode == 'reverse' %}Reversão{% else %}Decisão documentada{% endif %} · {{ item.detail.reference }} {% if item.reversible %}<a href="{% url 'course_correction_reverse' course.pk item.event.pk %}">Preparar reversão</a>{% endif %}</p>{% endfor %}</section>{% endif %}
+</section>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'pmf/catalogue-correction.js' %}" defer></script>{% endblock %}

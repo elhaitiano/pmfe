@@ -1,0 +1,72 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-kpis" aria-label="Indicadores do catálogo completo">
+  <div class="plan-kpi"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><div><strong>{{ catalogue_stats.total }}</strong><span>Total de acções</span></div></div>
+  <div class="plan-kpi plan-kpi--pending"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><div><strong>{{ catalogue_stats.pending }}</strong><span>Pendentes</span></div></div>
+  <div class="plan-kpi plan-kpi--validated"><span class="material-symbols-outlined" aria-hidden="true">verified</span><div><strong>{{ catalogue_stats.validated }}</strong><span>Validadas</span></div></div>
+  <div class="plan-kpi plan-kpi--blocked"><span class="material-symbols-outlined" aria-hidden="true">block</span><div><strong>{{ catalogue_stats.blocked }}</strong><span>Bloqueadas</span></div></div>
+</section>
+<p class="plan-note">Indicadores do catálogo completo, incluindo acções arquivadas; não são alterados pelos filtros.</p>
+<section class="plan-panel" aria-labelledby="catalogue-heading">
+  <div class="plan-heading"><h2 id="catalogue-heading"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span>Catálogo de formações</h2><p>Consulte as acções, reveja as pendências e prepare grupos apenas depois da validação.</p></div>
+  <form method="get" class="plan-catalogue-filters" role="search" aria-label="Pesquisar e filtrar o catálogo">
+    <label for="catalogue-search">Pesquisar no catálogo<input id="catalogue-search" name="q" class="gf-field" value="{{ q }}" placeholder="Título, código, ID da acção ou área"></label>
+    <label for="catalogue-validation">Estado de validação<select id="catalogue-validation" name="validation" class="gf-field"><option value="">Todos os estados</option>{% for value,label in validation_choices %}<option value="{{ value }}"{% if validation == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label for="catalogue-area">Área de formação<select id="catalogue-area" name="area" class="gf-field"><option value="">Todas as áreas</option><option value="__undefined__"{% if area == '__undefined__' %} selected{% endif %}>Área por definir</option>{% for value in areas %}<option value="{{ value }}"{% if area == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    {% if request.GET.page %}<input type="hidden" name="page" value="{{ request.GET.page }}">{% endif %}
+    <div class="plan-filter-actions"><button class="gf-btn" type="submit">Aplicar filtros</button><a class="gf-btn alt" href="{% url 'planning' %}">Limpar filtros</a></div>
+  </form>
+  <div class="plan-catalogue-toolbar"><p class="plan-note" role="status">{{ course_page.paginator.count }} resultado{{ course_page.paginator.count|pluralize }} de {{ catalogue_stats.total }} acções{% if course_page.paginator.count %} · A mostrar {{ course_page.start_index }}–{{ course_page.end_index }}{% endif %}</p>{% if user.is_staff %}<a class="gf-btn" href="{% url 'course_create' %}"><span class="material-symbols-outlined" aria-hidden="true">add</span>Nova acção de formação</a>{% endif %}</div>
+  <div class="plan-courses">
+    {% for course in courses %}
+    <article class="plan-course plan-course--compact" aria-labelledby="course-title-{{ course.pk }}">
+      <div class="plan-course-badges">
+        <span class="plan-status plan-status--{{ course.validation_status }}" aria-label="Estado formal: {{ course.get_validation_status_display }}"><span class="material-symbols-outlined" aria-hidden="true">{% if course.validation_status == 'validated' %}verified{% elif course.validation_status == 'blocked' %}block{% else %}schedule{% endif %}</span>{% if course.validation_status == 'validated' %}Validado{% elif course.validation_status == 'blocked' %}Bloqueado{% else %}Pendente{% endif %}</span>
+        {% if course.technical.duration_verified %}<span class="plan-duration-badge"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span>Duração verificada</span>{% endif %}
+      </div>
+      <h3 class="plan-course-title" id="course-title-{{ course.pk }}" title="{{ course.title }}">{{ course.title }}</h3>
+      <dl class="plan-compact-facts">
+        <div class="plan-compact-duration"><dt>Duração padrão total</dt><dd>{% if course.total_hours is not None %}<strong>{{ course.total_hours|floatformat:'-2' }} H</strong>{% else %}<strong>Por confirmar</strong>{% endif %}<small>{% if course.default_days is not None %}{{ course.default_days }} dia(s){% else %}Dias por confirmar{% endif %} × {% if course.default_hours is not None %}{{ course.default_hours|floatformat:'-2' }} H/dia{% else %}Horas por confirmar (H/dia){% endif %}</small></dd></div>
+        <div><dt>Grupos</dt><dd>{% if history_visible and course.source_action_id %}{{ course.historical_count }}{% else %}<span title="A consulta histórica depende da activação e das permissões existentes">—</span>{% endif %}</dd></div>
+      </dl>
+      {% if history_visible and course.source_action_id and course.historical_count %}<a class="gf-btn alt plan-consult-groups" href="{% url 'historical_index' %}?action={{ course.source_action_id|urlencode }}">Consultar grupos<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>{% endif %}
+      <details class="plan-course-details">
+        <summary>Ver detalhes<span class="material-symbols-outlined" aria-hidden="true">expand_more</span></summary>
+        <div class="plan-course-detail-body">
+          <h4>Designação completa</h4><p>{{ course.title }}</p>
+          <h4>Verificação técnica e estado formal</h4>
+          {% include 'planning/technical_status.html' with technical=course.technical %}
+          <h4>Dados do catálogo e grupos</h4>
+          <dl><div><dt>Área</dt><dd>{{ course.area|default:'Área por definir' }}</dd></div><div><dt>Disponibilidade</dt><dd>{% if course.active %}Disponível no catálogo{% else %}Arquivada no catálogo{% endif %}</dd></div><div><dt>Grupos operacionais</dt><dd>{{ course.group_count }}</dd></div><div><dt>Grupos</dt><dd>{% if history_visible and course.source_action_id %}{{ course.historical_count }}{% else %}Consulta não activada ou sem permissão{% endif %}</dd></div></dl>
+          {% if history_visible and course.source_action_id %}<p><a href="{% url 'historical_index' %}?action={{ course.source_action_id|urlencode }}">Consultar edições e correspondências históricas</a></p>{% endif %}
+          <dl><div><dt>ID da acção na origem</dt><dd>{{ course.source_action_id|default:'Sem ID de origem' }}</dd></div><div><dt>Sistema de origem</dt><dd>{{ course.source_system|default:'Registo manual' }}</dd></div><div><dt>Código de origem</dt><dd>{{ course.source_internal_code|default:'Não indicado' }}{% if not course.internal_code and course.source_internal_code %} · Por validar{% endif %}</dd></div><div><dt>Código aprovado</dt><dd>{{ course.internal_code|default:'Por confirmar' }}</dd></div></dl>
+          {% if course.internal_code and course.source_internal_code and course.internal_code != course.source_internal_code %}<p class="plan-warning">Divergência de código documentada: {{ course.source_internal_code }} na origem; {{ course.internal_code }} aprovado.</p>{% endif %}
+          {% if course.source_metadata %}<h4>Metadados preservados da origem</h4><dl><div><dt>Origem</dt><dd>{{ course.source_metadata.origin|default:'Não indicada' }}</dd></div><div><dt>Estado da designação</dt><dd>{{ course.source_metadata.designation_state|default:'Não indicado' }}</dd></div><div><dt>Área declarada</dt><dd>{{ course.source_metadata.area|default:'Não indicada' }}</dd></div><div><dt>Dias declarados</dt><dd>{{ course.source_metadata.days|default_if_none:'—' }}</dd></div><div><dt>Horas disponíveis</dt><dd>{{ course.source_metadata.hours|default_if_none:'—' }}</dd></div></dl><p class="plan-note">Valores da origem; não substituem a validação da duração e da unidade das horas.</p>{% endif %}
+          {% if course.contents %}<h4>Conteúdos / Objectivos</h4><p>{{ course.contents|linebreaksbr }}</p>{% endif %}
+          <h4>Observações de validação</h4><p>{{ course.validation_notes|default:'Sem observações registadas.'|linebreaksbr }}</p>
+          {% if course.aliases %}<h4>Aliases aprovados</h4><ul>{% for alias in course.aliases %}<li>{{ alias }}</li>{% endfor %}</ul>{% endif %}
+          {% if course.source_system or course.source_action_id %}<p class="plan-note">Acção importada protegida contra eliminação. Para arquivar, desmarque Disponível no catálogo em Editar acção.</p>{% endif %}
+      <div class="plan-actions plan-course-actions">
+        {% if user.is_staff %}
+          {% if course.can_create_groups %}<a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group }}</a>{% endif %}
+          <a class="gf-btn alt" href="{% url 'course_edit' course.pk %}" aria-label="Editar acção: {{ course.title }}">Editar acção</a>
+          {% if not course.source_system and not course.source_action_id %}<a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}
+        {% endif %}
+      </div>
+        </div>
+      </details>
+    </article>
+    {% empty %}<p class="plan-empty">{% if catalogue_stats.total %}Nenhuma acção corresponde à pesquisa e aos filtros. Utilize Limpar filtros para consultar o catálogo completo.{% else %}Ainda não existem acções no catálogo. Os registos anteriores continuam no histórico.{% endif %}</p>{% endfor %}
+  </div>
+  <nav class="pmf-pagination plan-catalogue-pagination" aria-label="Paginação das acções">
+    {% if course_page.has_previous %}<a href="?{% if catalogue_query %}{{ catalogue_query }}&amp;{% endif %}course_page={{ course_page.previous_page_number }}">Anterior</a>{% endif %}
+    <span aria-current="page">Página {{ course_page.number }} de {{ course_page.paginator.num_pages }}</span>
+    {% if course_page.has_next %}<a href="?{% if catalogue_query %}{{ catalogue_query }}&amp;{% endif %}course_page={{ course_page.next_page_number }}">Seguinte</a>{% endif %}
+  </nav>
+</section>
+<section class="plan-panel">
+  <div class="plan-heading"><h2><span class="material-symbols-outlined" aria-hidden="true">groups</span>Grupos e calendário</h2><p>G1, G2… por acção; os códigos cancelados não são reutilizados.</p></div>
+  <div class="batch-scroll"><table class="batch-table"><thead><tr><th>Grupo / Acção</th><th>Período</th><th>Local / Formador</th><th>Inscritos</th><th>Estado</th><th></th></tr></thead><tbody>{% for group in page %}<tr><td><strong>{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small></td><td>{{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days }} dias efectivos</small></td><td>{{ group.location }}<small>{{ group.trainer }}</small></td><td>{{ group.active_count }} / {{ group.capacity }}</td><td><span class="plan-pill">{{ group.state }}</span></td><td><a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Abrir grupo</a></td></tr>{% empty %}<tr><td colspan="6">Nenhum grupo encontrado.</td></tr>{% endfor %}</tbody></table></div>
+  <nav class="pmf-pagination" aria-label="Paginação dos grupos">{% if page.has_previous %}<a href="?{% if group_query %}{{ group_query }}&amp;{% endif %}page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span aria-current="page">Página {{ page.number }} de {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?{% if group_query %}{{ group_query }}&amp;{% endif %}page={{ page.next_page_number }}">Seguinte</a>{% endif %}</nav>
+</section>
+{% endblock %}
