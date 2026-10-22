@@ -45,15 +45,19 @@
                 {{ print_name }}
               </div>
             </div>
-            <div class="fields">
+            <div class="registration-details">
+              <h1 class="registration-name">{{ employee.name }}</h1>
+              <p class="registration-function">{{ employee.function|default:"Formando" }}</p>
+              <div class="fields">
               {% for label,value in print_fields %}
-              <div class="field{% if label == 'E-mail' %} full{% endif %}">
+              <div class="field">
                 <label>
                   {{ label }}:
                 </label>
                 <span class="field-value">{{ value|default:'-' }}</span>
               </div>
               {% endfor %}
+              </div>
             </div>
           </div>
         </div>

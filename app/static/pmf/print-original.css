@@ -765,3 +765,54 @@ canvas{
 .table-section th:last-child{
   font-size:6.2pt
 }
+
+/* Compact identity header: the detailed registration stays in the application. */
+.profile {
+  grid-template-columns: 27mm minmax(0, 1fr);
+  gap: 4mm;
+}
+.photo {
+  width: 25mm;
+  height: 29mm;
+}
+.silhouette {
+  transform: scale(.65);
+}
+.photo-label {
+  font-size: 8pt;
+}
+.registration-name {
+  margin: 0 0 1.5mm;
+  font-size: 14pt;
+  line-height: 1.2;
+  color: var(--navy);
+  overflow-wrap: anywhere;
+}
+.registration-function {
+  margin: 0 0 3mm;
+  font-size: 9pt;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.field {
+  display: block;
+  padding: 1.8mm 2mm;
+  border-right: 1px solid #e0e6ee;
+  border-bottom: 1px solid #e0e6ee;
+  min-width: 0;
+}
+.field label {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  font-size: 7pt;
+}
+.field .field-value {
+  border: 0;
+  padding: 1mm 0 0;
+  font-size: 8pt;
+  line-height: 1.2;
+}

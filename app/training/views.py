@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .forms import EmployeeForm, TrainingForm
 from .models import AuditEvent, Employee, Training
-from .analytics import statistics, distribution, profile_fields, format_phone, years_since
+from .analytics import statistics, distribution, profile_fields, format_phone, years_since, registration_header_fields
 
 
 class LocalLoginView(LoginView):
@@ -117,7 +117,7 @@ def employee_data(request, pk=None):
             'page': Paginator(employees, 30).get_page(request.GET.get('page')), 'q': q})
     employee = get_object_or_404(Employee, pk=pk)
     rows = list(employee.trainings.all())
-    fields = profile_fields(employee)
+    fields = registration_header_fields(employee)
     competencies, seen = [], set()
     for row in rows:
         if row.title not in seen and len(competencies) < 6:
@@ -219,7 +219,7 @@ def employee_print(request, pk):
     return render(request, 'print.html', {'employee': employee, 'trainings': rows,
         'stats': stats, 'today': timezone.localdate(), 'distribution': distribution(rows),
         'print_name': ' '.join(employee.name.split()[::max(1, len(employee.name.split()) - 1)]),
-        'print_fields': profile_fields(employee)})
+        'print_fields': registration_header_fields(employee)})
 
 
 @login_required

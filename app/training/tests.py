@@ -52,21 +52,22 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print', args=[employee.pk]))
         self.assertEqual(printed.context['print_name'], 'Ana Exemplo')
         fields = dict(printed.context['print_fields'])
-        self.assertEqual(fields['Função'], 'Operadora')
-        self.assertEqual(fields['Área Alocada'], 'CENTRO TESTE')
-        self.assertEqual(fields['Centro de Custo'], '')
-        for label in ['N.º BI', 'N.º INSS', 'Género', 'Estado civil', 'Empresa',
+        self.assertEqual(len(fields), 9)
+        self.assertEqual(fields['N.º Mecanográfico'], employee.number)
+        self.assertEqual(fields['Tel.'], '923 255 256 | 924 123 456')
+        for label in ['N.º INSS', 'Estado civil', 'Empresa', 'Centro de Custo', 'Área Alocada',
                       'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
-            self.assertIn(label, fields)
+            self.assertNotIn(label, fields)
+        self.assertContains(printed, 'Operadora')
         self.assertContains(printed, '924 123 456')
-        self.assertContains(printed, 'CENTRO TESTE')
+        self.assertNotContains(printed, 'CENTRO TESTE')
         self.assertContains(printed, '<th>CATEGORIA</th>', html=True)
         self.assertNotContains(printed, '<th>RESULTADO</th>')
         self.assertNotContains(printed, 'CERTIFICADO ENTREGUE')
         self.assertNotContains(printed, 'N.º 0012<br>')
         profile = self.client.get(reverse('employee_data', args=[employee.pk]))
         self.assertContains(profile, 'Ana Maria de Exemplo')
-        self.assertContains(profile, 'CENTRO TESTE')
+        self.assertNotContains(profile, 'CENTRO TESTE')
         from .forms import EmployeeForm
         form = EmployeeForm(instance=employee, data={'number':employee.number,
             'name':employee.name, 'phone_secondary':'925000111', 'function':'Técnica'})
@@ -180,8 +181,8 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print',args=[self.employee.pk]))
         self.assertEqual(profile.context['stats'], printed.context['stats'])
         self.assertEqual(profile.context['distribution'], printed.context['distribution'])
-        self.assertContains(printed, 'Função:')
-        self.assertContains(printed, 'Centro de Custo')
+        self.assertContains(printed, 'registration-function')
+        self.assertNotContains(printed, 'Centro de Custo')
         self.assertContains(printed, 'por confirmar')
 
     def test_profile_has_recent_five_and_history_keeps_all(self):

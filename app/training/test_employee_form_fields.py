@@ -30,8 +30,10 @@ class EmployeeFormFieldsTests(TestCase):
             self.assertEqual(field.widget.attrs['class'], 'gf-field')
         for route in ['employee_data', 'employee_print']:
             response = self.client.get(reverse(route, args=[employee.pk]))
-            for value in ['000123LA045', '0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Confirmado']:
-                self.assertContains(response, value)
+            self.assertContains(response, '000123LA045')
+            self.assertContains(response, 'Operadora')
+            for value in ['0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Confirmado']:
+                self.assertNotContains(response, value)
         response = self.client.get(reverse('employee_edit', args=[employee.pk]))
         for name in form.fields:
             self.assertContains(response, f'name="{name}"')

@@ -56,12 +56,12 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
               {{ employee.name }}
             </h3>
             <p class="text-primary uppercase tracking-[.12em] font-semibold mt-2">
-              Formando
+              {{ employee.function|default:"Formando" }}
             </p>
             <div class="profile-detail-grid grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-7 text-sm">
               {% for label,value in data_fields %}
-              <div{% if label == 'E-mail' %} class="md:col-span-3"{% endif %}>
-                <span class="text-slate-500">{% if label == 'Direcção' %}⌂{% elif label == 'N.º BI' %}♙{% elif label == 'Estado civil' %}⚭{% elif label == 'N.º Telemóvel' %}☎{% elif label == 'E-mail' %}✉{% else %}▣{% endif %} {{ label }}:</span> <strong>{{ value|default:'—' }}</strong>
+              <div>
+                <span class="text-slate-500">{% if label == 'Direcção' %}⌂{% elif label == 'N.º BI' %}♙{% elif label == 'Estado civil' %}⚭{% elif label == 'Tel.' %}☎{% elif label == 'E-mail' %}✉{% else %}▣{% endif %} {{ label }}:</span> <strong>{{ value|default:'—' }}</strong>
               </div>
               {% endfor %}
             </div>
@@ -189,8 +189,8 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
         <p class="text-xs text-slate-500 mt-2">
           Últimas cinco participações · <a class="text-primary" href="{% url 'employee_detail' employee.pk %}">Consultar o histórico completo ({{ history_total }})</a>
         </p>
-        <div class="overflow-x-auto mt-7">
-          <table class="w-full text-sm min-w-[1020px]">
+        <div class="ficha-history-frame">
+          <table class="ficha-history-table">
             <colgroup>
               <col style="width:5%"><col style="width:26%"><col style="width:20%"><col style="width:10%"><col style="width:17%"><col style="width:6%"><col style="width:6%"><col style="width:10%">
             </colgroup>

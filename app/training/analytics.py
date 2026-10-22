@@ -87,3 +87,20 @@ def profile_fields(employee):
         ('Telefone 2', format_phone(source.get('Telefone 2', ''))),
         ('Origem do cadastro', employee.registration_origin), ('Estado de revisão', employee.review_status),
         ('Validação Cadastro EPAL', employee.registration_validation), ('Linha fonte EPAL', employee.source_row)]
+
+
+def registration_header_fields(employee):
+    """Compact registration header shared by the screen and printable sheet."""
+    fields = dict(profile_fields(employee))
+    phones = [format_phone(employee.phone), format_phone((employee.source_data or {}).get('Telefone 2', ''))]
+    return [
+        ('N.º Mecanográfico', employee.number),
+        ('Direcção', employee.direction),
+        ('Categoria', employee.category),
+        ('Antiguidade', fields['Antiguidade']),
+        ('N.º BI', employee.identity_number),
+        ('Idade', fields['Idade']),
+        ('Género', employee.gender),
+        ('Tel.', ' | '.join(phone or '—' for phone in phones)),
+        ('E-mail', employee.email),
+    ]
