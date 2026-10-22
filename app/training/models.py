@@ -159,6 +159,8 @@ class ExecutiveReport(models.Model):
 
 
 class Course(models.Model):
+    code = models.CharField('Código da formação', max_length=40, blank=True,
+        help_text='Identificador do catálogo, independente do título. Pode ficar vazio enquanto não estiver confirmado.')
     key = models.CharField(max_length=1000, unique=True, editable=False)
     title = models.CharField('Acção de formação', max_length=1000)
     area = models.CharField('Área / Categoria', max_length=200, blank=True)
@@ -171,8 +173,21 @@ class Course(models.Model):
     revision = models.PositiveIntegerField(default=1)
     class Meta:
         ordering = ['title', 'pk']
+        constraints = [models.UniqueConstraint(
+            models.functions.Lower('code'), condition=~models.Q(code=''),
+            name='unique_course_code_nonempty')]
+
+    def clean(self):
+        super().clean()
+        self.code = self.code.strip().upper()
+        if self.pk:
+            original = type(self).objects.filter(pk=self.pk).values_list('code', flat=True).first()
+            if original and original != self.code:
+                raise ValidationError({'code': 'O código confirmado não pode ser alterado.'})
+
     def save(self,*args,**kwargs):
         import unicodedata
+        self.code = self.code.strip().upper()
         self.key=' '.join(unicodedata.normalize('NFKC',self.title).casefold().split())
         super().save(*args,**kwargs)
     def __str__(self):

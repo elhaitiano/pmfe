@@ -1,7 +1,7 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
 <form method="get" class="plan-search">
-  <input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos">
+  <input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar código, acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos">
   <button class="gf-btn">
     Pesquisar
   </button>
@@ -22,7 +22,7 @@
     <article class="plan-course">
       <span class="plan-pill">{{ course.area|default:'Área por definir' }}</span>
       <h3>
-        {{ course.title }}
+        {% if course.code %}{{ course.code }} · {% endif %}{{ course.title }}
       </h3>
       <p>
         {{ course.default_days }} dia(s) previstos · {{ course.default_hours|floatformat:1 }} h/dia · {{ course.group_count }} grupo(s)
@@ -77,7 +77,7 @@
         {% for group in page %}
         <tr>
           <td>
-            <strong>{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
+            <strong>{% if group.course.code %}{{ group.course.code }} · {% endif %}{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
           </td>
           <td>
             {{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days }} dias efectivos</small>

@@ -27,7 +27,18 @@ class CourseForm(StyledModelForm):
     revision = forms.IntegerField(widget=forms.HiddenInput, required=False)
     class Meta:
         model = Course
-        fields = ['title','area','contents','default_days','default_hours','active']
+        fields = ['code','title','area','contents','default_days','default_hours','active']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and self.instance.code:
+            self.fields['code'].disabled = True
+
+    def clean_code(self):
+        value = self.cleaned_data['code'].strip().upper()
+        if value and Course.objects.exclude(pk=self.instance.pk).filter(code__iexact=value).exists():
+            raise ValidationError('Este código já pertence a outra acção de formação.')
+        return value
+
     def clean_title(self):
         value = self.cleaned_data['title'].strip()
         if any(normalise(value) in {normalise(c.title),*(normalise(a) for a in c.aliases)} for c in Course.objects.exclude(pk=self.instance.pk)):
@@ -156,9 +167,9 @@ def enrol_reviewed(group, people, decisions, expected_keys, revision):
 def index(request):
     q=request.GET.get('q','').strip()
     courses=Course.objects.annotate(group_count=Count('groups'))
-    if q:courses=courses.filter(Q(title__icontains=q)|Q(area__icontains=q))
+    if q:courses=courses.filter(Q(title__icontains=q)|Q(area__icontains=q)|Q(code__icontains=q))
     groups=TrainingGroup.objects.select_related('course').annotate(active_count=Count('enrollments',filter=Q(enrollments__state='Activa')))
-    if q:groups=groups.filter(Q(title__icontains=q)|Q(trainer__icontains=q)|Q(location__icontains=q))
+    if q:groups=groups.filter(Q(title__icontains=q)|Q(trainer__icontains=q)|Q(location__icontains=q)|Q(course__code__icontains=q))
     return render(request,'planning/index.html',{'courses':courses.order_by('title','pk'),'page':Paginator(groups.order_by('-start','-pk'),20).get_page(request.GET.get('page')),'q':q})
 
 
@@ -175,11 +186,16 @@ def course_edit(request,pk=None):
                 item=form.save(commit=False);item.key=normalise(item.title);item.aliases=list(dict.fromkeys([*item.aliases,original_title,item.title]));item.revision=revision+1
                 if pk:
                     values={f:form.cleaned_data[f] for f in form.Meta.fields};values.update(key=item.key,aliases=item.aliases,revision=item.revision)
-                    if Course.objects.filter(pk=pk,revision=revision).update(**values)!=1:form.add_error(None,'A acção foi alterada noutra janela.')
+                    try:
+                        with transaction.atomic():
+                            if Course.objects.filter(pk=pk,revision=revision).update(**values)!=1:
+                                form.add_error(None,'A acção foi alterada noutra janela.')
+                    except IntegrityError:
+                        form.add_error(None,'O código ou título já pertence a outra acção. Reveja o catálogo.')
                 else:
                     try:
                         with transaction.atomic():item.save()
-                    except IntegrityError:form.add_error('title','Esta acção já foi criada. Abra o catálogo novamente.')
+                    except IntegrityError:form.add_error(None,'O código ou título já pertence a outra acção. Reveja o catálogo.')
                 if not form.errors:
                     record(request,'PLANNING_COURSE',f'Acção {item.pk}: {item.title}');return redirect('planning')
     return render(request,'planning/form.html',{'form':form,'title':'Editar acção de formação' if pk else 'Nova acção de formação','course':course})
