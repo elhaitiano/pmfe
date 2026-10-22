@@ -30,6 +30,7 @@
       </p>
       <small>{{ course.validation_status }} · {% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small>
       <div class="plan-actions">
+        <a class="gf-btn alt" href="{% url 'planning' %}?course={{ course.pk }}#grupos">Ver grupos ({{ course.group_count }})</a>
         {% if user.is_staff %}
         {% if course.active %}
         <a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group }}</a>{% endif %}<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}
@@ -42,8 +43,11 @@
     {% endfor %}
   </div>
 </section>
-<section class="plan-panel">
+<section class="plan-panel" id="grupos">
   <div class="plan-heading">
+    {% if selected_course %}
+    <p>{{ selected_course.code }} · {{ selected_course.title }} — <a href="{% url 'planning' %}#grupos">Todos os grupos</a></p>
+    {% endif %}
     <h2>
       <span class="material-symbols-outlined">groups</span>Grupos e calendário
     </h2>
@@ -93,7 +97,7 @@
             <span class="plan-pill">{{ group.state }}</span>
           </td>
           <td>
-            <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Abrir grupo</a>
+            <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Ver formandos</a>
           </td>
         </tr>
         {% empty %}
@@ -108,7 +112,7 @@
   </div>
   <div class="pmf-pagination">
     {% if page.has_previous %}
-    <a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+    <a href="?q={{ q|urlencode }}&amp;course={{ selected_course.pk|default:'' }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;course={{ selected_course.pk|default:'' }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
   </div>
 </section>
 {% endblock %}

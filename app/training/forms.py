@@ -1,10 +1,12 @@
 from django import forms
 from .models import Employee, Training
+from .widgets import numeric_text_widgets
 
 
 class StyledModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        numeric_text_widgets(self.fields)
         for field in self.fields.values():
             if not isinstance(field.widget, forms.HiddenInput):
                 field.widget.attrs['class'] = 'gf-field' if not isinstance(field.widget, forms.CheckboxInput) else 'rounded bg-slate-900 border-slate-700 text-secondary'

@@ -1,5 +1,30 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
+{% if source_trainings %}
+<section class="plan-panel">
+  <div class="plan-heading">
+    <h2>Formandos do histórico Excel</h2>
+    <p>Participações identificadas na fonte deste grupo; não são novas inscrições activas.</p>
+  </div>
+  <div class="batch-scroll">
+    <table class="batch-table">
+      <thead>
+        <tr><th>Formando / Nº Mec.</th><th>Direcção / Função</th><th>Estado histórico</th><th>Acção</th></tr>
+      </thead>
+      <tbody>
+        {% for participation in source_trainings %}
+        <tr>
+          <td>{{ participation.employee.name }}<small>{{ participation.employee.number }}</small></td>
+          <td>{{ participation.employee.direction }}<small>{{ participation.employee.function }}</small></td>
+          <td>{{ participation.status }}</td>
+          <td><a class="gf-btn alt" href="{% url 'employee_data' participation.employee.pk %}">Ver Ficha</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 <section class="plan-panel">
   <div class="plan-heading">
     <h2>

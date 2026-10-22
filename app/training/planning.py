@@ -17,6 +17,8 @@ from django.views.decorators.http import require_POST, require_http_methods
 from .forms import StyledModelForm
 from .models import Course, TrainingGroup, GroupSession, Enrollment, Employee, Training
 from .views import staff_required, record
+from .widgets import numeric_text_widgets
+from .models import AuditEvent
 
 
 def normalise(value):
@@ -63,6 +65,8 @@ class GroupForm(forms.Form):
     revision = forms.IntegerField(widget=forms.HiddenInput,required=False)
     def __init__(self,*a,**kw):
         super().__init__(*a,**kw)
+        numeric_text_widgets(self.fields)
+        self.fields['location'].widget.attrs['list'] = 'training-sites'
         for f in self.fields.values():f.widget.attrs['class']='gf-field'
     @property
     def design_groups(self):return [('',self.visible_fields())]
@@ -173,8 +177,11 @@ def index(request):
     courses=Course.objects.annotate(group_count=Count('groups'))
     if q:courses=courses.filter(Q(title__icontains=q)|Q(area__icontains=q)|Q(code__icontains=q))
     groups=TrainingGroup.objects.select_related('course').annotate(active_count=Count('enrollments',filter=Q(enrollments__state='Activa')))
+    selected_course = get_object_or_404(Course, pk=request.GET['course']) if request.GET.get('course', '').isdigit() else None
+    if selected_course:
+        groups = groups.filter(course=selected_course)
     if q:groups=groups.filter(Q(title__icontains=q)|Q(trainer__icontains=q)|Q(location__icontains=q)|Q(course__code__icontains=q))
-    return render(request,'planning/index.html',{'courses':courses.order_by('title','pk'),'page':Paginator(groups.order_by('-start','-pk'),20).get_page(request.GET.get('page')),'q':q})
+    return render(request,'planning/index.html',{'courses':courses.order_by('title','pk'),'page':Paginator(groups.order_by('-start','-pk'),20).get_page(request.GET.get('page')),'q':q,'selected_course':selected_course})
 
 
 @login_required
@@ -232,7 +239,17 @@ def group_detail(request,pk):
     group=get_object_or_404(TrainingGroup.objects.select_related('course'),pk=pk)
     enrollments=group.enrollments.select_related('employee','training')
     active=enrollments.filter(state='Activa')
-    return render(request,'planning/group.html',{'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'seed':group.trainings.order_by('pk').first()})
+    source_ids = []
+    for event in AuditEvent.objects.filter(action='IMPORT_GROUPS_70_V1').only('detail'):
+        try:
+            payload = json.loads(event.detail)
+        except (ValueError, TypeError):
+            continue
+        if payload.get('group_id') == group.pk:
+            source_ids.extend('pilar3b:' + value.strip() for value in
+                              payload.get('source', {}).get('IDs de participação', '').split('|') if value.strip())
+    source_trainings = Training.objects.filter(source_key__in=source_ids).select_related('employee').order_by('employee__name')
+    return render(request,'planning/group.html',{'source_trainings':source_trainings,'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'seed':group.trainings.order_by('pk').first()})
 
 
 @login_required

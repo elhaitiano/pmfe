@@ -6,11 +6,6 @@ DASHBOARD EXECUTIVO{% endblock %}
 <link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}">
 {% endblock %}
 {% block content %}
-<p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p>
-{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
-<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
-{% endif %}
-
 <div class="executive" id="viewDashboard">
   <section class="exec-hero">
     <div class="exec-hero-top">
