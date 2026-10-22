@@ -14,6 +14,8 @@ RUN groupadd --gid 10001 pmf \
     && mkdir /data \
     && chown pmf:pmf /data
 COPY app/ /app/
+RUN PMF_DATA_DIR=/tmp/pmf-static-build python manage.py collectstatic --noinput \
+    && rm -rf /tmp/pmf-static-build
 COPY docker/startup.py /opt/pmf-docker/startup.py
 USER 10001:10001
 EXPOSE 8000

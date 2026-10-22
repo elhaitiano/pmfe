@@ -341,3 +341,28 @@ O mapa encontra-se dentro de **Avaliação**, sem entrada 360° independente na 
 O radar utiliza a apresentação original do centro de avaliação e os resultados reais dos ciclos autorizados ao utilizador. Verde representa o ciclo seleccionado, azul uma avaliação anterior compatível e o tracejado o nível esperado, sempre na escala explícita /5. **Visão 360°** percorre as competências; pode parar a exploração ou seleccionar uma dimensão directamente. A tabela permanece disponível sem JavaScript. Com movimento reduzido, o avanço faz-se manualmente.
 
 A comparação só inclui ciclos anteriores fechados com a mesma função de referência, competências, descrições, níveis esperados e pesos. Valores ausentes ou não divulgáveis não se tornam zero; não se geram notas demonstrativas. Com menos de três competências, apresentam-se os valores em tabela, sem inventar eixos para completar o radar. O percurso de formação e as notas /20 permanecem separados das competências /5.
+
+
+## Administração e primeiros registos
+
+Abra **Administração** no menu ou aceda a `http://localhost:8080/admin/`. Utilize uma conta activa com os atributos de membro da equipa e superutilizador. Uma conta administrativa já existente pode entrar directamente.
+
+O painel apresenta contagens e uma sequência de preparação:
+
+1. **Contas e acessos**: crie contas individuais e, depois, configure o nível de acesso. Conta normal permite consulta e avaliações atribuídas; membro da equipa permite gestão operacional; superutilizador permite administração de contas e cópia integral.
+2. **Trabalhadores**: registe o cadastro dos formandos.
+3. **Catálogo de formação**: prepare as acções antes das turmas e inscrições em Planeamento.
+4. **Competências**: prepare as dimensões de avaliação.
+5. **Funções e regras RH**: associe competências, níveis esperados e pesos às funções.
+
+As listas administrativas permitem pesquisar os cadastros. Adicionar ou alterar um cadastro abre o formulário operacional existente, conservando as suas validações e auditoria. A gestão de contas utiliza os formulários Django, com palavras-passe protegidas. Desactive contas que deixem de ser usadas; a eliminação está desabilitada para preservar o histórico. O administrador não pode retirar os próprios privilégios nesta página.
+
+Respostas individuais de avaliação, provas e documentos privados não são expostos como tabelas editáveis no painel administrativo.
+
+Apenas se ainda não existir um superutilizador, crie o primeiro pelo terminal:
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
+O build Docker recolhe automaticamente os ficheiros estáticos do painel. Para execução directa fora do Docker, execute `python manage.py collectstatic --noinput` no directório que contém `manage.py`.

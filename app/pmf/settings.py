@@ -17,7 +17,7 @@ except FileExistsError:
 SECRET_KEY = key_file.read_text(encoding='utf-8')
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]']
-INSTALLED_APPS = ['django.contrib.auth', 'django.contrib.contenttypes',
+INSTALLED_APPS = ['django.contrib.admin', 'django.contrib.staticfiles', 'django.contrib.auth', 'django.contrib.contenttypes',
                   'django.contrib.sessions', 'django.contrib.messages', 'training']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware',
               'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -56,5 +56,6 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_SAMESITE = 'Strict'
 X_FRAME_OPTIONS = 'DENY'
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = BASE_DIR / 'static-collected'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 WHITENOISE_MIMETYPES = {'.ttf': 'font/ttf', '.woff2': 'font/woff2'}

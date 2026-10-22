@@ -11,3 +11,5 @@ app/**/.env
 app/**/secret.key
 app/**/*.sqlite3
 app/**/data/
+
+app/static-collected/

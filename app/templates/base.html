@@ -55,6 +55,11 @@
         <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'my_ratings' %}">
           <span class="material-symbols-outlined">rate_review</span>Minhas avaliações
         </a>
+        {% if user.is_superuser %}
+        <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'admin:index' %}">
+          <span class="material-symbols-outlined">admin_panel_settings</span>Administração
+        </a>
+        {% endif %}
       </nav>
       <div class="p-6 border-t border-white/10">
         {% if user.is_superuser %}

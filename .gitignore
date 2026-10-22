@@ -67,3 +67,6 @@ Desktop.ini
 # Documentação Markdown: publicar apenas o README.md da raiz
 *.[mM][dD]
 !/README.md
+
+# Generated Django static assets
+app/static-collected/

@@ -1,0 +1,27 @@
+{% extends 'admin/index.html' %}
+{% block content %}
+<section class="module">
+  <h2>Primeiros registos — ordem recomendada</h2>
+  <p>Este centro reúne a configuração inicial. Os botões de criação e edição de dados abrem os formulários da plataforma, preservando as validações, a auditoria e o histórico.</p>
+  <ol>
+    {% for title, description, url, count in setup_steps %}
+    <li style="margin: 16px 8px;">
+      <a href="{{ url }}"><strong>{{ title }}</strong></a> — {{ count }} registo(s)
+      <p>{{ description }}</p>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+<section class="module">
+  <h2>Continuar na plataforma</h2>
+  <ul>
+    <li><a href="{% url 'planning' %}">Preparar turmas e inscrever trabalhadores</a></li>
+    <li><a href="{% url 'evaluation_index' %}">Avaliações e mapa de competências 360°</a></li>
+    <li><a href="{% url 'competency_index' %}">Preparar ciclos e autorizar avaliadores</a></li>
+    <li><a href="{% url 'development_index' %}">Plano de desenvolvimento</a></li>
+    <li><a href="{% url 'home' %}">Voltar à plataforma / cópia de segurança</a></li>
+  </ul>
+  <p>As respostas privadas, tentativas concluídas e documentos não são editáveis directamente neste painel. Para retirar acesso a uma conta, desactive-a; a sua identidade histórica é conservada.</p>
+</section>
+{{ block.super }}
+{% endblock %}
