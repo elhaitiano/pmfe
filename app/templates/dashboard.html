@@ -199,72 +199,63 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
       </a>{% endfor %}
     </article>
-    <article class="exec-glass-box exec-wide">
+    <article class="exec-glass-box exec-wide exec-excellence">
       <div class="exec-panel-heading">
-        <h3>
-          <span class="material-symbols-outlined exec-gold-text">military_tech</span>Formandos — Notas e Assiduidade
-        </h3>
-        <span>10 maiores médias registadas</span>
+        <div>
+          <p class="exec-excellence-eyebrow">Quadro de excelência</p>
+          <h3>
+            <span class="material-symbols-outlined exec-gold-text" aria-hidden="true">military_tech</span>
+            Top Formandos — Classificação &amp; Assiduidade
+          </h3>
+        </div>
+        <span>Ordenado por média</span>
       </div>
       <div class="exec-table-wrap">
-        <table>
+        <table class="exec-excellence-table" aria-label="Top formandos por classificação e assiduidade">
           <thead>
             <tr>
-              <th>
-                Técnico
-              </th>
-              <th>
-                Notas finais
-              </th>
-              <th>
-                Média
-              </th>
-              <th>
-                Assiduidade
-              </th>
-              <th>
-                Horas
-              </th>
-              <th>
-              </th>
+              <th>Formando</th>
+              <th>Função / CSP</th>
+              <th>Assiduidade</th>
+              <th>Média</th>
+              <th>Acção</th>
             </tr>
           </thead>
           <tbody>
             {% for person in talents %}
             <tr>
               <td>
-                {{ person.employee.name }}<small>{{ person.employee.number }} · {{ person.employee.direction }}</small>
+                <div class="exec-ranked-person">
+                  <span class="exec-rank" aria-label="Posição {{ forloop.counter }}">{{ forloop.counter }}</span>
+                  <div>
+                    <strong>{{ person.employee.name }}</strong>
+                    <small>{{ person.employee.direction|default:'—' }}</small>
+                  </div>
+                </div>
               </td>
-              <td>
-                {{ person.graded }}
-              </td>
-              <td>
-                <strong class="exec-gold-text">{{ person.average|floatformat:1 }}/20</strong>
-              </td>
+              <td>{{ person.employee.function|default:person.employee.category|default:'—' }}</td>
               <td>
                 {% if person.stats.attendance is None %}
-                —{% else %}{{ person.stats.attendance|floatformat:1 }}%{% endif %}
+                —
+                {% else %}
+                <span class="exec-attendance-badge {% if person.stats.attendance < 80 %}exec-attendance-low{% endif %}">{{ person.stats.attendance|floatformat:1 }}%</span>
+                {% endif %}
               </td>
               <td>
-                {{ person.stats.hours|floatformat:1 }} h
+                <strong class="exec-ranking-grade {% if person.average >= 18 %}exec-grade-gold{% elif person.average >= 16 %}exec-grade-green{% endif %}" title="{{ person.graded }} nota(s) registada(s)">{{ person.average|floatformat:1 }}/20</strong>
               </td>
               <td>
-                <a href="{{ person.href }}" data-drill class="exec-reset">Ver dados</a>
+                <a href="{% url 'employee_data' person.employee.pk %}" class="exec-profile-link" aria-label="Ver ficha de {{ person.employee.name }}">
+                  Ver Ficha <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                </a>
               </td>
             </tr>
             {% empty %}
-            <tr>
-              <td colspan="6">
-                Sem notas finais registadas.
-              </td>
-            </tr>
+            <tr><td colspan="5">Sem notas finais registadas.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-      <p class="exec-note">
-        Médias de participações concluídas; o número de notas é apresentado para contextualizar a comparação. Não representa avaliação de desempenho no trabalho.
-      </p>
     </article>
     <article class="exec-glass-box">
       <div class="exec-panel-heading">

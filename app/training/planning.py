@@ -85,7 +85,7 @@ class GroupForm(forms.Form):
 
 def group_values(data):
     days=data['dates']
-    return {**{k:data[k] for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time']},'start':days[0],'end':days[-1],'days':len(days)}
+    return {**({'trainer_record': data['trainer_record']} if 'trainer_record' in data else {}), **{k:data[k] for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time']},'start':days[0],'end':days[-1],'days':len(days)}
 
 
 @transaction.atomic
@@ -290,7 +290,7 @@ def transition(request,pk):
                 for en in active:
                     if en.training_id or Training.objects.filter(group=current, employee=en.employee).exists():
                         raise ValidationError('Já existe uma participação para este formando e turma. Reveja a ligação antes de iniciar.')
-                    t=Training(employee=en.employee,group=current,course=current.course,plan_status='No Plano',title=current.title,area=current.area,trainer=current.trainer,provider=current.provider,location=current.location,start=current.start,end=current.end,days=current.days,hours_per_day=current.hours_per_day,attendance=0,status='Em Curso',result='Pendente')
+                    t=Training(employee=en.employee,group=current,course=current.course,plan_status='No Plano',title=current.title,area=current.area,trainer=current.trainer,trainer_record=current.trainer_record,provider=current.provider,location=current.location,start=current.start,end=current.end,days=current.days,hours_per_day=current.hours_per_day,attendance=0,status='Em Curso',result='Pendente')
                     t.full_clean();t.save();en.training=t;en.full_clean();en.save(update_fields=['training'])
                 current.state='Em Curso'
             elif action=='finish':

@@ -1085,3 +1085,107 @@
     grid-template-columns:minmax(0,1fr)
   }
 }
+
+/* Ranked learners card. */
+#viewDashboard .exec-excellence {
+  min-height: 0;
+  height: auto;
+  align-self: start;
+  padding: 28px 26px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #0d223b, #081727);
+}
+.exec-excellence-eyebrow {
+  margin: 0 0 10px;
+  color: #f4cf42;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+#viewDashboard .exec-excellence .exec-panel-heading {
+  padding-bottom: 20px;
+  margin-bottom: 10px;
+}
+#viewDashboard .exec-excellence-table {
+  display: table;
+  width: 100%;
+  min-width: 650px;
+  table-layout: auto;
+  font-size: 12px;
+}
+#viewDashboard .exec-excellence-table th {
+  padding: 14px 10px;
+  font-size: 10px;
+}
+#viewDashboard .exec-excellence-table td {
+  padding: 15px 10px;
+  vertical-align: middle;
+  line-height: 1.4;
+}
+#viewDashboard .exec-excellence-table th:first-child,
+#viewDashboard .exec-excellence-table td:first-child {
+  padding-left: 0;
+}
+#viewDashboard .exec-excellence-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.exec-ranked-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.exec-ranked-person strong {
+  color: #edf4fc;
+}
+.exec-rank {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #41e4c0, #adc7ff);
+  color: #10344a;
+  font-weight: 800;
+}
+.exec-attendance-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border: 1px solid rgba(65, 228, 192, .2);
+  border-radius: 999px;
+  background: rgba(65, 228, 192, .12);
+  color: #74e9cc;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.exec-attendance-low {
+  border-color: rgba(244, 207, 66, .25);
+  background: rgba(244, 207, 66, .12);
+  color: #f4cf42;
+}
+.exec-ranking-grade {
+  white-space: nowrap;
+}
+.exec-grade-gold { color: #f4cf42; }
+.exec-grade-green { color: #41e4c0; }
+#viewDashboard .exec-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid rgba(173, 199, 255, .18);
+  border-radius: 7px;
+  background: rgba(173, 199, 255, .07);
+  color: #dce8f6;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.exec-profile-link .material-symbols-outlined { font-size: 15px; }
+#viewDashboard .exec-profile-link:hover { background: rgba(65, 228, 192, .15); }
+.exec-profile-link:focus-visible { outline: 2px solid #41e4c0; outline-offset: 3px; }
+@media (max-width: 650px) {
+  #viewDashboard .exec-excellence { padding: 20px 16px; }
+}

@@ -6,6 +6,35 @@ from django.db import models
 from django.utils import timezone
 
 
+class Trainer(models.Model):
+    name = models.CharField('Nome completo', max_length=200, null=False)
+    organization = models.CharField('Entidade formadora', max_length=200, blank=True, null=True)
+    email = models.EmailField('E-mail', blank=True, null=True)
+    phone = models.CharField('Telefone', max_length=80, blank=True, null=True)
+    specialty = models.CharField('Especialidade', max_length=200, blank=True, null=True)
+    active = models.BooleanField('Activo', default=True, null=True)
+    source_data = models.JSONField('Dados de origem', default=dict, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name', 'pk']
+        verbose_name = 'Formador'
+        verbose_name_plural = 'Formadores'
+        constraints = [
+            models.CheckConstraint(condition=~models.Q(name=''), name='trainer_name_not_empty'),
+        ]
+
+    def clean(self):
+        super().clean()
+        self.name = self.name.strip()
+        if not self.name:
+            raise ValidationError({'name': 'Indique o nome do formador.'})
+
+    def __str__(self):
+        return f'{self.name} — {self.organization}' if self.organization else self.name
+
+
 class Employee(models.Model):
     number = models.CharField('N.º Mecanográfico', max_length=40, unique=True)
     name = models.CharField('Nome completo', max_length=200)
@@ -68,6 +97,11 @@ class Training(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='trainings')
     title = models.CharField('Nome da formação', max_length=1000)
     area = models.CharField('Área / Categoria', max_length=200, blank=True)
+    trainer_record = models.ForeignKey(
+        Trainer, verbose_name='Cadastro do formador', on_delete=models.PROTECT,
+        null=True, blank=True, related_name='trainings',
+        help_text='Ligação ao cadastro; o nome histórico é conservado separadamente.',
+    )
     trainer = models.CharField('Formador(a)', max_length=200, blank=True)
     provider = models.CharField('Entidade formadora', max_length=200, blank=True)
     location = models.CharField('Local da formação', max_length=200, blank=True)
@@ -324,6 +358,11 @@ class TrainingGroup(models.Model):
     number = models.PositiveIntegerField()
     title = models.CharField(max_length=1000)
     area = models.CharField(max_length=200, blank=True)
+    trainer_record = models.ForeignKey(
+        Trainer, verbose_name='Cadastro do formador', on_delete=models.PROTECT,
+        null=True, blank=True, related_name='groups',
+        help_text='Ligação ao cadastro; o nome histórico é conservado separadamente.',
+    )
     trainer = models.CharField('Formador(a)', max_length=200)
     provider = models.CharField('Entidade formadora', max_length=200, blank=True)
     location = models.CharField('Local', max_length=200)
