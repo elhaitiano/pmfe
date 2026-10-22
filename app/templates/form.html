@@ -1,1 +1,79 @@
-{% extends 'base.html' %}{% load static %}{% block heading %}{{ title|upper }}{% endblock %}{% block content %}<section class="content p-10 space-y-6"><section class="gf-panel"><div class="gf-body"><form method="post" id="trainingForm">{% csrf_token %}{{ form.non_field_errors }}{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}<div class="p-4 rounded-2xl bg-black/15 border border-white/10"><div class="flex justify-between gap-3 items-center"><div><div class="text-[9px] uppercase tracking-wider text-secondary">{{ title }}</div><div class="font-bold text-white mt-1">{{ employee.name }}</div></div><a class="gf-btn alt !py-2" href="{% if employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'home' %}{% endif %}">Cancelar</a></div>{% for group_title, fields in form.design_groups %}{% if group_title %}<div class="mt-5 mb-2 text-[10px] uppercase tracking-[.18em] text-secondary font-black">{{ group_title }}</div>{% endif %}<div class="gf-form-grid mt-4">{% for field in fields %}<label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<span class="block text-xs text-slate-500 mt-1">{{ field.help_text }}</span>{% endif %}</label>{% endfor %}</div>{% endfor %}{% if form.days %}<section class="mt-5 p-4 rounded-xl bg-black/15 border border-white/10" aria-label="Cálculos da participação"><h3 class="text-sm font-bold text-secondary">Resumo calculado</h3><div class="calc-grid mt-3"><div>Horas previstas<strong id="calcPlanned">—</strong></div><div>Horas realizadas<strong id="calcCompleted">—</strong></div><div>Assiduidade<strong id="calcAttendance">—</strong></div><div>Ausências<strong id="calcAbsences">—</strong></div></div><p id="calcMessage" class="text-xs text-slate-400 mt-3" aria-live="polite">Preencha duração, horas e presenças.</p></section>{% endif %}<button class="gf-btn mt-4 w-full"><span class="material-symbols-outlined text-base">save</span>Guardar</button></div></form></div></section></section>{% endblock %}{% block extra_scripts %}<script src="{% static 'pmf/training-form.js' %}" defer></script>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+{% block heading %}
+{{ title|upper }}
+{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body">
+      <form method="post" id="trainingForm">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}{% endfor %}
+        <div class="p-4 rounded-2xl bg-black/15 border border-white/10">
+          <div class="flex justify-between gap-3 items-center">
+            <div>
+              <div class="text-[9px] uppercase tracking-wider text-secondary">
+                {{ title }}
+              </div>
+              <div class="font-bold text-white mt-1">
+                {{ employee.name }}
+              </div>
+            </div>
+            <a class="gf-btn alt !py-2" href="{% if employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'home' %}{% endif %}">Cancelar
+            </a>
+          </div>
+          {% for group_title, fields in form.design_groups %}
+          {% if group_title %}
+          <div class="mt-5 mb-2 text-[10px] uppercase tracking-[.18em] text-secondary font-black">
+            {{ group_title }}
+          </div>
+          {% endif %}
+          <div class="gf-form-grid mt-4">
+            {% for field in fields %}
+            <label for="{{ field.id_for_label }}">
+              <span class="gf-label">{{ field.label }}{% if field.field.required %} *{% endif %}</span>
+              {{ field }}{{ field.errors }}{% if field.help_text %}
+              <span class="block text-xs text-slate-500 mt-1">{{ field.help_text }}</span>{% endif %}
+            </label>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          {% if form.days %}
+          <section class="mt-5 p-4 rounded-xl bg-black/15 border border-white/10" aria-label="Cálculos da participação">
+            <h3 class="text-sm font-bold text-secondary">
+              Resumo calculado
+            </h3>
+            <div class="calc-grid mt-3">
+              <div>
+                Horas previstas<strong id="calcPlanned">—</strong>
+              </div>
+              <div>
+                Horas realizadas<strong id="calcCompleted">—</strong>
+              </div>
+              <div>
+                Assiduidade<strong id="calcAttendance">—</strong>
+              </div>
+              <div>
+                Ausências<strong id="calcAbsences">—</strong>
+              </div>
+            </div>
+            <p id="calcMessage" class="text-xs text-slate-400 mt-3" aria-live="polite">
+              Preencha duração, horas e presenças.
+            </p>
+          </section>
+          {% endif %}
+          <button class="gf-btn mt-4{% if not form.number %} w-full{% endif %}">
+            <span class="material-symbols-outlined text-base">save</span>Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'pmf/training-form.js' %}" defer></script>
+{% endblock %}

@@ -1,11 +1,231 @@
-{% load static %}<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ficha individual do formando — PROÁGUA</title><link rel="stylesheet" href="{% static 'pmf/print-original.css' %}"></head><body>
-<div class="toolbar"><button id="printButton" onclick="window.print()">Imprimir / PDF</button><a class="back-button" href="{% url 'employee_data' employee.pk %}">Voltar à plataforma</a><span class="hint">Escolha «Guardar como PDF» na janela de impressão.</span></div>
-<div id="pages"><section class="page first-page">
-<div class="header"><div class="logo"><img src="{% static 'pmf/epal-oficial.png' %}" alt="EPAL - Empresa Pública de Águas"></div><div class="title">FICHA INDIVIDUAL DO FORMANDO</div><div class="filebox"><div>PROÁGUA</div></div></div>
-<div class="section"><div class="section-title">INFORMAÇÕES DO(A) FORMANDO(A)</div><div class="profile"><div class="photo-wrap"><div class="photo"><div class="silhouette"></div></div><div class="photo-label">{{ print_name }}</div></div><div class="fields">{% for label,value in print_fields %}<div class="field{% if label == 'E-mail' %} full{% endif %}"><label>{{ label }}:</label><span class="field-value">{{ value|default:'-' }}</span></div>{% endfor %}</div></div></div>
-<div class="dashboard"><div class="cards"><div class="card"><div class="card-half"><div class="card-title">1. TOTAL FORMAÇÕES</div><div class="card-value">{{ stats.total }}</div></div><div class="card-divider"></div><div class="card-half"><div class="card-title">3. ASSIDUIDADE</div><div class="card-value">{% if stats.attendance is not None %}{{ stats.attendance|floatformat:1 }}%{% else %}—{% endif %}</div>{% if stats.attendance_provisional %}<div class="card-note">Provisória</div>{% endif %}</div></div><div class="card"><div class="card-half"><div class="card-title">2. HORAS</div><div class="card-value">{{ stats.hours|floatformat:1 }} H</div></div><div class="card-divider"></div><div class="card-half"><div class="card-title">4. CERTIFICADOS</div><div class="card-value">{{ stats.certificates }}</div>{% if stats.certificates_pending %}<div class="card-note">{{ stats.certificates_pending }} por confirmar</div>{% endif %}</div></div></div><div class="chart-box"><div class="chart-title">DISTRIBUIÇÃO DE CARGA HORÁRIA</div><div class="chart-content"><canvas id="competencyChart" width="220" height="220" role="img" aria-label="Distribuição de horas por área de formação"></canvas><div class="legend">{% for item in distribution %}<div class="legend-row"><span class="legend-marker" style="background:{{ item.color }}"></span><span class="legend-label">{{ item.label }}</span><span class="legend-pct">{{ item.display_percent }}%</span></div>{% empty %}<div class="legend-row">Sem horas realizadas</div>{% endfor %}</div></div></div></div>
-<p class="data-notice">Dados provisórios — sujeitos à validação da EPAL. Assiduidade: presenças ÷ dias de formação; as participações planeadas são excluídas.</p>
-<div class="table-section"><table><colgroup><col style="width:5%"><col style="width:28%"><col style="width:21%"><col style="width:10%"><col style="width:18%"><col style="width:6%"><col style="width:12%"></colgroup><thead><tr class="history-title-row"><th colspan="7">HISTÓRICO DE FORMAÇÕES</th></tr><tr><th>ANO</th><th>FORMAÇÃO</th><th>FORMADOR(A)</th><th>CATEGORIA</th><th>PERÍODO</th><th>HORAS</th><th>ASSIDUIDADE</th></tr></thead><tbody>{% for t in trainings %}<tr><td>{{ t.start|date:'Y' }}</td><td>{{ t.title }}</td><td>{{ t.trainer|default:'-' }}</td><td>{{ t.area|default:'-' }}</td><td><span class="period-dates">{{ t.start|date:'d/m/y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/y' }}</span></td><td>{{ t.completed_hours|floatformat:1 }}</td><td>{% if t.attendance_percent is not None %}{{ t.attendance_percent|floatformat:1 }}%{% else %}-{% endif %}</td></tr>{% empty %}<tr><td colspan="7">Sem formações registadas.</td></tr>{% endfor %}</tbody></table></div>
-<div class="final-block"><div class="signature"><div class="signature-line"></div>Direcção dos Recursos Humanos</div></div>
-<div class="footer"><div>EPAL | PROÁGUA</div><div class="print">Data: {{ today|date:'d/m/Y' }}</div><div class="page-no"><span class="page-counter"></span></div></div>
-</section></div>{{ distribution|json_script:'distribution-data' }}<script src="{% static 'pmf/print.js' %}" defer></script></body></html>
+{% load static %}
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>
+      Ficha individual do formando — PROÁGUA
+    </title>
+    <link rel="stylesheet" href="{% static 'pmf/print-original.css' %}">
+  </head>
+  <body>
+    <div class="toolbar">
+      <button id="printButton" onclick="window.print()">
+        Imprimir / PDF
+      </button>
+      <a class="back-button" href="{% url 'employee_data' employee.pk %}">Voltar à plataforma</a><span class="hint">Escolha «Guardar como PDF» na janela de impressão.</span>
+    </div>
+    <div id="pages">
+      <section class="page first-page">
+        <div class="header">
+          <div class="logo">
+            <img src="{% static 'pmf/epal-oficial.png' %}" alt="EPAL - Empresa Pública de Águas">
+          </div>
+          <div class="title">
+            FICHA INDIVIDUAL DO FORMANDO
+          </div>
+          <div class="filebox">
+            <div>
+              PROÁGUA
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">
+            INFORMAÇÕES DO(A) FORMANDO(A)
+          </div>
+          <div class="profile">
+            <div class="photo-wrap">
+              <div class="photo">
+                <div class="silhouette">
+                </div>
+              </div>
+              <div class="photo-label">
+                {{ print_name }}
+              </div>
+            </div>
+            <div class="fields">
+              {% for label,value in print_fields %}
+              <div class="field{% if label == 'E-mail' %} full{% endif %}">
+                <label>
+                  {{ label }}:
+                </label>
+                <span class="field-value">{{ value|default:'-' }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="dashboard">
+          <div class="cards">
+            <div class="card">
+              <div class="card-half">
+                <div class="card-title">
+                  1. TOTAL FORMAÇÕES
+                </div>
+                <div class="card-value">
+                  {{ stats.total }}
+                </div>
+              </div>
+              <div class="card-divider">
+              </div>
+              <div class="card-half">
+                <div class="card-title">
+                  3. ASSIDUIDADE
+                </div>
+                <div class="card-value">
+                  {% if stats.attendance is not None %}
+                  {{ stats.attendance|floatformat:1 }}%{% else %}—{% endif %}
+                </div>
+                {% if stats.attendance_provisional %}
+                <div class="card-note">
+                  Provisória
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-half">
+                <div class="card-title">
+                  2. HORAS
+                </div>
+                <div class="card-value">
+                  {{ stats.hours|floatformat:1 }} H
+                </div>
+              </div>
+              <div class="card-divider">
+              </div>
+              <div class="card-half">
+                <div class="card-title">
+                  4. CERTIFICADOS
+                </div>
+                <div class="card-value">
+                  {{ stats.certificates }}
+                </div>
+                {% if stats.certificates_pending %}
+                <div class="card-note">
+                  {{ stats.certificates_pending }} por confirmar
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">
+              DISTRIBUIÇÃO DE CARGA HORÁRIA
+            </div>
+            <div class="chart-content">
+              <canvas id="competencyChart" width="220" height="220" role="img" aria-label="Distribuição de horas por área de formação"></canvas>
+              <div class="legend">
+                {% for item in distribution %}
+                <div class="legend-row">
+                  <span class="legend-marker" style="background:{{ item.color }}"></span><span class="legend-label">{{ item.label }}</span><span class="legend-pct">{{ item.display_percent }}%</span>
+                </div>
+                {% empty %}
+                <div class="legend-row">
+                  Sem horas realizadas
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="data-notice">
+          Dados provisórios — sujeitos à validação da EPAL. Assiduidade: presenças ÷ dias de formação; as participações planeadas são excluídas.
+        </p>
+        <div class="table-section">
+          <table>
+            <colgroup>
+              <col style="width:5%"><col style="width:28%"><col style="width:21%"><col style="width:10%"><col style="width:18%"><col style="width:6%"><col style="width:12%">
+            </colgroup>
+            <thead>
+              <tr class="history-title-row">
+                <th colspan="7">
+                  HISTÓRICO DE FORMAÇÕES
+                </th>
+              </tr>
+              <tr>
+                <th>
+                  ANO
+                </th>
+                <th>
+                  FORMAÇÃO
+                </th>
+                <th>
+                  FORMADOR(A)
+                </th>
+                <th>
+                  CATEGORIA
+                </th>
+                <th>
+                  PERÍODO
+                </th>
+                <th>
+                  HORAS
+                </th>
+                <th>
+                  ASSIDUIDADE
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in trainings %}
+              <tr>
+                <td>
+                  {{ t.start|date:'Y' }}
+                </td>
+                <td>
+                  {{ t.title }}
+                </td>
+                <td>
+                  {{ t.trainer|default:'-' }}
+                </td>
+                <td>
+                  {{ t.area|default:'-' }}
+                </td>
+                <td>
+                  <span class="period-dates">{{ t.start|date:'d/m/y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/y' }}</span>
+                </td>
+                <td>
+                  {{ t.completed_hours|floatformat:1 }}
+                </td>
+                <td>
+                  {% if t.attendance_percent is not None %}
+                  {{ t.attendance_percent|floatformat:1 }}%{% else %}-{% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7">
+                  Sem formações registadas.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="final-block">
+          <div class="signature">
+            <div class="signature-line">
+            </div>
+            Direcção dos Recursos Humanos
+          </div>
+        </div>
+        <div class="footer">
+          <div>
+            EPAL | PROÁGUA
+          </div>
+          <div class="print">
+            Data: {{ today|date:'d/m/Y' }}
+          </div>
+          <div class="page-no">
+            <span class="page-counter"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+    {{ distribution|json_script:'distribution-data' }}
+    <script src="{% static 'pmf/print.js' %}" defer></script>
+  </body>
+</html>

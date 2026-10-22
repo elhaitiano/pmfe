@@ -1,21 +1,341 @@
-{% extends 'base.html' %}{% load static l10n %}
-{% block heading %}DASHBOARD EXECUTIVO{% endblock %}
-{% block extra_styles %}<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}">{% endblock %}
-{% block content %}<div class="executive" id="viewDashboard">
-<section class="exec-hero"><div class="exec-hero-top"><div><div class="exec-badges"><span class="exec-badge-live"><span class="pulse-ring"></span>Monitorização Institucional Estratégica</span><span class="exec-period">{{ period_label }}</span></div><p class="exec-hero-copy">Painel consolidado da Direcção Geral e Recursos Humanos da <strong>EPAL</strong>. Formação, assiduidade, resultados e certificados num centro de análise e relatórios.</p></div><div class="exec-actions"><a href="{% url 'executive_reports' %}?{{ query }}" class="exec-button primary"><span class="material-symbols-outlined">download</span>Relatório Executivo PDF</a><a href="{% url 'executive_explore' %}?{{ query }}" class="exec-button"><span class="material-symbols-outlined">manage_search</span>Explorar os registos</a></div></div><div class="exec-hero-metrics"><div><span>Unidades operacionais</span><strong>{{ directions_active }} Direcções</strong><small>Com participações seleccionadas</small></div><div><span>Pólos formativos</span><strong>{{ locations }} Locais</strong><small>{{ trainers }} formadores registados</small></div><div><span>Taxa de conclusão</span><strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong><small>Participações concluídas</small></div><div><span>Certificados entregues</span><strong>{{ stats.certificates }}</strong><small>{{ stats.certificates_pending }} por confirmar</small></div></div></section>
-<nav class="exec-tabs no-print" aria-label="Camadas do centro executivo"><a class="active" href="{% url 'dashboard' %}?{{ query }}"><span class="material-symbols-outlined">dashboard</span>Visão estratégica</a><a href="{% url 'executive_explore' %}?{{ query }}"><span class="material-symbols-outlined">analytics</span>Análise detalhada</a><a href="{% url 'executive_reports' %}?{{ query }}"><span class="material-symbols-outlined">description</span>Relatórios e arquivo</a></nav>
-<div class="exec-notice"><span class="material-symbols-outlined">info</span><div><strong>Base provisória — aguardando validação dos RH da EPAL.</strong><p>Dados em falta ficam separados dos resultados negativos. Clique nos gráficos para consultar os registos que sustentam cada indicador.</p></div></div>
-{% include 'executive_filters.html' %}
-{% if not has_rows %}<div class="exec-empty">Sem formações iniciadas para esta selecção. Consulte também as actividades datadas no período.</div>{% endif %}
-<section class="exec-primary-kpis">{% for item in main_kpis %}<article class="exec-kpi-card"><div class="exec-kpi-top"><span>{{ item.label }}</span><div class="exec-icon" style="--tone:{{ item.color }}"><span class="material-symbols-outlined">{{ item.icon }}</span></div></div><p class="exec-kpi-val">{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></p><p class="exec-kpi-sub" style="color:{{ item.color }}"><span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }}</p></article>{% endfor %}</section>
-<section class="exec-secondary-kpis">{% for item in secondary_kpis %}<div class="exec-mini"><span>{{ item.label }}</span><strong>{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></strong></div>{% endfor %}</section>
-<section class="exec-grid"><article class="exec-glass-box exec-wide"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-secondary">bar_chart</span>Distribuição de Carga Horária por Domínio de Competências</h3><span>{{ area_bars|length }} áreas</span></div><div class="exec-area-composition"><div class="exec-area-list">{% for bar in area_bars %}<a href="{{ bar.href }}" class="exec-bar-row" data-drill data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} h · {{ bar.percent|floatformat:1 }}% das horas"><div class="exec-bar-caption"><span><i style="background:{{ bar.color }}"></i>{{ bar.label }}</span><strong>{{ bar.value|floatformat:1 }} h ({{ bar.percent|floatformat:1 }}%)</strong></div><div class="exec-bar-track"><div style="width:{{ bar.percent|unlocalize }}%;background:linear-gradient(90deg,{{ bar.color }}88,{{ bar.color }})" class="exec-bar-fill"></div></div></a>{% empty %}<p class="exec-muted">Sem carga horária registada.</p>{% endfor %}</div><div class="exec-donut-wrap"><svg viewBox="0 0 120 120" class="exec-donut" aria-label="Distribuição das horas por área"><circle cx="60" cy="60" r="46" fill="none" stroke="#ffffff12" stroke-width="15"/>{% for segment in area_donut %}{% if segment.value %}<a href="{{ segment.href }}" data-drill data-tip="{{ segment.label }}: {{ segment.value|floatformat:1 }} h · {{ segment.percent|floatformat:1 }}%"><circle class="exec-donut-segment" cx="60" cy="60" r="46" fill="none" stroke="{{ segment.color }}" stroke-width="15" pathLength="100" stroke-dasharray="{{ segment.percent|unlocalize }} {{ segment.remainder|unlocalize }}" stroke-dashoffset="{{ segment.offset|unlocalize }}" transform="rotate(-90 60 60)"><title>{{ segment.label }} — {{ segment.value|floatformat:1 }} horas</title></circle></a>{% endif %}{% endfor %}<text x="60" y="60" text-anchor="middle" class="exec-donut-total">{{ stats.hours|floatformat:0 }}</text><text x="60" y="72" text-anchor="middle" class="exec-donut-unit">HORAS</text></svg><small>Horas de participantes</small><div class="exec-donut-mini"><span>Conclusão<strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong></span><span>Formadores<strong>{{ trainers }}</strong></span></div></div></div><div class="exec-conclusion"><span class="material-symbols-outlined">verified_user</span><p>{{ insights.1|default:insights.0 }}</p></div></article>
-<article class="exec-glass-box"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-primary">apartment</span>Desempenho por Direcção</h3></div><div class="exec-direction-list">{% for row in directions_table %}<a href="{{ row.href }}" class="exec-direction-card" data-drill><div><strong>{{ row.label }}</strong><span>{% if row.average is None %}—{% else %}{{ row.average|floatformat:1 }}/20{% endif %}</span></div><p>{{ row.hours|floatformat:1 }} horas · {{ row.present }}/{{ row.total }} técnicos</p><small>Assiduidade: {% if row.attendance is None %}—{% else %}{{ row.attendance|floatformat:1 }}%{% endif %} · Cobertura: {{ row.coverage|floatformat:1 }}%</small></a>{% empty %}<p class="exec-muted">Sem técnicos registados.</p>{% endfor %}</div></article>
-<article class="exec-glass-box exec-wide"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-secondary">monitoring</span>{{ timeline_title }}</h3><span>Clique numa barra</span></div><div class="exec-evolution">{% for bar in timeline_bars %}<a href="{{ bar.href }}" data-drill class="exec-column" data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} horas"><span class="exec-column-value">{{ bar.value|floatformat:1 }}</span><div class="exec-column-track"><div style="height:{{ bar.width|unlocalize }}%" class="exec-column-fill"></div></div><span class="exec-column-label">{{ bar.label }}</span></a>{% empty %}<p class="exec-muted">Sem dados para esta selecção.</p>{% endfor %}</div>{% if previous %}<div class="exec-conclusion"><span class="material-symbols-outlined">compare_arrows</span><p>Período anterior: {{ previous.start|date:'d/m/y' }} a {{ previous.end|date:'d/m/y' }} · {{ previous.hours|floatformat:1 }} h. Variação: {% if previous.change is None %}sem base percentual{% else %}{{ previous.change|floatformat:1 }}%{% endif %}.</p></div>{% endif %}</article>
-<article class="exec-glass-box"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-primary">donut_small</span>Situação das participações</h3></div>{% for bar in status_bars %}<a href="{{ bar.href }}" data-drill class="exec-bar-row"><div class="exec-bar-caption"><span>{{ bar.label }}</span><strong>{{ bar.value }}</strong></div><div class="exec-bar-track"><div style="width:{{ bar.width|unlocalize }}%" class="exec-bar-fill"></div></div></a>{% endfor %}</article>
-<article class="exec-glass-box exec-wide"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined exec-gold-text">military_tech</span>Formandos — Notas e Assiduidade</h3><span>10 maiores médias registadas</span></div><div class="exec-table-wrap"><table><thead><tr><th>Técnico</th><th>Notas finais</th><th>Média</th><th>Assiduidade</th><th>Horas</th><th></th></tr></thead><tbody>{% for person in talents %}<tr><td>{{ person.employee.name }}<small>{{ person.employee.number }} · {{ person.employee.direction }}</small></td><td>{{ person.graded }}</td><td><strong class="exec-gold-text">{{ person.average|floatformat:1 }}/20</strong></td><td>{% if person.stats.attendance is None %}—{% else %}{{ person.stats.attendance|floatformat:1 }}%{% endif %}</td><td>{{ person.stats.hours|floatformat:1 }} h</td><td><a href="{{ person.href }}" data-drill class="exec-reset">Ver dados</a></td></tr>{% empty %}<tr><td colspan="6">Sem notas finais registadas.</td></tr>{% endfor %}</tbody></table></div><p class="exec-note">Médias de participações concluídas; o número de notas é apresentado para contextualizar a comparação. Não representa avaliação de desempenho no trabalho.</p></article>
-<article class="exec-glass-box"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-secondary">bubble_chart</span>Assiduidade vs Média Final</h3></div><svg viewBox="0 0 580 260" class="exec-scatter" aria-label="Assiduidade e média por técnico"><path d="M55 25V220H545" stroke="#527895" fill="none"/><path d="M55 130H545M295 25V220" stroke="#ffffff10" fill="none"/><text x="8" y="42">20</text><text x="8" y="134">10</text><text x="20" y="223">0</text><text x="48" y="243">0%</text><text x="510" y="243">100%</text>{% for point in scatter %}<a href="{{ point.href }}" data-drill data-tip="{{ point.name }} · {{ point.attendance|floatformat:1 }}% · {{ point.average|floatformat:1 }}/20"><circle class="exec-scatter-point" cx="{{ point.x|unlocalize }}" cy="{{ point.y|unlocalize }}" r="{{ point.radius }}"><title>{{ point.name }}</title></circle></a>{% endfor %}</svg><p class="exec-note">Cada ponto é um técnico com nota final e assiduidade disponíveis. O tamanho reflecte o número de participações. Clique para consultar o histórico.</p><div class="exec-panel-heading" style="margin-top:28px"><h3><span class="material-symbols-outlined exec-gold-text">verified</span>Resultados finais</h3></div>{% for item in results %}<a href="{{ item.href }}" data-drill class="exec-summary"><span>{{ item.label }}</span><strong>{{ item.value }}</strong></a>{% endfor %}<p class="exec-note">Somente participações concluídas. {{ stats.certificates_pending }} entregas de certificados por confirmar no universo seleccionado.</p></article></section>
-<section class="exec-grid"><article class="exec-glass-box exec-wide"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-secondary">insights</span>Leitura executiva e prioridades</h3></div>{% for insight in insights %}<p class="exec-insight">{{ insight }}</p>{% endfor %}<p class="exec-note">Impacto no terreno: disponível após ligação da avaliação pós-formação/360º. O painel utiliza apenas os dados actualmente registados.</p></article><article class="exec-glass-box"><div class="exec-panel-heading"><h3><span class="material-symbols-outlined text-primary">event_available</span>Actividades datadas no período</h3></div><a href="{% url 'executive_explore' %}?{{ query }}&amp;slice=endings&amp;label=Conclusões%20no%20período" data-drill class="exec-summary"><span>Participações concluídas pela data de fim</span><strong>{{ ended|length }}</strong></a><a href="{% url 'executive_explore' %}?{{ query }}&amp;slice=deliveries&amp;label=Entregas%20datadas%20no%20período" data-drill class="exec-summary"><span>Certificados efectivamente entregues</span><strong>{{ deliveries|length }}</strong></a><p class="exec-note">Pode incluir formações iniciadas anteriormente. {{ delivery_dates_missing }} entregas confirmadas sem data não podem ser atribuídas a um mês.</p></article></section>
-<details class="exec-method"><summary>Critérios dos indicadores</summary><p>Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = presenças ÷ dias previstos, excluindo planeadas. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.</p><p>A evolução agrupa pela data de início, sem repartir as horas diariamente. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há participações em curso ou por confirmar.{% endif %}</p></details>
-</div><dialog id="execDialog" aria-labelledby="execDialogTitle"><div class="exec-dialog-top"><h2 id="execDialogTitle">Dados do gráfico</h2><button type="button" id="execDialogClose" aria-label="Fechar detalhes">×</button></div><div id="execDialogBody"></div></dialog><div id="execTooltip" role="tooltip" hidden></div>{% endblock %}
-{% block extra_scripts %}<script src="{% static 'pmf/dashboard.js' %}" defer></script>{% endblock %}
+{% extends 'base.html' %}
+{% load static l10n %}
+{% block heading %}
+DASHBOARD EXECUTIVO{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}">
+{% endblock %}
+{% block content %}
+<div class="executive" id="viewDashboard">
+  <section class="exec-hero">
+    <div class="exec-hero-top">
+      <div>
+        <div class="exec-badges">
+          <span class="exec-badge-live"><span class="pulse-ring"></span>Monitorização Institucional Estratégica</span><span class="exec-period">{{ period_label }}</span>
+        </div>
+        <p class="exec-hero-copy">
+          Painel consolidado da Direcção Geral e Recursos Humanos da <strong>EPAL</strong>. Formação, assiduidade, resultados e certificados num centro de análise e relatórios.
+        </p>
+      </div>
+      <div class="exec-actions">
+        <a href="{% url 'executive_reports' %}?{{ query }}" class="exec-button primary"><span class="material-symbols-outlined">download</span>Relatório Executivo PDF</a><a href="{% url 'executive_explore' %}?{{ query }}" class="exec-button"><span class="material-symbols-outlined">manage_search</span>Explorar os registos</a>
+      </div>
+    </div>
+    <div class="exec-hero-metrics">
+      <div>
+        <span>Unidades operacionais</span><strong>{{ directions_active }} Direcções</strong><small>Com participações seleccionadas</small>
+      </div>
+      <div>
+        <span>Pólos formativos</span><strong>{{ locations }} Locais</strong><small>{{ trainers }} formadores registados</small>
+      </div>
+      <div>
+        <span>Taxa de conclusão</span><strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong><small>Participações concluídas</small>
+      </div>
+      <div>
+        <span>Certificados entregues</span><strong>{{ stats.certificates }}</strong><small>{{ stats.certificates_pending }} por confirmar</small>
+      </div>
+    </div>
+  </section>
+  <nav class="exec-tabs no-print" aria-label="Camadas do centro executivo">
+    <a class="active" href="{% url 'dashboard' %}?{{ query }}"><span class="material-symbols-outlined">dashboard</span>Visão estratégica</a><a href="{% url 'executive_explore' %}?{{ query }}"><span class="material-symbols-outlined">analytics</span>Análise detalhada</a><a href="{% url 'executive_reports' %}?{{ query }}"><span class="material-symbols-outlined">description</span>Relatórios e arquivo</a>
+  </nav>
+  <div class="exec-notice">
+    <span class="material-symbols-outlined">info</span>
+    <div>
+      <strong>Base provisória — aguardando validação dos RH da EPAL.</strong>
+      <p>
+        Dados em falta ficam separados dos resultados negativos. Clique nos gráficos para consultar os registos que sustentam cada indicador.
+      </p>
+    </div>
+  </div>
+  {% include 'executive_filters.html' %}
+  {% if not has_rows %}
+  <div class="exec-empty">
+    Sem formações iniciadas para esta selecção. Consulte também as actividades datadas no período.
+  </div>
+  {% endif %}
+  <section class="exec-primary-kpis">
+    {% for item in main_kpis %}
+    <article class="exec-kpi-card">
+      <div class="exec-kpi-top">
+        <span>{{ item.label }}</span>
+        <div class="exec-icon" style="--tone:{{ item.color }}">
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
+        </div>
+      </div>
+      <p class="exec-kpi-val">
+        {% if item.value is None %}
+        —{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
+      </p>
+      <p class="exec-kpi-sub" style="color:{{ item.color }}">
+        <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }}
+      </p>
+    </article>
+    {% endfor %}
+  </section>
+  <section class="exec-secondary-kpis">
+    {% for item in secondary_kpis %}
+    <div class="exec-mini">
+      <span>{{ item.label }}</span><strong>{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></strong>
+    </div>
+    {% endfor %}
+  </section>
+  <section class="exec-grid">
+    <article class="exec-glass-box exec-wide">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-secondary">bar_chart</span>Distribuição de Carga Horária por Domínio de Competências
+        </h3>
+        <span>{{ area_bars|length }} áreas</span>
+      </div>
+      <div class="exec-area-composition">
+        <div class="exec-area-list">
+          {% for bar in area_bars %}
+          <a href="{{ bar.href }}" class="exec-bar-row" data-drill data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} h · {{ bar.percent|floatformat:1 }}% das horas">
+          <div class="exec-bar-caption">
+            <span><i style="background:{{ bar.color }}"></i>{{ bar.label }}</span><strong>{{ bar.value|floatformat:1 }} h ({{ bar.percent|floatformat:1 }}%)</strong>
+          </div>
+          <div class="exec-bar-track">
+            <div style="width:{{ bar.percent|unlocalize }}%;background:linear-gradient(90deg,{{ bar.color }}88,{{ bar.color }})" class="exec-bar-fill">
+            </div>
+          </div>
+          </a>{% empty %}
+          <p class="exec-muted">
+            Sem carga horária registada.
+          </p>
+          {% endfor %}
+        </div>
+        <div class="exec-donut-wrap">
+          <svg viewBox="0 0 120 120" class="exec-donut" aria-label="Distribuição das horas por área"><circle cx="60" cy="60" r="46" fill="none" stroke="#ffffff12" stroke-width="15"/>{% for segment in area_donut %}{% if segment.value %}<a href="{{ segment.href }}" data-drill data-tip="{{ segment.label }}: {{ segment.value|floatformat:1 }} h · {{ segment.percent|floatformat:1 }}%"><circle class="exec-donut-segment" cx="60" cy="60" r="46" fill="none" stroke="{{ segment.color }}" stroke-width="15" pathLength="100" stroke-dasharray="{{ segment.percent|unlocalize }} {{ segment.remainder|unlocalize }}" stroke-dashoffset="{{ segment.offset|unlocalize }}" transform="rotate(-90 60 60)">
+          <title>
+            {{ segment.label }} — {{ segment.value|floatformat:1 }} horas
+          </title>
+          </circle></a>{% endif %}{% endfor %}<text x="60" y="60" text-anchor="middle" class="exec-donut-total">{{ stats.hours|floatformat:0 }}</text><text x="60" y="72" text-anchor="middle" class="exec-donut-unit">HORAS</text></svg><small>Horas de participantes</small>
+          <div class="exec-donut-mini">
+            <span>Conclusão<strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong></span><span>Formadores<strong>{{ trainers }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="exec-conclusion">
+        <span class="material-symbols-outlined">verified_user</span>
+        <p>
+          {{ insights.1|default:insights.0 }}
+        </p>
+      </div>
+    </article>
+    <article class="exec-glass-box">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-primary">apartment</span>Desempenho por Direcção
+        </h3>
+      </div>
+      <div class="exec-direction-list">
+        {% for row in directions_table %}
+        <a href="{{ row.href }}" class="exec-direction-card" data-drill>
+        <div>
+          <strong>{{ row.label }}</strong><span>{% if row.average is None %}—{% else %}{{ row.average|floatformat:1 }}/20{% endif %}</span>
+        </div>
+        <p>
+          {{ row.hours|floatformat:1 }} horas · {{ row.present }}/{{ row.total }} técnicos
+        </p>
+        <small>Assiduidade: {% if row.attendance is None %}—{% else %}{{ row.attendance|floatformat:1 }}%{% endif %} · Cobertura: {{ row.coverage|floatformat:1 }}%</small></a>{% empty %}
+        <p class="exec-muted">
+          Sem técnicos registados.
+        </p>
+        {% endfor %}
+      </div>
+    </article>
+    <article class="exec-glass-box exec-wide">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-secondary">monitoring</span>{{ timeline_title }}
+        </h3>
+        <span>Clique numa barra</span>
+      </div>
+      <div class="exec-evolution">
+        {% for bar in timeline_bars %}
+        <a href="{{ bar.href }}" data-drill class="exec-column" data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} horas"><span class="exec-column-value">{{ bar.value|floatformat:1 }}</span>
+        <div class="exec-column-track">
+          <div style="height:{{ bar.width|unlocalize }}%" class="exec-column-fill">
+          </div>
+        </div>
+        <span class="exec-column-label">{{ bar.label }}</span></a>{% empty %}
+        <p class="exec-muted">
+          Sem dados para esta selecção.
+        </p>
+        {% endfor %}
+      </div>
+      {% if previous %}
+      <div class="exec-conclusion">
+        <span class="material-symbols-outlined">compare_arrows</span>
+        <p>
+          Período anterior: {{ previous.start|date:'d/m/y' }} a {{ previous.end|date:'d/m/y' }} · {{ previous.hours|floatformat:1 }} h. Variação: {% if previous.change is None %}sem base percentual{% else %}{{ previous.change|floatformat:1 }}%{% endif %}.
+        </p>
+      </div>
+      {% endif %}
+    </article>
+    <article class="exec-glass-box">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-primary">donut_small</span>Situação das participações
+        </h3>
+      </div>
+      {% for bar in status_bars %}
+      <a href="{{ bar.href }}" data-drill class="exec-bar-row">
+      <div class="exec-bar-caption">
+        <span>{{ bar.label }}</span><strong>{{ bar.value }}</strong>
+      </div>
+      <div class="exec-bar-track">
+        <div style="width:{{ bar.width|unlocalize }}%" class="exec-bar-fill">
+        </div>
+      </div>
+      </a>{% endfor %}
+    </article>
+    <article class="exec-glass-box exec-wide">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined exec-gold-text">military_tech</span>Formandos — Notas e Assiduidade
+        </h3>
+        <span>10 maiores médias registadas</span>
+      </div>
+      <div class="exec-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                Técnico
+              </th>
+              <th>
+                Notas finais
+              </th>
+              <th>
+                Média
+              </th>
+              <th>
+                Assiduidade
+              </th>
+              <th>
+                Horas
+              </th>
+              <th>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for person in talents %}
+            <tr>
+              <td>
+                {{ person.employee.name }}<small>{{ person.employee.number }} · {{ person.employee.direction }}</small>
+              </td>
+              <td>
+                {{ person.graded }}
+              </td>
+              <td>
+                <strong class="exec-gold-text">{{ person.average|floatformat:1 }}/20</strong>
+              </td>
+              <td>
+                {% if person.stats.attendance is None %}
+                —{% else %}{{ person.stats.attendance|floatformat:1 }}%{% endif %}
+              </td>
+              <td>
+                {{ person.stats.hours|floatformat:1 }} h
+              </td>
+              <td>
+                <a href="{{ person.href }}" data-drill class="exec-reset">Ver dados</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6">
+                Sem notas finais registadas.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="exec-note">
+        Médias de participações concluídas; o número de notas é apresentado para contextualizar a comparação. Não representa avaliação de desempenho no trabalho.
+      </p>
+    </article>
+    <article class="exec-glass-box">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-secondary">bubble_chart</span>Assiduidade vs Média Final
+        </h3>
+      </div>
+      <svg viewBox="0 0 580 260" class="exec-scatter" aria-label="Assiduidade e média por técnico"><path d="M55 25V220H545" stroke="#527895" fill="none"/><path d="M55 130H545M295 25V220" stroke="#ffffff10" fill="none"/><text x="8" y="42">20</text><text x="8" y="134">10</text><text x="20" y="223">0</text><text x="48" y="243">0%</text><text x="510" y="243">100%</text>{% for point in scatter %}<a href="{{ point.href }}" data-drill data-tip="{{ point.name }} · {{ point.attendance|floatformat:1 }}% · {{ point.average|floatformat:1 }}/20"><circle class="exec-scatter-point" cx="{{ point.x|unlocalize }}" cy="{{ point.y|unlocalize }}" r="{{ point.radius }}">
+      <title>
+        {{ point.name }}
+      </title>
+      </circle></a>{% endfor %}</svg>
+      <p class="exec-note">
+        Cada ponto é um técnico com nota final e assiduidade disponíveis. O tamanho reflecte o número de participações. Clique para consultar o histórico.
+      </p>
+      <div class="exec-panel-heading" style="margin-top:28px">
+        <h3>
+          <span class="material-symbols-outlined exec-gold-text">verified</span>Resultados finais
+        </h3>
+      </div>
+      {% for item in results %}
+      <a href="{{ item.href }}" data-drill class="exec-summary"><span>{{ item.label }}</span><strong>{{ item.value }}</strong></a>{% endfor %}
+      <p class="exec-note">
+        Somente participações concluídas. {{ stats.certificates_pending }} entregas de certificados por confirmar no universo seleccionado.
+      </p>
+    </article>
+  </section>
+  <section class="exec-grid">
+    <article class="exec-glass-box exec-wide">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-secondary">insights</span>Leitura executiva e prioridades
+        </h3>
+      </div>
+      {% for insight in insights %}
+      <p class="exec-insight">
+        {{ insight }}
+      </p>
+      {% endfor %}
+      <p class="exec-note">
+        Impacto no terreno: disponível após ligação da avaliação pós-formação/360º. O painel utiliza apenas os dados actualmente registados.
+      </p>
+    </article>
+    <article class="exec-glass-box">
+      <div class="exec-panel-heading">
+        <h3>
+          <span class="material-symbols-outlined text-primary">event_available</span>Actividades datadas no período
+        </h3>
+      </div>
+      <a href="{% url 'executive_explore' %}?{{ query }}&amp;slice=endings&amp;label=Conclusões%20no%20período" data-drill class="exec-summary"><span>Participações concluídas pela data de fim</span><strong>{{ ended|length }}</strong></a><a href="{% url 'executive_explore' %}?{{ query }}&amp;slice=deliveries&amp;label=Entregas%20datadas%20no%20período" data-drill class="exec-summary"><span>Certificados efectivamente entregues</span><strong>{{ deliveries|length }}</strong></a>
+      <p class="exec-note">
+        Pode incluir formações iniciadas anteriormente. {{ delivery_dates_missing }} entregas confirmadas sem data não podem ser atribuídas a um mês.
+      </p>
+    </article>
+  </section>
+  <details class="exec-method"><summary>Critérios dos indicadores</summary>
+  <p>
+    Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = presenças ÷ dias previstos, excluindo planeadas. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
+  </p>
+  <p>
+    A evolução agrupa pela data de início, sem repartir as horas diariamente. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há participações em curso ou por confirmar.{% endif %}
+  </p>
+  </details>
+</div>
+<dialog id="execDialog" aria-labelledby="execDialogTitle">
+<div class="exec-dialog-top">
+  <h2 id="execDialogTitle">
+    Dados do gráfico
+  </h2>
+  <button type="button" id="execDialogClose" aria-label="Fechar detalhes">
+    ×
+  </button>
+</div>
+<div id="execDialogBody">
+</div>
+</dialog>
+<div id="execTooltip" role="tooltip" hidden>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'pmf/dashboard.js' %}" defer></script>
+{% endblock %}

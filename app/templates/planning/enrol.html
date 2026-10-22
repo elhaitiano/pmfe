@@ -1,1 +1,194 @@
-{% extends 'planning/base.html' %}{% load static %}{% block plan_content %}<section class="plan-panel"><div class="plan-heading"><h2>{{ group.code }} · {{ group.title }}</h2><p>Pesquise, seleccione vários formandos e reveja os avisos antes de confirmar.</p><a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar ao grupo</a></div>{% if error %}<div class="batch-error" role="alert">{{ error }}</div>{% endif %}{% if review %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="confirm"><input type="hidden" name="review_token" value="{{ review_token }}"><div class="plan-warning">Revisão da selecção: nenhum registo foi gravado ainda. Uma repetição exige motivo; uma transferência conserva a inscrição no grupo de origem.</div>{% for item in review %}<article class="plan-review"><input type="hidden" name="employees" value="{{ item.person.pk }}"><h3>{{ item.person.name }} <small>· {{ item.person.number }}</small></h3>{% if item.blocked %}<p class="plan-warning">Este formando já consta deste grupo. Não é possível repetir a inscrição.</p>{% endif %}{% for warning in item.warnings %}<p class="plan-warning"><strong>{{ warning.kind }}:</strong> {{ warning.note }}<small>{{ warning.label }}</small></p>{% empty %}<p class="plan-note">Sem participação anterior identificada nesta acção.</p>{% endfor %}<label>Decisão<select name="choice_{{ item.person.pk }}" class="gf-field"><option value="skip"{% if item.choice == 'skip' %} selected{% endif %}>Não adicionar</option>{% if not item.blocked %}{% if not item.needs_reason %}<option value="add"{% if item.choice == 'add' or not item.choice %} selected{% endif %}>Adicionar ao grupo</option>{% endif %}<option value="repeat"{% if item.choice == 'repeat' %} selected{% endif %}>Manter nova inscrição com justificação</option>{% if item.can_transfer %}<option value="transfer"{% if item.choice == 'transfer' %} selected{% endif %}>Transferir do(s) grupo(s) planeado(s)</option>{% endif %}{% endif %}</select></label><label>Motivo (obrigatório para repetição ou transferência)<textarea class="gf-field" name="reason_{{ item.person.pk }}" rows="2" maxlength="1000">{{ item.reason }}</textarea></label></article>{% endfor %}<div class="plan-actions"><button class="gf-btn" id="planConfirm">Confirmar inscrições</button><a class="gf-btn alt" href="{% url 'group_enrol' group.pk %}">Voltar à selecção</a></div></form>{% else %}{% if reuse_groups %}<details class="plan-reuse"><summary>Reutilizar participantes de um grupo anterior</summary><form method="get" class="plan-search"><select class="gf-field" name="reuse" aria-label="Grupo de origem">{% for old in reuse_groups %}<option value="{{ old.pk }}">{{ old.code }} · {{ old.start|date:'d/m/y' }} · {{ old.state }}</option>{% endfor %}</select><button class="gf-btn alt">Rever estes participantes</button></form></details>{% endif %}<form method="get" class="plan-search"><input class="gf-field" name="q" value="{{ q }}" placeholder="Nome ou número mecanográfico" aria-label="Pesquisar formando"><select name="direction" class="gf-field" aria-label="Filtrar direcção"><option value="">Todas as direcções</option>{% for d in directions %}<option{% if direction == d %} selected{% endif %}>{{ d }}</option>{% endfor %}</select><button class="gf-btn alt">Pesquisar</button></form><form method="post" id="planSelection" data-scope="{{ user.pk }}-{{ group.pk }}">{% csrf_token %}<input type="hidden" name="action" value="review"><div class="plan-selection"><label><input type="checkbox" id="planSelectPage"> Seleccionar os disponíveis nesta página</label><span id="planSelectedCount" aria-live="polite">0 seleccionados</span><button type="button" class="gf-btn alt" id="planClearSelection">Limpar selecção</button><button class="gf-btn">Rever selecção</button></div><div class="batch-scroll"><table class="batch-table"><thead><tr><th>Seleccionar</th><th>Formando / Nº Mec.</th><th>Direcção / Função</th><th>Histórico nesta acção</th></tr></thead><tbody>{% for item in candidates %}<tr><td><input type="checkbox" name="employees" value="{{ item.person.pk }}" data-person{% if item.blocked %} disabled{% endif %} aria-label="Seleccionar {{ item.person.name }}"></td><td>{{ item.person.name }}<small>{{ item.person.number }}</small></td><td>{{ item.person.direction|default:'—' }}<small>{{ item.person.source_data.Função|default:item.person.category }}</small></td><td>{% if item.blocked %}<span class="plan-warning">Já consta deste grupo</span>{% else %}{% for warning in item.warnings %}<div class="plan-warning"><strong>{{ warning.kind }}</strong><small>{{ warning.note }} {{ warning.label }}</small></div>{% empty %}<span class="plan-note">Sem participação anterior identificada</span>{% endfor %}{% endif %}</td></tr>{% empty %}<tr><td colspan="4">Nenhum formando encontrado.</td></tr>{% endfor %}</tbody></table></div><div id="planCarriedSelection"></div></form><div class="pmf-pagination">{% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}</div><p class="plan-note">A selecção acompanha a pesquisa nesta janela. A confirmação é sempre validada pelo servidor, incluindo capacidade, duplicados e alterações recentes.</p>{% endif %}</section>{% endblock %}{% block extra_scripts %}<script src="{% static 'pmf/planning.js' %}" defer></script>{% endblock %}
+{% extends 'planning/base.html' %}
+{% load static %}
+{% block plan_content %}
+<section class="plan-panel">
+  <div class="plan-heading">
+    <h2>
+      {{ group.code }} · {{ group.title }}
+    </h2>
+    <p>
+      Pesquise, seleccione vários formandos e reveja os avisos antes de confirmar.
+    </p>
+    <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar ao grupo</a>
+  </div>
+  {% if error %}
+  <div class="batch-error" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
+  {% if review %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="confirm"><input type="hidden" name="review_token" value="{{ review_token }}">
+    <div class="plan-warning">
+      Revisão da selecção: nenhum registo foi gravado ainda. Uma repetição exige motivo; uma transferência conserva a inscrição no grupo de origem.
+    </div>
+    {% for item in review %}
+    <article class="plan-review">
+      <input type="hidden" name="employees" value="{{ item.person.pk }}">
+      <h3>
+        {{ item.person.name }} <small>· {{ item.person.number }}</small>
+      </h3>
+      {% if item.blocked %}
+      <p class="plan-warning">
+        Este formando já consta deste grupo. Não é possível repetir a inscrição.
+      </p>
+      {% endif %}
+      {% for warning in item.warnings %}
+      <p class="plan-warning">
+        <strong>{{ warning.kind }}:</strong> {{ warning.note }}<small>{{ warning.label }}</small>
+      </p>
+      {% empty %}
+      <p class="plan-note">
+        Sem participação anterior identificada nesta acção.
+      </p>
+      {% endfor %}
+      <label>
+        Decisão
+        <select name="choice_{{ item.person.pk }}" class="gf-field">
+          <option value="skip"{% if item.choice == 'skip' %} selected{% endif %}>
+            Não adicionar
+          </option>
+          {% if not item.blocked %}
+          {% if not item.needs_reason %}
+          <option value="add"{% if item.choice == 'add' or not item.choice %} selected{% endif %}>
+            Adicionar ao grupo
+          </option>
+          {% endif %}
+          <option value="repeat"{% if item.choice == 'repeat' %} selected{% endif %}>
+            Manter nova inscrição com justificação
+          </option>
+          {% if item.can_transfer %}
+          <option value="transfer"{% if item.choice == 'transfer' %} selected{% endif %}>
+            Transferir do(s) grupo(s) planeado(s)
+          </option>
+          {% endif %}
+          {% endif %}
+        </select>
+      </label>
+      <label>
+        Motivo (obrigatório para repetição ou transferência)
+        <textarea class="gf-field" name="reason_{{ item.person.pk }}" rows="2" maxlength="1000">{{ item.reason }}</textarea>
+      </label>
+    </article>
+    {% endfor %}
+    <div class="plan-actions">
+      <button class="gf-btn" id="planConfirm">
+        Confirmar inscrições
+      </button>
+      <a class="gf-btn alt" href="{% url 'group_enrol' group.pk %}">Voltar à selecção</a>
+    </div>
+  </form>
+  {% else %}
+  {% if reuse_groups %}
+  <details class="plan-reuse"><summary>Reutilizar participantes de um grupo anterior</summary>
+  <form method="get" class="plan-search">
+    <select class="gf-field" name="reuse" aria-label="Grupo de origem">
+      {% for old in reuse_groups %}
+      <option value="{{ old.pk }}">
+        {{ old.code }} · {{ old.start|date:'d/m/y' }} · {{ old.state }}
+      </option>
+      {% endfor %}
+    </select>
+    <button class="gf-btn alt">
+      Rever estes participantes
+    </button>
+  </form>
+  </details>{% endif %}
+  <form method="get" class="plan-search">
+    <input class="gf-field" name="q" value="{{ q }}" placeholder="Nome ou número mecanográfico" aria-label="Pesquisar formando">
+    <select name="direction" class="gf-field" aria-label="Filtrar direcção">
+      <option value="">
+        Todas as direcções
+      </option>
+      {% for d in directions %}
+      <option{% if direction == d %} selected{% endif %}>
+        {{ d }}
+      </option>
+      {% endfor %}
+    </select>
+    <button class="gf-btn alt">
+      Pesquisar
+    </button>
+  </form>
+  <form method="post" id="planSelection" data-scope="{{ user.pk }}-{{ group.pk }}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="review">
+    <div class="plan-selection">
+      <label>
+        <input type="checkbox" id="planSelectPage"> Seleccionar os disponíveis nesta página
+      </label>
+      <span id="planSelectedCount" aria-live="polite">0 seleccionados</span>
+      <button type="button" class="gf-btn alt" id="planClearSelection">
+        Limpar selecção
+      </button>
+      <button class="gf-btn">
+        Rever selecção
+      </button>
+    </div>
+    <div class="batch-scroll">
+      <table class="batch-table">
+        <thead>
+          <tr>
+            <th>
+              Seleccionar
+            </th>
+            <th>
+              Formando / Nº Mec.
+            </th>
+            <th>
+              Direcção / Função
+            </th>
+            <th>
+              Histórico nesta acção
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in candidates %}
+          <tr>
+            <td>
+              <input type="checkbox" name="employees" value="{{ item.person.pk }}" data-person{% if item.blocked %} disabled{% endif %} aria-label="Seleccionar {{ item.person.name }}">
+            </td>
+            <td>
+              {{ item.person.name }}<small>{{ item.person.number }}</small>
+            </td>
+            <td>
+              {{ item.person.direction|default:'—' }}<small>{{ item.person.source_data.Função|default:item.person.category }}</small>
+            </td>
+            <td>
+              {% if item.blocked %}
+              <span class="plan-warning">Já consta deste grupo</span>{% else %}{% for warning in item.warnings %}
+              <div class="plan-warning">
+                <strong>{{ warning.kind }}</strong><small>{{ warning.note }} {{ warning.label }}</small>
+              </div>
+              {% empty %}
+              <span class="plan-note">Sem participação anterior identificada</span>{% endfor %}{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">
+              Nenhum formando encontrado.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="planCarriedSelection">
+    </div>
+  </form>
+  <div class="pmf-pagination">
+    {% if page.has_previous %}
+    <a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+  </div>
+  <p class="plan-note">
+    A selecção acompanha a pesquisa nesta janela. A confirmação é sempre validada pelo servidor, incluindo capacidade, duplicados e alterações recentes.
+  </p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'pmf/planning.js' %}" defer></script>
+{% endblock %}

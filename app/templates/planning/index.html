@@ -1,1 +1,113 @@
-{% extends 'planning/base.html' %}{% block plan_content %}<form method="get" class="plan-search"><input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos"><button class="gf-btn">Pesquisar</button>{% if user.is_staff %}<a class="gf-btn" href="{% url 'course_create' %}"><span class="material-symbols-outlined">add</span>Nova acção de formação</a>{% endif %}</form><section class="plan-panel"><div class="plan-heading"><h2><span class="material-symbols-outlined">menu_book</span>Catálogo de formações</h2><p>Registe a acção uma vez. Cada edição recebe o seu próprio grupo.</p></div><div class="plan-courses">{% for course in courses %}<article class="plan-course"><span class="plan-pill">{{ course.area|default:'Área por definir' }}</span><h3>{{ course.title }}</h3><p>{{ course.default_days }} dia(s) previstos · {{ course.default_hours|floatformat:1 }} h/dia · {{ course.group_count }} grupo(s)</p><small>{% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small><div class="plan-actions">{% if user.is_staff %}{% if course.active %}<a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group }}</a>{% endif %}<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}</div></article>{% empty %}<p class="plan-empty">Ainda não existem acções no catálogo. Crie a primeira acção para preparar o seu G1. Os registos anteriores continuam no histórico.</p>{% endfor %}</div></section><section class="plan-panel"><div class="plan-heading"><h2><span class="material-symbols-outlined">groups</span>Grupos e calendário</h2><p>G1, G2… por acção; os códigos cancelados não são reutilizados.</p></div><div class="batch-scroll"><table class="batch-table"><thead><tr><th>Grupo / Acção</th><th>Período</th><th>Local / Formador</th><th>Inscritos</th><th>Estado</th><th></th></tr></thead><tbody>{% for group in page %}<tr><td><strong>{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small></td><td>{{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days }} dias efectivos</small></td><td>{{ group.location }}<small>{{ group.trainer }}</small></td><td>{{ group.active_count }} / {{ group.capacity }}</td><td><span class="plan-pill">{{ group.state }}</span></td><td><a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Abrir grupo</a></td></tr>{% empty %}<tr><td colspan="6">Nenhum grupo encontrado.</td></tr>{% endfor %}</tbody></table></div><div class="pmf-pagination">{% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}</div></section>{% endblock %}
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<form method="get" class="plan-search">
+  <input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos">
+  <button class="gf-btn">
+    Pesquisar
+  </button>
+  {% if user.is_staff %}
+  <a class="gf-btn" href="{% url 'course_create' %}"><span class="material-symbols-outlined">add</span>Nova acção de formação</a>{% endif %}
+</form>
+<section class="plan-panel">
+  <div class="plan-heading">
+    <h2>
+      <span class="material-symbols-outlined">menu_book</span>Catálogo de formações
+    </h2>
+    <p>
+      Registe a acção uma vez. Cada edição recebe o seu próprio grupo.
+    </p>
+  </div>
+  <div class="plan-courses">
+    {% for course in courses %}
+    <article class="plan-course">
+      <span class="plan-pill">{{ course.area|default:'Área por definir' }}</span>
+      <h3>
+        {{ course.title }}
+      </h3>
+      <p>
+        {{ course.default_days }} dia(s) previstos · {{ course.default_hours|floatformat:1 }} h/dia · {{ course.group_count }} grupo(s)
+      </p>
+      <small>{% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small>
+      <div class="plan-actions">
+        {% if user.is_staff %}
+        {% if course.active %}
+        <a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group }}</a>{% endif %}<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}
+      </div>
+    </article>
+    {% empty %}
+    <p class="plan-empty">
+      Ainda não existem acções no catálogo. Crie a primeira acção para preparar o seu G1. Os registos anteriores continuam no histórico.
+    </p>
+    {% endfor %}
+  </div>
+</section>
+<section class="plan-panel">
+  <div class="plan-heading">
+    <h2>
+      <span class="material-symbols-outlined">groups</span>Grupos e calendário
+    </h2>
+    <p>
+      G1, G2… por acção; os códigos cancelados não são reutilizados.
+    </p>
+  </div>
+  <div class="batch-scroll">
+    <table class="batch-table">
+      <thead>
+        <tr>
+          <th>
+            Grupo / Acção
+          </th>
+          <th>
+            Período
+          </th>
+          <th>
+            Local / Formador
+          </th>
+          <th>
+            Inscritos
+          </th>
+          <th>
+            Estado
+          </th>
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for group in page %}
+        <tr>
+          <td>
+            <strong>{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
+          </td>
+          <td>
+            {{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days }} dias efectivos</small>
+          </td>
+          <td>
+            {{ group.location }}<small>{{ group.trainer }}</small>
+          </td>
+          <td>
+            {{ group.active_count }} / {{ group.capacity }}
+          </td>
+          <td>
+            <span class="plan-pill">{{ group.state }}</span>
+          </td>
+          <td>
+            <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Abrir grupo</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">
+            Nenhum grupo encontrado.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pmf-pagination">
+    {% if page.has_previous %}
+    <a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+  </div>
+</section>
+{% endblock %}

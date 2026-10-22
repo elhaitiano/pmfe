@@ -1,1 +1,28 @@
-{% extends 'base.html' %}{% block heading %}ELIMINAR FORMAÇÃO{% endblock %}{% block content %}<section class="content p-10 space-y-6"><section class="gf-panel"><div class="gf-head"><h1 class="text-xl font-bold text-white">Eliminar formação?</h1></div><div class="gf-body space-y-5"><p>{{ training.title }} — {{ training.employee }}</p><p class="text-sm text-slate-400">O funcionário será preservado. A eliminação ficará registada no histórico de actividade.</p><form method="post" class="flex gap-4">{% csrf_token %}<button class="gf-btn !bg-red-900 !border-red-400">Confirmar eliminação</button><a class="gf-btn alt" href="{% url 'employee_detail' training.employee_id %}">Cancelar</a></form></div></section></section>{% endblock %}
+{% extends 'base.html' %}
+{% block heading %}
+ELIMINAR FORMAÇÃO{% endblock %}{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-head">
+      <h1 class="text-xl font-bold text-white">
+        Eliminar formação?
+      </h1>
+    </div>
+    <div class="gf-body space-y-5">
+      <p>
+        {{ training.title }} — {{ training.employee }}
+      </p>
+      <p class="text-sm text-slate-400">
+        O funcionário será preservado. A eliminação ficará registada no histórico de actividade.
+      </p>
+      <form method="post" class="flex gap-4">
+        {% csrf_token %}
+        <button class="gf-btn !bg-red-900 !border-red-400">
+          Confirmar eliminação
+        </button>
+        <a class="gf-btn alt" href="{% url 'employee_detail' training.employee_id %}">Cancelar</a>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

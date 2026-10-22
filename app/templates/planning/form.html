@@ -1,2 +1,57 @@
-{% extends 'planning/base.html' %}{% load static %}{% block plan_content %}<section class="plan-panel"><div class="plan-heading"><h2>{{ title }}</h2><p>{{ course.title }}</p></div>{% if form.dates %}<details class="plan-calendar-builder"><summary>Preencher rapidamente os dias do calendário</summary><div class="plan-search"><label>Primeiro dia<input id="planFirstDay" class="gf-field" type="date"></label><label>Número de dias<input id="planDayCount" class="gf-field" type="number" min="1" max="366" value="{{ course.default_days }}"></label><label><input id="planWeekdaysOnly" type="checkbox" checked> Apenas segunda a sexta</label><button type="button" id="planBuildCalendar" class="gf-btn alt">Preencher calendário</button></div><p class="plan-note" id="planCalendarMessage" aria-live="polite">Depois de preencher, reveja as datas e ajuste feriados ou dias específicos.</p></details>{% endif %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for f in form.hidden_fields %}{{ f }}{{ f.errors }}{% endfor %}<div class="plan-form-grid">{% for field in form.visible_fields %}<label><span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</label>{% endfor %}</div><div class="plan-actions"><button class="gf-btn">Guardar</button><a class="gf-btn alt" href="{% url 'planning' %}">Cancelar</a></div></form><p class="plan-note">O catálogo pode ser reutilizado depois do projecto. Ao criar um grupo, o título e a área ficam guardados nessa edição; editar o catálogo não altera grupos anteriores.</p></section>{% endblock %}
-{% block extra_scripts %}<script src="{% static 'pmf/planning.js' %}" defer></script>{% endblock %}
+{% extends 'planning/base.html' %}
+{% load static %}
+{% block plan_content %}
+<section class="plan-panel">
+  <div class="plan-heading">
+    <h2>
+      {{ title }}
+    </h2>
+    <p>
+      {{ course.title }}
+    </p>
+  </div>
+  {% if form.dates %}
+  <details class="plan-calendar-builder"><summary>Preencher rapidamente os dias do calendário</summary>
+  <div class="plan-search">
+    <label>
+      Primeiro dia<input id="planFirstDay" class="gf-field" type="date">
+    </label>
+    <label>
+      Número de dias<input id="planDayCount" class="gf-field" type="number" min="1" max="366" value="{{ course.default_days }}">
+    </label>
+    <label>
+      <input id="planWeekdaysOnly" type="checkbox" checked> Apenas segunda a sexta
+    </label>
+    <button type="button" id="planBuildCalendar" class="gf-btn alt">
+      Preencher calendário
+    </button>
+  </div>
+  <p class="plan-note" id="planCalendarMessage" aria-live="polite">
+    Depois de preencher, reveja as datas e ajuste feriados ou dias específicos.
+  </p>
+  </details>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}{% for f in form.hidden_fields %}{{ f }}{{ f.errors }}{% endfor %}
+    <div class="plan-form-grid">
+      {% for field in form.visible_fields %}
+      <label>
+        <span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+    <div class="plan-actions">
+      <button class="gf-btn">
+        Guardar
+      </button>
+      <a class="gf-btn alt" href="{% url 'planning' %}">Cancelar</a>
+    </div>
+  </form>
+  <p class="plan-note">
+    O catálogo pode ser reutilizado depois do projecto. Ao criar um grupo, o título e a área ficam guardados nessa edição; editar o catálogo não altera grupos anteriores.
+  </p>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'pmf/planning.js' %}" defer></script>
+{% endblock %}
