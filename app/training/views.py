@@ -192,7 +192,7 @@ def training_edit(request, pk):
 @staff_required
 def training_delete(request, pk):
     training = get_object_or_404(Training, pk=pk)
-    if (training.documents.exists() or training.exams.exists() or
+    if (training.documents.exists() or training.exams.exists() or training.evaluation_cycles.exists() or
             hasattr(training, "evaluation") or hasattr(training, "reaction")):
         messages.error(request, 'Esta participação tem documentos privados ou avaliações. Conserve o histórico e corrija os dados, se necessário.')
         return redirect('employee_detail', pk=training.employee_id)
@@ -232,6 +232,8 @@ def audit(request):
 @staff_required
 @require_POST
 def backup(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied('A cópia integral contém respostas privadas e exige um superutilizador.')
     record(request, 'BACKUP', 'Exportação da base, relatórios e documentos privados')
     with tempfile.TemporaryDirectory() as folder:
         target = Path(folder) / 'backup.sqlite3'

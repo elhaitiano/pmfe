@@ -23,6 +23,9 @@ DASHBOARD EXECUTIVO{% endblock %}
         </p>
       </div>
       <div class="exec-actions">
+        {% if user.is_staff %}
+        <a href="{% url 'indicator_index' %}" class="exec-button">Indicadores confirmados e 360°</a>
+        {% endif %}
         <a href="{% url 'executive_reports' %}?{{ query }}" class="exec-button primary"><span class="material-symbols-outlined">download</span>Relatório Executivo PDF</a><a href="{% url 'executive_explore' %}?{{ query }}" class="exec-button"><span class="material-symbols-outlined">manage_search</span>Explorar os registos</a>
       </div>
     </div>

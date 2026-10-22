@@ -320,6 +320,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(self.client.get('/auditoria/').status_code, 200)
 
     def test_backup_is_a_restorable_sqlite_snapshot(self):
+        self.admin.is_superuser = True
+        self.admin.save(update_fields=["is_superuser"])
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get('/backup/').status_code, 405)
         with tempfile.TemporaryDirectory() as folder:

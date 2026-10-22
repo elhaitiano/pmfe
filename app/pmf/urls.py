@@ -1,8 +1,24 @@
 from django.contrib.auth import views as auth
 from django.urls import path
-from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations
+from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations, competencies, indicators
 
 urlpatterns = [
+    path('competencias/', competencies.index, name='competency_index'),
+    path('competencias/catalogo/', competencies.catalog, name='competency_catalog'),
+    path('competencias/nova/', competencies.catalog_edit, {'kind':'competency'}, name='competency_create'),
+    path('competencias/<int:pk>/editar/', competencies.catalog_edit, {'kind':'competency'}, name='competency_edit'),
+    path('competencias/funcoes/nova/', competencies.catalog_edit, {'kind':'role'}, name='role_create'),
+    path('competencias/funcoes/<int:pk>/', competencies.catalog_edit, {'kind':'role'}, name='role_edit'),
+    path('competencias/ciclos/novo/', competencies.cycle_edit, name='cycle_create'),
+    path('competencias/ciclos/<int:pk>/', competencies.cycle_detail, name='cycle_detail'),
+    path('competencias/ciclos/<int:pk>/editar/', competencies.cycle_edit, name='cycle_edit'),
+    path('competencias/ciclos/<int:pk>/avaliadores/', competencies.raters_edit, name='cycle_raters'),
+    path('minhas-avaliacoes/', competencies.my_ratings, name='my_ratings'),
+    path('minhas-avaliacoes/<uuid:code>/', competencies.respond, name='cycle_respond'),
+    path('desenvolvimento/', competencies.development, name='development_index'),
+    path('desenvolvimento/lacunas/<int:item_pk>/nova/', competencies.action_edit, name='development_create'),
+    path('desenvolvimento/lacunas/<int:item_pk>/<int:pk>/', competencies.action_edit, name='development_edit'),
+    path('indicadores/', indicators.index, name='indicator_index'),
     path('avaliacao/', evaluations.index, name='evaluation_index'),
     path('avaliacao/<int:pk>/', evaluations.detail, name='evaluation_detail'),
     path('avaliacao/<int:pk>/formacao/', evaluations.record_edit, {'kind': 'learning'}, name='evaluation_edit'),

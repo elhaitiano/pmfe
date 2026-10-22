@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block heading %}{{ title|upper }}{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body">
+      {% if cycle %}
+      <p>{{ cycle.employee }} · {{ cycle.moment }} · {{ cycle.get_state_display }}</p>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.hidden_fields %}
+        {{ field }}{{ field.errors }}
+        {% endfor %}
+        <div class="gf-form-grid mt-4">
+          {% for field in form.visible_fields %}
+          <label for="{{ field.id_for_label }}">
+            <span class="gf-label">{{ field.label }}</span>
+            {{ field }}{{ field.errors }}
+            <small>{{ field.help_text }}</small>
+          </label>
+          {% endfor %}
+        </div>
+        {% if formset %}
+        <p class="mt-5">Guarde para apresentar mais três linhas. Deixe as linhas adicionais vazias quando não forem necessárias.</p>
+        {{ formset.management_form }}
+        {{ formset.non_form_errors }}
+        {% for subform in formset %}
+        <fieldset class="border-b border-white/10 py-4">
+          <legend>Registo {{ forloop.counter }}</legend>
+          {{ subform.non_field_errors }}
+          {% for field in subform.hidden_fields %}
+          {{ field }}{{ field.errors }}
+          {% endfor %}
+          <div class="gf-form-grid">
+            {% for field in subform.visible_fields %}
+            <label for="{{ field.id_for_label }}">
+              <span class="gf-label">{{ field.label }}</span>
+              {{ field }}{{ field.errors }}
+              <small>{{ field.help_text }}</small>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        {% endfor %}
+        {% endif %}
+        <button class="gf-btn mt-4">Guardar</button>
+        {% if cycle %}
+        <a class="gf-btn alt" href="{% url 'cycle_detail' cycle.pk %}">Voltar ao ciclo</a>
+        {% else %}
+        <a class="gf-btn alt" href="{% url 'competency_index' %}">Voltar</a>
+        {% endif %}
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

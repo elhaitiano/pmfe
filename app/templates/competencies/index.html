@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block heading %}COMPETÊNCIAS E AVALIAÇÃO 360°{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <p>Prepare o catálogo e as regras RH, crie um ciclo, autorize as contas dos avaliadores e confirme a abertura. Apenas o responsável ou um superutilizador gere o ciclo e consulta os seus resultados agregados.</p>
+      <a class="gf-btn" href="{% url 'competency_catalog' %}">Catálogo e funções</a>
+      <a class="gf-btn" href="{% url 'cycle_create' %}">Novo ciclo</a>
+      <a class="gf-btn alt" href="{% url 'development_index' %}">Plano de desenvolvimento</a>
+      <a class="gf-btn alt" href="{% url 'indicator_index' %}">Indicadores confirmados</a>
+      <form method="get">
+        <label for="cycle-search" class="gf-label">Pesquisar trabalhador</label>
+        <input class="gf-field" id="cycle-search" name="q" value="{{ q }}">
+        <button class="gf-btn mt-4">Pesquisar</button>
+      </form>
+      {% for cycle in page %}
+      <article class="border-b border-white/10 py-4">
+        <a class="text-secondary" href="{% url 'cycle_detail' cycle.pk %}">{{ cycle.employee }} — {{ cycle.moment }}</a>
+        <p>{{ cycle.start|date:'d/m/Y' }} a {{ cycle.end|date:'d/m/Y' }} · {{ cycle.get_state_display }} · Responsável: {{ cycle.owner.username }}</p>
+      </article>
+      {% empty %}
+      <p>Não existem ciclos sob a sua responsabilidade.</p>
+      {% endfor %}
+      <nav>
+        {% if page.has_previous %}
+        <a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>
+        {% endif %}
+        <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}
+        <a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>
+        {% endif %}
+      </nav>
+    </div>
+  </section>
+</section>
+{% endblock %}

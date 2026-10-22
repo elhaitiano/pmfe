@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block heading %}CICLO 360° #{{ cycle.pk }}{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">{{ cycle.employee }} — {{ cycle.moment }}</h2>
+      <p>{{ cycle.get_state_display }} · {{ cycle.start|date:'d/m/Y' }} a {{ cycle.end|date:'d/m/Y' }}</p>
+      <p>Responsável: {{ cycle.owner.username }} · Função de referência: {{ cycle.config.role|default:cycle.role.title }}</p>
+      {% if cycle.config %}
+      <p>Função do cadastro na abertura: {{ cycle.config.employee_function|default:'Por preencher' }} · Versão da configuração: {{ cycle.config.version }}</p>
+      {% else %}
+      <p>Função no cadastro: {{ cycle.employee.function|default:'Por preencher' }}</p>
+      {% endif %}
+      <p>Pesos: autoavaliação {{ cycle.weight_self }}%, superior {{ cycle.weight_manager }}%, colegas {{ cycle.weight_peer }}%, formador {{ cycle.weight_trainer }}%.</p>
+      <p>Cobertura mínima por tipo: {{ cycle.minimum_coverage }}% · Mínimo de colegas: {{ cycle.minimum_peers }}.</p>
+      <p>{{ cycle.notes|linebreaksbr }}</p>
+      {% if cycle.state == 'draft' %}
+      <a class="gf-btn" href="{% url 'cycle_edit' cycle.pk %}">Editar configuração</a>
+      <a class="gf-btn" href="{% url 'cycle_raters' cycle.pk %}">Contas e autorizações</a>
+      <p>Ao abrir, confirma os pesos propostos e a identidade de cada avaliador. As regras, o prazo e as autorizações ficam fixos. A atribuição aparece em Minhas avaliações; não é enviado correio electrónico.</p>
+      {% endif %}
+      <h3 class="font-bold">Avaliadores</h3>
+      <p>A lista permite acompanhar a entrega. Não permite consultar notas nem comentários individuais.</p>
+      {% for rater in raters %}
+      <p>{{ rater.user.username }} · {{ rater.get_kind_display }} · {{ rater.authorized|yesno:'Autorizado,Sem autorização' }} · {{ rater.submitted_at|yesno:'Entregue,Por entregar' }}</p>
+      {% empty %}
+      <p>Autorize as contas antes de abrir o ciclo.</p>
+      {% endfor %}
+      {% if cycle.state == 'draft' or cycle.state == 'open' %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.revision }}{{ form.revision.errors }}
+        <label for="id_reason" class="gf-label">Motivo da transição</label>
+        {{ form.reason }}{{ form.reason.errors }}
+        <label class="block mt-4">{{ form.confirm }} {{ form.confirm.label }}</label>
+        {{ form.confirm.errors }}{{ form.action.errors }}
+        {% if cycle.state == 'draft' %}
+        <button class="gf-btn mt-4" name="action" value="open">Confirmar e abrir ciclo</button>
+        {% else %}
+        <p class="mt-4">Fechar conserva todas as respostas e impede novas entregas. Se a cobertura for insuficiente, os resultados ficam indisponíveis. Não é possível reabrir; prepare outro ciclo quando necessário.</p>
+        <button class="gf-btn mt-4" name="action" value="close">Fechar ciclo</button>
+        {% endif %}
+        <button class="gf-btn alt" name="action" value="cancel">Cancelar ciclo</button>
+      </form>
+      {% endif %}
+      <h3 class="font-bold">Resultados agregados</h3>
+      {% if results.available %}
+      <p>Índice ponderado: {{ results.overall|floatformat:2 }} /5.</p>
+      {% else %}
+      <p>{{ results.reason }}</p>
+      {% endif %}
+      {% for item in results.items %}
+      <article class="border-b border-white/10 py-4">
+        <h4>{{ item.name }} · Nível esperado: {{ item.expected }} /5 · Peso relativo: {{ item.weight }}</h4>
+        {% if item.score != None %}
+        <p>Resultado: {{ item.score|floatformat:2 }} /5 · Lacuna: {{ item.gap|floatformat:2 }}</p>
+        {% if item.gap > 0 %}
+        <a class="gf-btn alt" href="{% url 'development_create' item.id %}">Planear desenvolvimento</a>
+        {% endif %}
+        {% else %}
+        <p>Valor não divulgado: cobertura ou mínimo de colegas insuficiente.</p>
+        {% endif %}
+      </article>
+      {% endfor %}
+      <a class="gf-btn alt" href="{% url 'competency_index' %}">Voltar aos ciclos</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

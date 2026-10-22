@@ -150,7 +150,7 @@ class DocumentRecoveryTests(TransactionTestCase):
             report = ExecutiveReport.objects.create(actor='Teste', title='Relatório', filters={}, summary={}, sha256=hashlib.sha256(PDF).hexdigest())
             (folder/'reports').mkdir(); (folder/'reports'/f'{report.pk}.pdf').write_bytes(PDF)
             (folder/'secret.key').write_text('test-only-key')
-            user = get_user_model().objects.create_user('recovery-admin', is_staff=True)
+            user = get_user_model().objects.create_user('recovery-admin', is_staff=True, is_superuser=True)
             self.client.force_login(user)
             from .models import TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
             participation = Training.objects.create(employee=employee, title='Prova de recuperação',
@@ -161,6 +161,24 @@ class DocumentRecoveryTests(TransactionTestCase):
             question = ExamQuestion.objects.create(exam=exam, number=1, prompt='P', expected_answer='R', points=10)
             attempt = ExamAttempt.objects.create(exam=exam, number=1, authorized_by='Teste')
             ExamAnswer.objects.create(attempt=attempt, question=question, response='Resposta preservada', awarded=8)
+            from .models import (Competency, RoleProfile, RoleCompetency, EvaluationCycle, CycleRater,
+                CompetencyResponse, PrivateResponseRevision, DevelopmentAction)
+            from .competency_services import open_cycle, finish_cycle
+            role = RoleProfile.objects.create(title='Função de recuperação')
+            skill = Competency.objects.create(name='Competência de recuperação')
+            RoleCompetency.objects.create(role=role, competency=skill, expected=5, weight=1,
+                validated=True, validated_by='RH', validated_on=timezone.localdate())
+            cycle = EvaluationCycle.objects.create(employee=employee, role=role, owner=user,
+                start=timezone.localdate(), end=timezone.localdate(), moment='Acompanhamento',
+                weight_self=100, weight_manager=0, weight_peer=0, weight_trainer=0)
+            rater = CycleRater.objects.create(cycle=cycle, user=user, kind='self', authorized=True)
+            open_cycle(cycle, cycle.revision)
+            item = cycle.items.get()
+            CompetencyResponse.objects.create(rater=rater, item=item, score=3, comment='Comentário privado preservado')
+            PrivateResponseRevision.objects.create(rater=rater, reason='Histórico privado', payload={'score':3})
+            CycleRater.objects.filter(pk=rater.pk).update(submitted_at=timezone.now())
+            finish_cycle(cycle, cycle.revision)
+            DevelopmentAction.objects.create(item=item, action='Acção preservada', responsible='RH', due=timezone.localdate())
             snapshot = folder/'source.sqlite3'
             with sqlite3.connect(snapshot) as target: connection.connection.backup(target)
             config = SimpleNamespace(DATA_DIR=folder, DATABASES={'default': {'NAME': snapshot}})
@@ -178,6 +196,10 @@ class DocumentRecoveryTests(TransactionTestCase):
                 self.assertEqual(db.execute('SELECT logistics FROM training_trainingevaluation').fetchone()[0], 4)
                 self.assertEqual(db.execute('SELECT organization FROM training_reactionevaluation').fetchone()[0], 5)
                 self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(), [])
+                self.assertEqual(db.execute('SELECT comment FROM training_competencyresponse').fetchone()[0], 'Comentário privado preservado')
+                self.assertEqual(db.execute('SELECT reason FROM training_privateresponserevision').fetchone()[0], 'Histórico privado')
+                self.assertEqual(db.execute('SELECT action FROM training_developmentaction').fetchone()[0], 'Acção preservada')
+                self.assertEqual(db.execute('SELECT state FROM training_evaluationcycle').fetchone()[0], 'closed')
             with self.assertRaises(ValueError): restore(archive, destination)
             bad = folder/'bad.zip'
             with zipfile.ZipFile(archive) as original, zipfile.ZipFile(bad,'w') as output:

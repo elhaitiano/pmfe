@@ -119,7 +119,7 @@ O serviço é publicado apenas em `127.0.0.1`, para acesso no próprio computado
 ## Contas e permissões
 
 - Utilizadores autenticados podem consultar dados e documentos de acordo com as permissões das páginas.
-- Administradores podem alterar dados, gerir turmas, publicar guias, efectuar eliminações autorizadas e criar cópias de segurança.
+- Administradores podem alterar dados, gerir turmas, publicar guias e efectuar eliminações autorizadas. A cópia integral da base é reservada a superutilizadores, porque inclui respostas privadas 360°.
 - A conta criada com `createsuperuser` tem acesso administrativo. Não é necessário recriá-la em cada actualização quando a mesma base é conservada.
 - As permissões são verificadas no servidor.
 
@@ -254,7 +254,7 @@ Entre os documentos Markdown, apenas o `README.md` da raiz está previsto para p
 ## Limitações actuais
 
 - A configuração destina-se a um único computador e a uma única instância backend com SQLite.
-- A avaliação no terreno/360° e o plano de desenvolvimento ainda não estão activos. O arquivo privado de CV já está disponível para administradores.
+- A avaliação 360°, o plano de desenvolvimento e os indicadores confirmados estão disponíveis. A recolha 360° é feita através de contas individuais autorizadas, no computador local. O arquivo privado de CV continua disponível para administradores.
 - O assistente utiliza guias locais; não é uma IA generativa nem aprende automaticamente novas funcionalidades.
 - Existem listas diárias de presença, mas o cálculo de horas utiliza os totais de dias de presença registados.
 - A plataforma acompanha a entrega de certificados; a emissão automática a partir de um modelo ainda não está implementada.
@@ -278,4 +278,57 @@ O resultado de uma tentativa **não altera automaticamente** a nota final da par
 
 Os registos incluem fonte documental, data, responsável e estado **Por confirmar / Validado / Rever**. Marcar como validado exige data, responsável e fonte; não significa que a aplicação tenha verificado o documento. Correcções exigem motivo, conservam o antes/depois na auditoria e rejeitam gravações de uma janela desactualizada. Uma tentativa concluída é conservada; uma nova avaliação exige outra tentativa autorizada.
 
-Os registos são privados aos administradores; não existe portal de realização de provas pelos participantes nem correcção automática de respostas. As relações com a participação evitam duplicar o cadastro do trabalhador. A cópia de segurança e a recuperação da base incluem avaliações, questões, tentativas e respostas. Esta etapa não importa automaticamente folhas Excel nem implementa a avaliação 360°.
+Os registos são privados aos administradores; não existe portal de realização de provas pelos participantes nem correcção automática de respostas. As relações com a participação evitam duplicar o cadastro do trabalhador. A cópia de segurança e a recuperação da base incluem avaliações, questões, tentativas e respostas. A importação automática de folhas Excel continua a exigir uma fase própria. O módulo 360° é descrito abaixo.
+
+
+## Competências e avaliação 360°
+
+1. Em **Competências e 360° → Catálogo e funções**, crie competências e funções de referência. Cada regra define nível esperado (1–5), peso relativo da competência e validação RH com responsável e data. Pode desactivar entradas; os ciclos antigos conservam as suas regras.
+2. Crie um ciclo para um trabalhador. A função do catálogo é escolhida explicitamente: o texto `Função` do cadastro não é substituído nem convertido automaticamente. Pode associar a participação do mesmo trabalhador ou uma turma com inscrição activa.
+3. Defina momento, período, pesos dos tipos de avaliador, cobertura mínima por tipo e mínimo de colegas. Os pesos propostos são 10% autoavaliação, 40% superior, 25% colegas e 25% formador; devem somar 100% e são confirmados pelo responsável ao abrir. Tipos com peso zero não recebem avaliadores autorizados.
+4. Autorize contas individuais e confirme a identidade e o tipo de cada avaliador. Cada conta participa uma única vez por ciclo; só existe uma autoavaliação. A aplicação não deduz a identidade de uma conta a partir do nome do trabalhador.
+5. Abra o ciclo. A abertura conserva uma cópia dos nomes, descrições, níveis esperados, pesos, validações RH e configuração. Alterar o catálogo posteriormente não muda os resultados históricos. A configuração, os avaliadores e os prazos ficam fixos.
+6. Cada avaliador entra com a própria conta e utiliza **Minhas avaliações**. Pode guardar e corrigir rascunhos dentro do período. Entregar exige nota 1–5 em todas as competências; a entrega conserva a resposta. Não são enviados convites por correio electrónico.
+7. O responsável fecha o ciclo. Não há médias em tempo real, para evitar inferências a partir de entregas sucessivas. Fechar ou cancelar é definitivo; uma nova recolha exige outro ciclo.
+
+Para criar uma conta de leitura/avaliador sem privilégios administrativos:
+
+```bash
+docker compose exec backend python manage.py create_evaluator nome_do_avaliador
+```
+
+O comando pede e confirma a palavra-passe sem a mostrar e aplica os validadores de palavras-passe. Não coloque palavras-passe em comandos, ficheiros ou Git. A conta mantém as permissões de consulta existentes na plataforma e só responde aos ciclos em que foi autorizada. O comando não autoriza avaliações nem concede acesso administrativo.
+
+### Cálculo e confidencialidade
+
+Para cada competência, calcula-se a média das respostas entregues de cada tipo de avaliador e aplica-se o peso percentual desse tipo. O índice do ciclo é a média desses resultados ponderada pelos pesos relativos das competências. Não se redistribui o peso de grupos em falta.
+
+Cada tipo com peso positivo deve atingir a cobertura configurada, calculada como respostas entregues divididas pelos avaliadores autorizados desse tipo. Colegas exigem ainda **pelo menos três respostas distintas**, mesmo que a cobertura percentual já tenha sido atingida. Se faltar cobertura ou o mínimo de colegas, o resultado fica indisponível; respostas em rascunho não contam e ausência de resposta não equivale a zero.
+
+O responsável do ciclo e os superutilizadores consultam apenas resultados agregados nas páginas de gestão. As respostas e comentários individuais, bem como o histórico das suas correcções, são acessíveis na interface apenas à conta que os registou. A auditoria geral regista a operação de resposta, sem copiar notas, comentários ou motivos privados. Os comentários não são publicados nos agregados. Outros administradores não consultam ciclos que não gerem.
+
+A confidencialidade da interface não oculta a base ao administrador do computador: o SQLite e a cópia integral contêm as respostas e o seu histórico. Por isso, **Cópia de segurança** permanece disponível apenas para superutilizadores. A recuperação conserva esses dados, as autorizações e a configuração histórica dos ciclos.
+
+## Plano de desenvolvimento
+
+Um ciclo fechado com resultados divulgáveis mostra a lacuna por competência: `máximo(0, nível esperado − resultado)`. A partir de uma lacuna positiva, utilize **Planear desenvolvimento** para registar acção, responsável pela execução, prazo e, opcionalmente, formação recomendada do catálogo.
+
+Em **Desenvolvimento**, acompanhe os estados Planeada, Em curso, Concluída e Cancelada, incluindo prazos ultrapassados. Concluir ou cancelar exige data e evidência/comentário de revisão. As correcções são auditadas e gravações de uma janela desactualizada são rejeitadas. Concluir uma acção não modifica a pontuação histórica; um novo ciclo permite medir a evolução. As formações recomendadas não geram inscrições automaticamente.
+
+## Indicadores confirmados
+
+O menu **Indicadores confirmados** e a ligação no dashboard separam cinco famílias de informação, com filtros de trabalhador e período, denominadores e conciliação por participação:
+
+| Família | Regra de inclusão |
+| --- | --- |
+| Presença | Formação concluída, presenças verificadas e dias conhecidos; soma de presenças dividida pela soma dos dias |
+| Aprendizagem | Nota final presente numa participação concluída, com avaliação validada que ainda corresponde exactamente à nota e ao resultado actuais |
+| Logística e satisfação | Avaliações/reacções validadas; cada dimensão conta apenas os valores respondidos, com denominador próprio |
+| Competências | Ciclos fechados, autorizados ao utilizador e com cobertura suficiente; média dos índices históricos por ciclo |
+| Certificados | Emissão, entrega ao participante, entrega aos RH e declarações separados; valores desconhecidos apresentados à parte |
+
+O filtro temporal usa a data de início da participação ou do ciclo. Não é um relatório de entregas ocorridas no período. A média de competências é por ciclo, não por trabalhador único. Uma declaração ou um ficheiro PDF não confirma automaticamente uma entrega.
+
+Os totais são derivados das relações existentes, sem tabelas duplicadas para reproduzir folhas de resumo. Os indicadores mostram os registos excluídos/provisórios e permitem conciliá-los com a participação ou ciclo de origem. Os relatórios executivos anteriores conservam a análise histórica e os seus avisos de dados provisórios; não são apresentados como exportação dos novos indicadores confirmados.
+
+Após a migração, avaliações antigas conservam as notas e fontes, mas não recebem uma confirmação de nota inventada. Para incluí-las na aprendizagem confirmada, reveja e guarde a avaliação com estado **Validado**. Se a nota ou o resultado mudar depois, é necessária nova validação. A importação real de dados e a aceitação visual/manual no Windows permanecem fases posteriores.

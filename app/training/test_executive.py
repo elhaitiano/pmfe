@@ -100,6 +100,7 @@ class ExecutiveCentreTests(TestCase):
         self.assertEqual(self.client.get(reverse('executive_reports')).status_code,302)
 
     def test_backup_carries_database_and_report_files(self):
+        self.user.is_superuser=True; self.user.save(update_fields=["is_superuser"])
         identifier=uuid.uuid4();path=Path(self.folder.name)/'reports';path.mkdir();(path/f'{identifier}.pdf').write_bytes(b'%PDF-demo')
         database=Path(self.folder.name)/'base.sqlite3'
         with sqlite3.connect(database) as c:

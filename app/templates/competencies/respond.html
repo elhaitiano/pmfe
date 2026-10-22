@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block heading %}RESPOSTA PRIVADA 360°{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2>{{ rater.cycle.employee }} — {{ rater.get_kind_display }}</h2>
+      <p>Notas de 1 a 5. Entregar conserva a resposta e impede alterações. Comentários não são publicados nos resultados agregados.</p>
+      {% if editable %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.revision }}{{ form.revision.errors }}
+        {% for item, score, comment in form.rows %}
+        <fieldset class="border-b border-white/10 py-4">
+          <legend>{{ item.name }} · {{ item.dimension }}</legend>
+          <p>{{ item.description|linebreaksbr }}</p>
+          <label for="{{ score.id_for_label }}" class="gf-label">{{ score.label }}</label>
+          {{ score }}{{ score.errors }}
+          <label for="{{ comment.id_for_label }}" class="gf-label">{{ comment.label }}</label>
+          {{ comment }}{{ comment.errors }}
+        </fieldset>
+        {% endfor %}
+        <label for="id_reason" class="gf-label mt-4">{{ form.reason.label }}</label>
+        {{ form.reason }}{{ form.reason.errors }}
+        <button class="gf-btn mt-4" name="action" value="save">Guardar rascunho</button>
+        <button class="gf-btn alt" name="action" value="submit">Entregar resposta</button>
+      </form>
+      {% else %}
+      <p>Registo em consulta: já entregue, fora do prazo ou ciclo encerrado.</p>
+      {% for answer in responses %}
+      <article class="border-b border-white/10 py-4">
+        <h3>{{ answer.item.name }}: {{ answer.score }} /5</h3>
+        <p>{{ answer.comment|linebreaksbr }}</p>
+      </article>
+      {% empty %}
+      <p>Não existem respostas guardadas.</p>
+      {% endfor %}
+      {% endif %}
+      <details>
+        <summary>Histórico privado das gravações</summary>
+        {% for change in rater.private_history.all %}
+        <p>{{ change.created_at|date:'d/m/Y H:i' }} — {{ change.reason }}</p>
+        {% empty %}
+        <p>Sem gravações anteriores.</p>
+        {% endfor %}
+      </details>
+      <a class="gf-btn alt" href="{% url 'my_ratings' %}">Voltar</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

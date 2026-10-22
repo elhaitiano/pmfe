@@ -398,3 +398,6 @@ class AssistantGuide(models.Model):
 # Register the evaluation models with the existing training application.
 from .evaluation_models import (TrainingEvaluation, ReactionEvaluation, Exam,
                                 ExamQuestion, ExamAttempt, ExamAnswer)
+from .competency_models import (Competency, RoleProfile, RoleCompetency, EvaluationCycle,
+    CycleCompetency, CycleRater, CompetencyResponse, DevelopmentAction)
+from .competency_models import PrivateResponseRevision

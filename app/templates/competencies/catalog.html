@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block heading %}CATÁLOGO DE COMPETÊNCIAS E FUNÇÕES{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <p>O catálogo não substitui automaticamente o texto Função no cadastro. Cada ciclo conserva uma cópia das regras aprovadas quando é aberto.</p>
+      <a class="gf-btn" href="{% url 'competency_create' %}">Nova competência</a>
+      <a class="gf-btn" href="{% url 'role_create' %}">Nova função e regras</a>
+      <h2 class="font-bold text-xl">Competências</h2>
+      {% for item in competencies %}
+      <p>
+        <a class="text-secondary" href="{% url 'competency_edit' item.pk %}">{{ item.name }}</a>
+        · {{ item.dimension }} · {{ item.active|yesno:'Activa,Inactiva' }}
+      </p>
+      {% empty %}
+      <p>Crie as competências antes das regras de função.</p>
+      {% endfor %}
+      <h2 class="font-bold text-xl">Funções</h2>
+      {% for role in roles %}
+      <p>
+        <a class="text-secondary" href="{% url 'role_edit' role.pk %}">{{ role.title }}</a>
+        · {{ role.active|yesno:'Activa,Inactiva' }}
+      </p>
+      {% empty %}
+      <p>Nenhuma função de referência criada.</p>
+      {% endfor %}
+      <a class="gf-btn alt" href="{% url 'competency_index' %}">Voltar aos ciclos</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

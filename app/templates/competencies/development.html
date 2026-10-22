@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block heading %}PLANO DE DESENVOLVIMENTO{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <p>Crie acções a partir das lacunas divulgadas num ciclo 360° fechado. Concluir uma acção não altera a avaliação histórica; um novo ciclo mede a evolução.</p>
+      {% for action in actions %}
+      <article class="border-b border-white/10 py-4">
+        <h2>{{ action.item.cycle.employee }} — {{ action.item.name }}</h2>
+        <p>{{ action.action|linebreaksbr }}</p>
+        <p>{{ action.responsible }} · {{ action.due|date:'d/m/Y' }} · {{ action.state }}{% if action.overdue %} · Prazo ultrapassado{% endif %}</p>
+        <p>Formação recomendada: {{ action.course|default:'Não indicada' }}</p>
+        <p>{{ action.review_date|date:'d/m/Y' }} {{ action.review|linebreaksbr }}</p>
+        <a class="gf-btn alt" href="{% url 'development_edit' action.item_id action.pk %}">Actualizar / rever</a>
+        <a class="gf-btn alt" href="{% url 'cycle_detail' action.item.cycle_id %}">Ciclo de origem</a>
+      </article>
+      {% empty %}
+      <p>Nenhuma acção sob a sua responsabilidade.</p>
+      {% endfor %}
+      <a class="gf-btn alt" href="{% url 'competency_index' %}">Ciclos 360°</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

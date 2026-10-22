@@ -26,6 +26,9 @@ class EvidenceRecord(models.Model):
 
 
 class TrainingEvaluation(EvidenceRecord):
+    validated_grade = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    validated_result = models.CharField(max_length=30, blank=True)
+
     training = models.OneToOneField('Training', on_delete=models.PROTECT, related_name='evaluation')
     logistics = models.DecimalField('Avaliação logística /5', max_digits=3, decimal_places=2,
         null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)])

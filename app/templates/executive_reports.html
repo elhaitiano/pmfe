@@ -15,6 +15,9 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
     </p>
     <a href="{% url 'dashboard' %}?{{ query }}" class="exec-button">Voltar ao Dashboard</a>
   </section>
+  {% if user.is_staff %}
+  <p class="exec-note">Os relatórios deste centro conservam os totais históricos, incluindo dados provisórios. Consulte os <a class="text-secondary" href="{% url 'indicator_index' %}">Indicadores confirmados</a> para os denominadores de validação e os resultados 360° autorizados.</p>
+  {% endif %}
   {% include 'executive_filters.html' %}
   <section class="exec-glass-box">
     <div class="exec-panel-heading">

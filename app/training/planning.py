@@ -378,10 +378,14 @@ def attendance_excel(request,pk):
 
 
 def group_deletion_allowed(group):
+    if group.evaluation_cycles.exists():
+        return False
     return group.state in ['Planeada','Cancelada'] and not group.trainings.exists()
 
 
 def course_deletion_allowed(course):
+    if course.development_actions.exists():
+        return False
     if course.participations.exists():
         return False
     if course.groups.exists() or Training.objects.filter(group__course=course).exists():

@@ -146,6 +146,9 @@ def record_edit(request, pk, kind):
                 if not Training.objects.filter(pk=pk, version=form.cleaned_data['revision']).update(**updates):
                     return conflict()
                 obj = form.save(commit=False)
+                if kind == 'learning':
+                    obj.validated_grade = training.grade if obj.validation == 'Validado' else None
+                    obj.validated_result = training.result if obj.validation == 'Validado' else ''
                 obj.revision += 1
                 obj.save()
                 audited(request, 'UPDATE_EVALUATION', obj, before, form.cleaned_data['correction_reason'])
