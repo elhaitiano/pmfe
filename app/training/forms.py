@@ -27,15 +27,33 @@ class EmployeeForm(StyledModelForm):
         employee.source_data = dict(employee.source_data or {})
         employee.source_data.update({'Função': self.cleaned_data['function'],
                                     'Telefone 2': self.cleaned_data['phone_secondary']})
+        employee.source_data['Validação Cadastro EPAL'] = self.cleaned_data['registration_validation']
         if commit:
             employee.save()
         return employee
 
+    @property
+    def design_groups(self):
+        return [(title, [self[name] for name in names]) for title, names in [
+            ('Identificação', ['number', 'name', 'gender', 'birth_date',
+                              'identity_number', 'social_security_number', 'marital_status']),
+            ('Contactos', ['phone', 'phone_secondary', 'email']),
+            ('Dados profissionais', ['admission_date', 'company', 'direction',
+                                    'function', 'category', 'area', 'cost_center']),
+            ('Cadastro e revisão', ['registration_origin', 'review_status',
+                                   'registration_validation', 'source_row']),
+        ]]
+
     class Meta:
         model = Employee
-        fields = ['number', 'name', 'direction', 'function', 'category', 'area', 'email', 'phone', 'birth_date', 'admission_date']
+        fields = ['number', 'name', 'gender', 'birth_date', 'identity_number',
+                  'social_security_number', 'marital_status', 'phone', 'email',
+                  'admission_date', 'company', 'direction', 'function', 'category',
+                  'area', 'cost_center', 'registration_origin', 'review_status',
+                  'registration_validation', 'source_row']
         widgets = {key: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'})
                    for key in ['birth_date', 'admission_date']}
+        widgets['registration_origin'] = forms.Textarea(attrs={'rows': 2})
 
 
 class TrainingForm(StyledModelForm):

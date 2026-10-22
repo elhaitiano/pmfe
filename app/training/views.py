@@ -33,10 +33,7 @@ class LocalLoginView(LoginView):
 
 
 def employee_fields(employee):
-    return [('Categoria', employee.category), ('Direcção', employee.direction),
-            ('Área Alocada', employee.area), ('Data de Nascimento', employee.birth_date),
-            ('Data de Admissão', employee.admission_date), ('Telefone', format_phone(employee.phone)),
-            ('E-mail', employee.email)]
+    return profile_fields(employee)
 
 
 def staff_required(view):
@@ -218,13 +215,7 @@ def employee_print(request, pk):
     return render(request, 'print.html', {'employee': employee, 'trainings': rows,
         'stats': stats, 'today': timezone.localdate(), 'distribution': distribution(rows),
         'print_name': ' '.join(employee.name.split()[::max(1, len(employee.name.split()) - 1)]),
-        'print_fields': [('Nº Mec.', employee.number), ('Género', source.get('Sexo', '')),
-            ('Categoria', employee.category), ('Nº BI', source.get('Nº do BI', '')),
-            ('Função', employee.function),
-            ('Idade', f'{age} anos' if age is not None else ''),
-            ('Direcção', employee.direction), ('Tel. 1', format_phone(employee.phone)),
-            ('Antiguidade', f'{seniority} anos' if seniority is not None else ''),
-            ('Tel. 2', format_phone(source.get('Telefone 2', ''))), ('E-mail', employee.email)]})
+        'print_fields': profile_fields(employee)})
 
 
 @login_required

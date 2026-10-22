@@ -72,6 +72,12 @@ def profile_fields(employee):
     age, seniority = years_since(employee.birth_date), years_since(employee.admission_date)
     return [('N.º Mecanográfico', employee.number), ('Direcção', employee.direction), ('Função', employee.function),
         ('Categoria', employee.category), ('Antiguidade', f'{seniority} anos' if seniority is not None else ''),
-        ('N.º BI', source.get('Nº do BI', '')), ('Idade', f'{age} anos' if age is not None else ''),
-        ('Género', source.get('Sexo', '')), ('N.º Telemóvel', format_phone(employee.phone)),
-        ('E-mail', employee.email), ('Centro de Custo', employee.area)]
+        ('N.º BI', employee.identity_number), ('Idade', f'{age} anos' if age is not None else ''),
+        ('Género', employee.gender), ('N.º Telemóvel', format_phone(employee.phone)),
+        ('E-mail', employee.email), ('Centro de Custo', employee.cost_center),
+        ('Área Alocada', employee.area), ('N.º INSS', employee.social_security_number),
+        ('Estado civil', employee.marital_status), ('Empresa', employee.company),
+        ('Data de Nascimento', employee.birth_date), ('Data de Admissão', employee.admission_date),
+        ('Telefone 2', format_phone(source.get('Telefone 2', ''))),
+        ('Origem do cadastro', employee.registration_origin), ('Estado de revisão', employee.review_status),
+        ('Validação Cadastro EPAL', employee.registration_validation), ('Linha fonte EPAL', employee.source_row)]
