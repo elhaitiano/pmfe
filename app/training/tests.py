@@ -342,48 +342,33 @@ class WorkflowTests(TestCase):
 
 
 class ImportTests(TestCase):
-    def workbook(self):
-        # A read-only workbook stub; no source spreadsheet is authored by this test.
-        employee_headers = ['N.º', 'N.º Mecan', 'N.º INSS', 'Nome', 'Nascimento', 'Sexo', 'BI',
-                            'Estado', 'Telefone', 'Admissão', 'Categoria', 'Email', 'Direcção', 'Área']
-        training_headers = ['N.º Mecanográfico', 'Nome Formação', 'Data de Início', 'Data de Fim',
-                            'Duração (dias)', 'Nº Presenças', 'Nº Hora por dia', 'Área/Categoria', 'Status-Curso']
-
-        class Sheet:
-            def __init__(self, title, headers, rows):
-                self.title, self.headers, self.rows = title, headers, rows
-
-            def iter_rows(self, min_row, max_row=None, values_only=True):
-                return iter([self.headers] if max_row else self.rows)
-
-        class Workbook(dict):
-            @property
-            def sheetnames(self):
-                return list(self)
-
-            def close(self):
-                pass
-
-        return Workbook({
-            'FUNCIONÁRIOS_ EPAL': Sheet('FUNCIONÁRIOS_ EPAL', employee_headers,
-                [[1, '001', None, 'Teste', '01-01-1990', None, None, None, '', '01-01-2010', '', '', '', '']]),
-            'Formandos': Sheet('Formandos', training_headers, [
-                ['001', 'Teste formação', '2025-01-01', '2025-01-02', 2, 1, 7, 'Área', 'Concluído'],
-                ['999', 'Sem identidade', '2025-01-01', '2025-01-02', 2, 1, 7, 'Área', 'Concluído']])})
-
-    @patch('training.management.commands.import_excel.load_workbook')
-    def test_dry_run_apply_idempotence_and_unmatched(self, load):
-        load.side_effect = lambda *args, **kwargs: self.workbook()
-        with tempfile.TemporaryDirectory() as folder:
-            source, report = Path(folder) / 'source.xlsm', Path(folder) / 'report.json'
-            source.write_bytes(b'test-source-never-edited')
-            call_command('import_excel', source, report=report, stdout=StringIO())
-            self.assertFalse(Employee.objects.exists())
-            result = json.loads(report.read_text())
-            self.assertEqual(result['employees_created'], 1)
-            self.assertEqual(len(result['issues']), 1)
-            call_command('import_excel', source, report=report, apply=True, stdout=StringIO())
-            call_command('import_excel', source, report=report, apply=True, stdout=StringIO())
-            self.assertEqual(Employee.objects.count(), 1)
-            self.assertEqual(Training.objects.count(), 1)
-            self.assertEqual(source.read_bytes(), b'test-source-never-edited')
+    def test_legacy_headers_detected_and_invalid_row_blocks_entire_import(self):
+        from openpyxl import Workbook
+        from training.integrated_import import build_plan, apply_reviewed
+        book = Workbook()
+        sheet = book.active
+        sheet.title = 'FUNCIONÁRIOS_ EPAL'
+        for _ in range(10):
+            sheet.append(['Intro'])
+        sheet.append(['N.º Mecan', 'Nome', 'Nascimento', 'Função'])
+        sheet.append(['001', 'Teste', '01-01-1990', 'Operador'])
+        training = book.create_sheet('Formandos')
+        training.append(['N.º Mecanográfico', 'Nome Formação', 'Data de Início', 'Data de Fim',
+                         'Duração (dias)', 'Nº Presenças', 'Nº Hora por dia', 'Status-Curso'])
+        training.append(['001', 'Teste formação', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído'])
+        training.append(['999', 'Sem identidade', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído'])
+        plan = build_plan(book, 'legacy')
+        self.assertEqual(plan.report['employees_created'], 1)
+        self.assertEqual(plan.report['errors'], 1)
+        self.assertEqual(plan.report['sheets'][0]['header_row'], 11)
+        with self.assertRaises(ValueError):
+            apply_reviewed(book, 'legacy', plan.report['review_token'])
+        self.assertFalse(Employee.objects.exists())
+        self.assertFalse(Training.objects.exists())
+        training.delete_rows(3)
+        plan = build_plan(book, 'legacy')
+        apply_reviewed(book, 'legacy', plan.report['review_token'])
+        plan = build_plan(book, 'legacy')
+        apply_reviewed(book, 'legacy', plan.report['review_token'])
+        self.assertEqual(Employee.objects.count(), 1)
+        self.assertEqual(Training.objects.count(), 1)

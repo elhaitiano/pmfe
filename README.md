@@ -125,30 +125,34 @@ O serviço é publicado apenas em `127.0.0.1`, para acesso no próprio computado
 
 ## Importação de dados Excel
 
-A importação utiliza o comando Django `import_excel`. O ficheiro deve respeitar uma das estruturas EPAL/PROÁGUA reconhecidas pelo importador.
+Em **Administração → Preparar importação Excel**, um superutilizador pode enviar um `.xlsx` ou `.xlsm` (até 10 MB), pré-visualizar alterações e descarregar um relatório JSON. **A página apenas simula: não grava trabalhadores nem participações e não conserva o Excel enviado.** O relatório contém dados pessoais e deve ficar numa pasta privada.
 
-Coloque o ficheiro na pasta do projecto com o nome `dados.xlsx` e copie-o para o backend:
+Os cabeçalhos são detectados nas primeiras 30 linhas, incluindo cabeçalhos na primeira linha e nomes alternativos. Datas Excel numéricas ou em texto respeitam a época do ficheiro; identificadores textuais e máscaras de zeros são preservados. Zeros já perdidos numa célula numérica sem máscara não podem ser reconstruídos automaticamente e geram um aviso. Fórmulas em campos importados exigem valores confirmados, sem execução de fórmulas ou VBA.
+
+A fonte principal de cadastro é `FUNCIONARIOS`, completada por `FUNCIONARIOS_EPAL` ou `BASE_EPAL`. Empresa, centro de custo e validação podem completar lacunas a partir das participações quando os valores são consistentes. Divergências entre fontes aparecem no relatório; divergências de identidade bloqueiam a importação. `PARTICIPACOES` tem prioridade sobre `BASE_MESTRA_FORMACAO`; cópias coincidentes são conciliadas pelo ID de participação, nunca importadas duas vezes. O formato antigo `Formandos` é reconhecido quando não existe histórico integrado.
+
+O catálogo existente é consultado pelo código, sem criar nem alterar cursos. Participações sem correspondência ficam sem ligação, com aviso. Valores existentes não vazios são protegidos; uma divergência exige revisão, e células vazias não apagam dados. Participações existentes não são actualizadas automaticamente. Não são criadas turmas, provas, avaliações ou respostas 360° a partir das folhas auxiliares. O relatório identifica as folhas fora do âmbito.
+
+Para simular pelo terminal, copie o ficheiro para o backend:
 
 ```bash
 docker compose cp dados.xlsx backend:/tmp/import.xlsx
-```
-
-Execute primeiro uma **simulação sem guardar os registos**:
-
-```bash
 docker compose exec backend python manage.py import_excel /tmp/import.xlsx --report /tmp/simulacao.json
-docker compose exec backend python -m json.tool /tmp/simulacao.json
 ```
 
-Reveja as alterações e os erros indicados. Crie uma cópia de segurança antes da importação efectiva, sobretudo se a base já contém dados. Para guardar os registos válidos:
+Reveja `issues`, `changes`, `source_counts` e `totals` no relatório. `errors` deve ser zero; os avisos também devem ser avaliados. As presenças e horas históricas permanecem declaradas, sem validação automática. Uma entrega de certificado sem data documental fica como declaração e não como entrega confirmada.
+
+**Só depois da revisão e autorização para carregar a base operacional**, faça uma cópia de segurança completa no menu da aplicação. O comando de gravação exige o `review_token` do relatório aprovado:
 
 ```bash
-docker compose exec backend python manage.py import_excel /tmp/import.xlsx --apply --report /data/resultado-importacao.json
+docker compose exec backend python manage.py import_excel /tmp/import.xlsx \
+  --apply --review-token TOKEN_DO_RELATORIO_REVISTO \
+  --report /data/resultado-importacao.json
 ```
 
-Na importação integrada, o número mecanográfico identifica o técnico e o ID de participação permite reconhecer participações existentes. A reimportação conserva os resultados das participações integradas já guardadas. Dados provenientes de outro formato ou sistema de identificação exigem revisão antes da fusão.
+O token vincula a revisão ao Excel e ao estado do cadastro, catálogo e participações. Se algum destes elementos mudar, é necessária nova simulação. A gravação é transaccional: qualquer erro anula toda a operação, sem aceitar parcialmente as linhas válidas. Uma cópia SQLite é criada antes da tentativa; não substitui a cópia completa com documentos. A auditoria guarda apenas identificação da importação e contagens, sem copiar dados pessoais do relatório.
 
-Os caminhos `/tmp` e `/data` destes comandos pertencem ao contentor. Os ficheiros Excel de origem e os relatórios com dados pessoais devem permanecer fora do repositório público.
+Uma nova simulação da mesma fonte reconhece os registos já importados, sem os duplicar. Os caminhos `/tmp` e `/data` pertencem ao contentor. Os relatórios locais podem ficar em `exports/`, excluído do Git, tal como os Excel de origem.
 
 ## Certificados e documentos privados
 

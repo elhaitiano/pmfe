@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block heading %}PREPARAR IMPORTAÇÃO EXCEL{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">Simulação dos primeiros dados</h2>
+      <p>Seleccione o Excel para rever trabalhadores, participações e ligações ao catálogo. Esta página não grava dados.</p>
+      <p>As folhas repetidas são conciliadas. Valores vazios não apagam o cadastro existente. Divergências bloqueantes devem ser resolvidas antes da importação.</p>
+      <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="gf-btn" type="submit" name="output" value="html">Pré-visualizar</button>
+        <button class="gf-btn alt" type="submit" name="output" value="json">Descarregar relatório JSON</button>
+      </form>
+      <p class="text-sm text-slate-400">O relatório contém dados pessoais. Guarde-o numa pasta privada. A aplicação não conserva o Excel enviado.</p>
+    </div>
+  </section>
+  {% if report %}
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">Resultado da simulação</h2>
+      <p>{{ report.employees_created }} trabalhadores novos; {{ report.employees_updated }} cadastros a completar; {{ report.trainings_created }} participações novas; {{ report.trainings_existing }} participações já existentes.</p>
+      <p>{{ report.errors }} erros bloqueantes; {{ report.warnings }} avisos; {{ report.duplicates_reconciled }} registos entre folhas conciliados.</p>
+      {% if report.can_apply %}
+      <p>Simulação sem erros bloqueantes. Reveja os avisos e as alterações antes de autorizar a gravação.</p>
+      {% else %}
+      <p>Importação bloqueada. Corrija os erros e faça uma nova simulação.</p>
+      {% endif %}
+      <p>{{ report.source_policy }}</p>
+      <h3 class="font-bold">Totais do histórico reconhecido</h3>
+      <ul>
+        <li>Participações: {{ report.totals.participations }}</li>
+        <li>Presenças declaradas: {{ report.totals.attendance_declared }}</li>
+        <li>Horas realizadas declaradas: {{ report.totals.completed_hours_declared }}</li>
+        <li>Horas previstas: {{ report.totals.planned_hours_declared }}</li>
+        <li>Declarações de certificado: {{ report.totals.certificate_declarations }}</li>
+        <li>Entregas confirmadas: {{ report.totals.certificate_deliveries_confirmed }}</li>
+      </ul>
+      <p>As presenças e horas históricas não se tornam automaticamente indicadores confirmados. Uma declaração não comprova uma entrega.</p>
+      <details>
+        <summary>Folhas e cabeçalhos reconhecidos</summary>
+        <ul>
+          {% for item in report.sheets %}
+          <li>{{ item.sheet }} — cabeçalho na linha {{ item.header_row }}</li>
+          {% endfor %}
+        </ul>
+        <p>Folhas fora desta importação: {{ report.ignored_sheets|join:', ' }}</p>
+      </details>
+    </div>
+  </section>
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">Erros e avisos</h2>
+      {% for item in report.issues %}
+      <details>
+        <summary>{% if item.severity == 'error' %}Erro{% else %}Aviso{% endif %} — {{ item.sheet }}, linha {{ item.row|default_if_none:'—' }}: {{ item.reason }}</summary>
+        <dl>
+          {% for key, value in item.items %}
+          <dt class="font-bold">{{ key }}</dt><dd>{{ value }}</dd>
+          {% endfor %}
+        </dl>
+      </details>
+      {% empty %}
+      <p>Nenhum erro ou aviso.</p>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">Alterações propostas</h2>
+      {% for change in report.changes %}
+      <details>
+        <summary>{% if change.entity == 'employee' %}Trabalhador{% else %}Participação{% endif %} {{ change.identifier }} — {% if change.operation == 'create' %}Criar{% elif change.operation == 'update' %}Completar cadastro{% else %}Já existente{% endif %} — {{ change.source.sheet }}:{{ change.source.row }}</summary>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead>
+            <tbody>
+              {% for field, values in change.fields.items %}
+              <tr><td>{{ field }}</td><td>{{ values.before|default_if_none:'—' }}</td><td>{{ values.after|default_if_none:'—' }}</td></tr>
+              {% empty %}
+              <tr><td colspan="3">Sem alterações.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

@@ -70,3 +70,6 @@ Desktop.ini
 
 # Generated Django static assets
 app/static-collected/
+
+# Private import previews and local exports
+/exports/
