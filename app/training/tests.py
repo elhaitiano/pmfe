@@ -51,11 +51,15 @@ class WorkflowTests(TestCase):
         self.create_training()
         printed = self.client.get(reverse('employee_print', args=[employee.pk]))
         self.assertEqual(printed.context['print_name'], 'Ana Exemplo')
-        self.assertEqual([x[0] for x in printed.context['print_fields']],
-            ['Nº Mec.', 'Género', 'Categoria', 'Nº BI', 'Função', 'Idade',
-             'Direcção', 'Tel. 1', 'Antiguidade', 'Tel. 2', 'E-mail'])
+        fields = dict(printed.context['print_fields'])
+        self.assertEqual(fields['Função'], 'Operadora')
+        self.assertEqual(fields['Área Alocada'], 'CENTRO TESTE')
+        self.assertEqual(fields['Centro de Custo'], '')
+        for label in ['N.º BI', 'N.º INSS', 'Género', 'Estado civil', 'Empresa',
+                      'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
+            self.assertIn(label, fields)
         self.assertContains(printed, '924 123 456')
-        self.assertNotContains(printed, 'CENTRO TESTE')
+        self.assertContains(printed, 'CENTRO TESTE')
         self.assertContains(printed, '<th>CATEGORIA</th>', html=True)
         self.assertNotContains(printed, '<th>RESULTADO</th>')
         self.assertNotContains(printed, 'CERTIFICADO ENTREGUE')
@@ -177,7 +181,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(profile.context['stats'], printed.context['stats'])
         self.assertEqual(profile.context['distribution'], printed.context['distribution'])
         self.assertContains(printed, 'Função:')
-        self.assertNotContains(printed, 'Centro de Custo')
+        self.assertContains(printed, 'Centro de Custo')
         self.assertContains(printed, 'por confirmar')
 
     def test_profile_has_recent_five_and_history_keeps_all(self):
