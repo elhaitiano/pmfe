@@ -53,3 +53,43 @@ class TrainerRegistryTests(TestCase):
         with self.assertRaises(ProtectedError):
             trainer.delete()
         self.assertEqual(group.trainer, 'Nome histórico')
+
+
+class TrainerViewTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        self.staff = get_user_model().objects.create_user('trainer-manager', is_staff=True)
+        self.reader = get_user_model().objects.create_user('trainer-reader')
+
+    def test_access_csrf_and_registry_workflow(self):
+        from django.test import Client
+        from django.urls import reverse
+        from .models import AuditEvent
+        listing = reverse('trainer_index')
+        create = reverse('trainer_create')
+        self.assertEqual(self.client.get(listing).status_code, 302)
+        self.client.force_login(self.reader)
+        self.assertEqual(self.client.get(listing).status_code, 403)
+        self.assertEqual(self.client.post(create, {'name': 'Forbidden'}).status_code, 403)
+        self.client.force_login(self.staff)
+        self.assertContains(self.client.get(listing), 'Nenhum formador registado')
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.staff)
+        self.assertEqual(csrf_client.post(create, {'name': 'No CSRF'}).status_code, 403)
+        self.assertEqual(self.client.post(create, {'name': '', 'email': 'invalid'}).status_code, 200)
+        self.assertEqual(Trainer.objects.count(), 0)
+        response = self.client.post(create, {'name': 'Ana Teste', 'organization': 'EPAL', 'active': 'on'})
+        self.assertRedirects(response, listing)
+        trainer = Trainer.objects.get()
+        self.assertTrue(trainer.active)
+        self.assertContains(self.client.get(listing, {'q': 'Ana'}), 'Ana Teste')
+        self.assertNotContains(self.client.get(listing, {'q': 'Absent'}), 'Ana Teste')
+        response = self.client.post(reverse('trainer_edit', args=[trainer.pk]), {
+            'name': 'Ana Teste', 'organization': 'EPAL', 'email': 'ana@example.com',
+        })
+        self.assertRedirects(response, listing)
+        trainer.refresh_from_db()
+        self.assertFalse(trainer.active)
+        self.assertEqual(AuditEvent.objects.filter(action__in=['TRAINER_CREATE', 'TRAINER_UPDATE']).count(), 2)
+        self.assertContains(self.client.get(reverse('planning')), 'Formadores')
+        self.assertEqual(self.client.get(reverse('trainer_edit', args=[99999])).status_code, 404)

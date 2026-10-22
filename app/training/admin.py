@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from .models import Employee, Course, Competency, RoleProfile, AuditEvent
+from .models import Employee, Course, Competency, RoleProfile, AuditEvent, Trainer
 
 
 class PMFAdminSite(AdminSite):
@@ -30,6 +30,7 @@ class PMFAdminSite(AdminSite):
 
     def index(self, request, extra_context=None):
         steps = [
+            ('Formadores', 'Gerir o cadastro e os contactos dos formadores.', reverse('trainer_index'), Trainer.objects.count()),
             ('1. Contas e acessos', 'Crie contas individuais. Defina o nível de acesso após criar a conta.',
              reverse('admin:auth_user_changelist'), get_user_model().objects.count()),
             ('2. Trabalhadores', 'Registe o cadastro antes das inscrições ou avaliações.',

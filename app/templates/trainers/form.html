@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block heading %}{{ title|upper }}{% endblock %}
+{% block content %}
+<section class="content p-10">
+  <section class="gf-panel">
+    <div class="gf-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="gf-form-grid">
+          {% for field in form %}
+          <label for="{{ field.id_for_label }}">
+            <span class="gf-label">{{ field.label }}</span>
+            {{ field }}{{ field.errors }}
+          </label>
+          {% endfor %}
+        </div>
+        <div class="flex flex-wrap gap-3 mt-5">
+          <button class="gf-btn" type="submit">Guardar</button>
+          <a class="gf-btn alt" href="{% url 'trainer_index' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

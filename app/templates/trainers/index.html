@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block heading %}FORMADORES{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body">
+      <form method="get" class="flex flex-wrap gap-3 mb-5">
+        <input class="gf-field" name="q" value="{{ q }}" placeholder="Nome, entidade ou especialidade" aria-label="Pesquisar formadores">
+        <button class="gf-btn">Pesquisar</button>
+        <a class="gf-btn" href="{% url 'trainer_create' %}">Novo formador</a>
+        <a class="gf-btn alt" href="{% url 'planning' %}">Planeamento e grupos</a>
+      </form>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr><th class="p-3 text-left">Nome</th><th class="p-3">Entidade</th><th class="p-3">Contactos</th><th class="p-3">Especialidade</th><th class="p-3">Estado</th><th class="p-3">Grupos</th><th class="p-3">Acção</th></tr></thead>
+          <tbody>
+            {% for trainer in page %}
+            <tr class="border-b border-white/10">
+              <td class="p-3">{{ trainer.name }}</td>
+              <td class="p-3">{{ trainer.organization|default:'—' }}</td>
+              <td class="p-3">{{ trainer.email|default:'—' }}<br>{{ trainer.phone|default:'—' }}</td>
+              <td class="p-3">{{ trainer.specialty|default:'—' }}</td>
+              <td class="p-3">{{ trainer.active|yesno:'Activo,Inactivo' }}</td>
+              <td class="p-3">{{ trainer.group_count }}</td>
+              <td class="p-3"><a class="gf-btn alt" href="{% url 'trainer_edit' trainer.pk %}">Editar</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="7" class="p-3">Nenhum formador registado.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav class="flex gap-3 mt-5" aria-label="Páginas de formadores">
+        {% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}
+        <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+      </nav>
+    </div>
+  </section>
+</section>
+{% endblock %}
