@@ -12,6 +12,7 @@ from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from .forms import StyledModelForm
 from .models import Employee, Training, PrivateDocument
 from .views import staff_required, record
@@ -45,7 +46,7 @@ class DocumentForm(StyledModelForm):
         self.instance.employee = employee
         self.fields['training'].queryset = Training.objects.filter(employee=employee)
         self.fields['training'].label_from_instance = lambda row: f'{row.title} — {row.start:%d/%m/%Y} (#{row.pk})'
-        self.fields['training'].help_text = 'Obrigatória para certificados/comprovativos; deixe vazia para CV.'
+        self.fields['training'].help_text = 'Obrigatória para certificados/comprovativos; deixe vazia para CV ou Bilhete de Identidade.'
 
     def clean_file(self):
         upload = self.cleaned_data['file']
@@ -138,8 +139,11 @@ def index(request, pk):
                 path.unlink(missing_ok=True)
             raise
         messages.success(request, 'Documento privado guardado. O envio não confirma emissão ou entrega.')
+        if request.POST.get('return_to') == 'files':
+            return redirect(reverse('employee_data', args=[pk]) + '#arquivos')
         return redirect('employee_documents', pk=pk)
     return render(request, 'documents.html', {'employee': employee, 'form': form,
+        'return_to': 'files' if request.POST.get('return_to') == 'files' else '',
         'documents': employee.documents.select_related('training').all()})
 
 

@@ -7,6 +7,7 @@
     <p class="text-sm text-slate-400">Acesso reservado a administradores. Anexar um PDF não confirma emissão nem entrega de certificado.</p>
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}{{ form.non_field_errors }}
+      {% if return_to %}<input type="hidden" name="return_to" value="files">{% endif %}
       <div class="gf-form-grid mt-4">
         {% for field in form %}
         <label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}</span>

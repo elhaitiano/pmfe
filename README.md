@@ -158,7 +158,7 @@ Uma nova simulação da mesma fonte reconhece os registos já importados, sem os
 
 No histórico, os administradores encontram **Certificado e entregas** em cada participação. A emissão, a declaração do responsável, a entrega confirmada ao participante e a entrega confirmada aos RH têm campos separados. Declarações conservam origem e responsável, sem inventar datas; não aumentam o indicador de entregas confirmadas. A entrega confirmada exige a data efectiva.
 
-O acesso **Documentos privados**, na ficha ou histórico, permite anexar CV ao trabalhador e certificados/comprovativos à participação correcta. Apenas administradores podem carregar, consultar e descarregar os PDFs. Os ficheiros ficam fora dos recursos públicos, com nomes internos UUID e verificação SHA-256. O controlo do formato é básico; o conteúdo não é convertido nem executado pelo servidor.
+O acesso **Documentos privados**, na ficha ou histórico, permite anexar CV e Bilhete de Identidade ao trabalhador e certificados/comprovativos à participação correcta. Na Ficha Individual, a secção **Arquivos**, abaixo do histórico recente, permite carregar estes PDFs, consultar os arquivos activos e abrir a gestão de versões arquivadas. Esta secção não aparece na ficha impressa. Apenas administradores podem carregar, consultar e descarregar os PDFs. Os ficheiros ficam fora dos recursos públicos, com nomes internos UUID e verificação SHA-256. O controlo do formato é básico; o conteúdo não é convertido nem executado pelo servidor.
 
 Arquivar preserva o ficheiro e o histórico; reactivar exige um motivo, tal como arquivar. Anexar um comprovativo não altera automaticamente os estados do certificado. Participações com documentos associados ficam protegidas contra eliminação.
 

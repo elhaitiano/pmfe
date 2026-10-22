@@ -45,6 +45,40 @@ class DocumentTests(TestCase):
         data.update(changes)
         return self.client.post(self.url, data)
 
+    def test_identity_pdf_from_profile_and_private_card(self):
+        profile_url = reverse('employee_data', args=[self.employee.pk])
+        response = self.client.get(profile_url)
+        self.assertContains(response, 'id="arquivos"')
+        self.assertContains(response, 'Bilhete de Identidade')
+        html = response.content.decode()
+        self.assertLess(html.index('HISTÓRICO RECENTE DE FORMAÇÃO'), html.index('id="arquivos"'))
+        response = self.upload(kind='identity', return_to='files',
+            file=SimpleUploadedFile('bilhete-privado.pdf', PDF, content_type='application/pdf'))
+        self.assertRedirects(response, profile_url + '#arquivos')
+        document = PrivateDocument.objects.get()
+        self.assertIsNone(document.training_id)
+        document.full_clean()
+        self.assertContains(self.client.get(profile_url), 'bilhete-privado.pdf')
+        self.client.force_login(self.reader)
+        response = self.client.get(profile_url)
+        self.assertNotContains(response, 'bilhete-privado.pdf')
+        self.assertNotContains(response, 'name="file"')
+        self.assertEqual(self.client.get(reverse('document_download', args=[document.pk])).status_code, 403)
+        self.client.force_login(self.staff)
+        self.client.post(reverse('document_archive', args=[document.pk]),
+                         {'action': 'archive', 'reason': 'Substituído'})
+        self.assertNotContains(self.client.get(profile_url), 'bilhete-privado.pdf')
+        self.assertContains(self.client.get(self.url), 'bilhete-privado.pdf')
+
+    def test_identity_cannot_attach_to_training_and_inline_errors_preserve_return(self):
+        response = self.upload(kind='identity', training=self.training.pk, return_to='files')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="return_to"')
+        self.assertFalse(PrivateDocument.objects.exists())
+        response = self.upload(kind='certificate', return_to='files')
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(PrivateDocument.objects.exists())
+
     def test_upload_private_download_hash_and_archival(self):
         self.assertEqual(self.upload().status_code, 302)
         doc = PrivateDocument.objects.get()

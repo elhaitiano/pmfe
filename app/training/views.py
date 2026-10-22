@@ -125,10 +125,14 @@ def employee_data(request, pk=None):
             competencies.append({'training': row,
                 'percent': max(0, min(100, float(row.grade) * 5)) if row.grade is not None else None})
     groups = distribution(rows)
+    from .documents import DocumentForm
+    document_form = DocumentForm(employee=employee, prefix=None) if request.user.is_staff else None
     return render(request, 'employee_data.html', {'employee': employee, 'data_fields': fields,
         'trainings': rows[:5], 'stats': statistics(rows), 'distribution': groups, 'history_total': len(rows),
         'competencies': competencies, 'has_hours': bool(groups),
-        'unconfirmed_certificates': sum(row.certified is None for row in rows)})
+        'unconfirmed_certificates': sum(row.certified is None for row in rows),
+        'document_form': document_form,
+        'private_documents': employee.documents.filter(active=True).select_related('training') if request.user.is_staff else []})
 
 
 

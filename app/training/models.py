@@ -234,7 +234,7 @@ class PrivateDocument(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='documents')
     training = models.ForeignKey(Training, on_delete=models.PROTECT, null=True, blank=True, related_name='documents')
     kind = models.CharField('Tipo de documento', max_length=30, choices=[
-        ('cv', 'CV'), ('certificate', 'Certificado'),
+        ('cv', 'CV'), ('identity', 'Bilhete de Identidade'), ('certificate', 'Certificado'),
         ('participant_receipt', 'Comprovativo de entrega ao participante'),
         ('hr_receipt', 'Comprovativo de entrega aos RH')])
     original_name = models.CharField(max_length=200)
@@ -249,9 +249,9 @@ class PrivateDocument(models.Model):
         ordering = ['-created', '-pk']
 
     def clean(self):
-        if self.kind == 'cv' and self.training_id:
-            raise ValidationError({'training': 'O CV pertence ao trabalhador, sem participação associada.'})
-        if self.kind != 'cv' and not self.training_id:
+        if self.kind in ('cv', 'identity') and self.training_id:
+            raise ValidationError({'training': 'O CV e o Bilhete de Identidade pertencem ao trabalhador, sem participação associada.'})
+        if self.kind not in ('cv', 'identity') and not self.training_id:
             raise ValidationError({'training': 'Seleccione a participação do certificado.'})
         if self.training_id and self.training.employee_id != self.employee_id:
             raise ValidationError({'training': 'A participação pertence a outro trabalhador.'})
