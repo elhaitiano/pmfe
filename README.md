@@ -259,3 +259,23 @@ Entre os documentos Markdown, apenas o `README.md` da raiz está previsto para p
 - Existem listas diárias de presença, mas o cálculo de horas utiliza os totais de dias de presença registados.
 - A plataforma acompanha a entrega de certificados; a emissão automática a partir de um modelo ainda não está implementada.
 - Os indicadores dependem da qualidade dos registos. Os dados EPAL não validados pelos RH continuam provisórios.
+
+
+## Avaliação da formação, provas e reacção
+
+O menu **Avaliação**, disponível aos administradores, permite pesquisar uma participação existente e registar:
+
+- **Avaliação da formação:** logística numa escala explícita de 1 a 5, nota final de 0 a 20 e resultado final independentes. Valores desconhecidos permanecem vazios; concluir a formação não atribui aprovação.
+- **Reacção:** organização, conteúdo, formador e utilidade de 1 a 5, com comentários. É possível guardar uma resposta parcial, conservando vazios os itens não respondidos.
+- **Provas:** tipo diagnóstica/intermédia/final, questões de resposta textual com critérios de correcção manual, referência do manual e cotação positiva. O limiar de aprovação é configurável entre 0% e 100%; o formulário propõe 50% e o responsável deve confirmar o critério aplicável.
+- **Tentativas e respostas:** um administrador inicia a primeira tentativa. As seguintes exigem a conclusão da anterior e um motivo de autorização. Todas as tentativas permanecem no histórico.
+
+Para preparar uma prova, guarde o título e as questões. Cada gravação apresenta mais três espaços para novas questões, até ao limite de 100. Após iniciar a primeira tentativa, as questões e o critério ficam fechados; crie uma nova prova para uma versão diferente.
+
+Na correcção, registe as respostas e os pontos atribuídos. Uma pontuação vazia significa **não classificada**; zero é uma classificação explícita. Pode guardar um rascunho. **Concluir correcção** exige todas as pontuações, data, responsável e fonte documental, e conserva o resultado. A percentagem é `pontos obtidos / cotação total × 100`; a nota /20 é a percentagem dividida por cinco. A aprovação compara a percentagem sem arredondamento com o limiar registado; os ecrãs apresentam duas casas decimais.
+
+O resultado de uma tentativa **não altera automaticamente** a nota final da participação. O responsável regista essa decisão em **Avaliação e nota final**, com motivo e fonte. Isto permite distinguir provas diagnósticas, reavaliações e uma classificação final baseada em vários elementos.
+
+Os registos incluem fonte documental, data, responsável e estado **Por confirmar / Validado / Rever**. Marcar como validado exige data, responsável e fonte; não significa que a aplicação tenha verificado o documento. Correcções exigem motivo, conservam o antes/depois na auditoria e rejeitam gravações de uma janela desactualizada. Uma tentativa concluída é conservada; uma nova avaliação exige outra tentativa autorizada.
+
+Os registos são privados aos administradores; não existe portal de realização de provas pelos participantes nem correcção automática de respostas. As relações com a participação evitam duplicar o cadastro do trabalhador. A cópia de segurança e a recuperação da base incluem avaliações, questões, tentativas e respostas. Esta etapa não importa automaticamente folhas Excel nem implementa a avaliação 360°.

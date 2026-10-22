@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block heading %}AVALIAÇÃO DA PARTICIPAÇÃO{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">{{ employee }} — {{ training.title }}</h2>
+      <p>Nota final /20: {{ training.grade|default_if_none:'—' }} · Resultado: {{ training.result }}</p>
+      <p>Formação concluída não significa aprovação. Uma prova não substitui automaticamente a nota final.</p>
+      <p>Logística /5: {{ evaluation.logistics|default_if_none:'—' }} · {{ evaluation.validation|default:'Sem registo' }}</p>
+      <a class="gf-btn" href="{% url 'evaluation_edit' training.pk %}">Avaliação e nota final</a>
+      <h3 class="font-bold">Reacção do participante</h3>
+      {% if reaction %}
+      <p>Organização: {{ reaction.organization|default_if_none:'—' }} · Conteúdo: {{ reaction.content|default_if_none:'—' }} · Formador: {{ reaction.trainer|default_if_none:'—' }} · Utilidade: {{ reaction.usefulness|default_if_none:'—' }} (escala 1–5)</p>
+      <p>{{ reaction.comments|linebreaksbr }}</p>
+      <p>{{ reaction.validation }} · {{ reaction.date|date:'d/m/Y' }} · {{ reaction.evaluator }}</p>
+      {% else %}
+      <p>Sem registo de reacção.</p>
+      {% endif %}
+      <a class="gf-btn alt" href="{% url 'reaction_edit' training.pk %}">Registar / corrigir reacção</a>
+      <h3 class="font-bold">Provas</h3>
+      <a class="gf-btn" href="{% url 'exam_create' training.pk %}">Nova prova</a>
+      {% for exam in exams %}
+      <article class="border-b border-white/10 py-4 space-y-3">
+        <h4>{{ exam.title }} · {{ exam.kind }}</h4>
+        <p>Nota máxima: {{ exam.maximum }} · Aprovação: {{ exam.pass_percent }}% · {{ exam.validation }}</p>
+        {% if not exam.attempts.all %}
+        <a class="gf-btn alt" href="{% url 'exam_edit' training.pk exam.pk %}">Editar prova / questões</a>
+        {% endif %}
+        <a class="gf-btn alt" href="{% url 'attempt_create' exam.pk %}">Autorizar tentativa</a>
+        {% for attempt in exam.attempts.all %}
+        <p>
+          <a class="text-secondary" href="{% url 'attempt_edit' attempt.pk %}">Tentativa {{ attempt.number }}</a>:
+          {{ attempt.result }}
+          {% if attempt.finalized %}
+          · {{ attempt.percent|floatformat:2 }}% · {{ attempt.grade20|floatformat:2 }}/20
+          {% else %}
+          · Sem classificação final
+          {% endif %}
+        </p>
+        {% endfor %}
+      </article>
+      {% empty %}
+      <p>Nenhuma prova registada.</p>
+      {% endfor %}
+      <a class="gf-btn alt" href="{% url 'employee_detail' employee.pk %}">Histórico do trabalhador</a>
+      <a class="gf-btn alt" href="{% url 'evaluation_index' %}">Todas as participações</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

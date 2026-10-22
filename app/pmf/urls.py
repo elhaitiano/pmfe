@@ -1,8 +1,16 @@
 from django.contrib.auth import views as auth
 from django.urls import path
-from training import views, batch, dashboard, executive_views, planning, assistant, documents
+from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations
 
 urlpatterns = [
+    path('avaliacao/', evaluations.index, name='evaluation_index'),
+    path('avaliacao/<int:pk>/', evaluations.detail, name='evaluation_detail'),
+    path('avaliacao/<int:pk>/formacao/', evaluations.record_edit, {'kind': 'learning'}, name='evaluation_edit'),
+    path('avaliacao/<int:pk>/reaccao/', evaluations.record_edit, {'kind': 'reaction'}, name='reaction_edit'),
+    path('avaliacao/<int:pk>/provas/nova/', evaluations.exam_edit, name='exam_create'),
+    path('avaliacao/<int:pk>/provas/<int:exam_pk>/', evaluations.exam_edit, name='exam_edit'),
+    path('avaliacao/provas/<int:pk>/tentativas/nova/', evaluations.attempt_create, name='attempt_create'),
+    path('avaliacao/tentativas/<int:pk>/', evaluations.attempt_edit, name='attempt_edit'),
     path('funcionarios/<int:pk>/documentos/', documents.index, name='employee_documents'),
     path('documentos/<uuid:pk>/descarregar/', documents.download, name='document_download'),
     path('documentos/<uuid:pk>/estado/', documents.archive, name='document_archive'),

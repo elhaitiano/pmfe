@@ -394,3 +394,7 @@ class AssistantGuide(models.Model):
     actor = models.CharField(max_length=150, blank=True)
     class Meta:
         ordering = ['title','pk']
+
+# Register the evaluation models with the existing training application.
+from .evaluation_models import (TrainingEvaluation, ReactionEvaluation, Exam,
+                                ExamQuestion, ExamAttempt, ExamAnswer)

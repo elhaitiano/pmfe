@@ -152,6 +152,15 @@ class DocumentRecoveryTests(TransactionTestCase):
             (folder/'secret.key').write_text('test-only-key')
             user = get_user_model().objects.create_user('recovery-admin', is_staff=True)
             self.client.force_login(user)
+            from .models import TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
+            participation = Training.objects.create(employee=employee, title='Prova de recuperação',
+                start=date(2026,1,1), end=date(2026,1,1), days=1, hours_per_day=7, attendance=1)
+            TrainingEvaluation.objects.create(training=participation, logistics=4)
+            ReactionEvaluation.objects.create(training=participation, organization=5)
+            exam = Exam.objects.create(training=participation, title='Prova')
+            question = ExamQuestion.objects.create(exam=exam, number=1, prompt='P', expected_answer='R', points=10)
+            attempt = ExamAttempt.objects.create(exam=exam, number=1, authorized_by='Teste')
+            ExamAnswer.objects.create(attempt=attempt, question=question, response='Resposta preservada', awarded=8)
             snapshot = folder/'source.sqlite3'
             with sqlite3.connect(snapshot) as target: connection.connection.backup(target)
             config = SimpleNamespace(DATA_DIR=folder, DATABASES={'default': {'NAME': snapshot}})
@@ -165,6 +174,10 @@ class DocumentRecoveryTests(TransactionTestCase):
             self.assertEqual((destination/'secret.key').read_text(), 'test-only-key')
             with sqlite3.connect(destination/'pmf.sqlite3') as db:
                 self.assertEqual(db.execute('SELECT active FROM training_privatedocument').fetchone()[0], 0)
+                self.assertEqual(db.execute('SELECT response, awarded FROM training_examanswer').fetchone(), ('Resposta preservada', 8))
+                self.assertEqual(db.execute('SELECT logistics FROM training_trainingevaluation').fetchone()[0], 4)
+                self.assertEqual(db.execute('SELECT organization FROM training_reactionevaluation').fetchone()[0], 5)
+                self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(), [])
             with self.assertRaises(ValueError): restore(archive, destination)
             bad = folder/'bad.zip'
             with zipfile.ZipFile(archive) as original, zipfile.ZipFile(bad,'w') as output:

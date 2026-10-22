@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block heading %}{{ title|upper }}{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body">
+      <h2 class="text-xl font-bold">{{ training.employee }} — {{ training.title }}</h2>
+      <p>Deixe os valores desconhecidos vazios. A fonte documental e a validação não são inferidas.</p>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}{{ hidden.errors }}
+        {% endfor %}
+        <div class="gf-form-grid mt-4">
+          {% for field in form.visible_fields %}
+          <label for="{{ field.id_for_label }}">
+            <span class="gf-label">{{ field.label }}</span>
+            {{ field }}{{ field.errors }}
+            <small>{{ field.help_text }}</small>
+          </label>
+          {% endfor %}
+        </div>
+        {% if questions %}
+        <h3 class="font-bold mt-5">Questões e critérios de correcção manual</h3>
+        <p>Guarde para acrescentar mais questões (até 100). Após a primeira tentativa, as questões e o critério ficam fechados; crie uma nova prova para outra versão.</p>
+        {{ questions.management_form }}
+        {{ questions.non_form_errors }}
+        {% for question in questions %}
+        <fieldset class="border-b border-white/10 py-4">
+          <legend>Questão {{ forloop.counter }}</legend>
+          {{ question.non_field_errors }}
+          {% for hidden in question.hidden_fields %}
+          {{ hidden }}{{ hidden.errors }}
+          {% endfor %}
+          <div class="gf-form-grid">
+            {% for field in question.visible_fields %}
+            <label for="{{ field.id_for_label }}">
+              <span class="gf-label">{{ field.label }}</span>
+              {{ field }}{{ field.errors }}
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        {% endfor %}
+        {% endif %}
+        <button class="gf-btn mt-4">Guardar</button>
+        <a class="gf-btn alt" href="{% url 'evaluation_detail' training.pk %}">Voltar</a>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

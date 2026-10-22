@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block heading %}AVALIAÇÃO DA FORMAÇÃO{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body">
+      <p>Seleccione uma participação. Aprendizagem, logística e reacção são registos distintos.</p>
+      <form method="get" class="mt-4">
+        <label class="gf-label" for="evaluation-search">Trabalhador, número ou formação</label>
+        <input class="gf-field" id="evaluation-search" name="q" value="{{ q }}">
+        <button class="gf-btn mt-4">Pesquisar</button>
+      </form>
+      {% for row in page %}
+      <article class="mt-5 border-b border-white/10 pb-4">
+        <a class="text-secondary" href="{% url 'evaluation_detail' row.pk %}">
+          {{ row.employee }} — {{ row.title }} ({{ row.start|date:'d/m/Y' }})
+        </a>
+        <p>{{ row.status }} · Resultado: {{ row.result }} · Nota /20: {{ row.grade|default_if_none:'—' }}</p>
+      </article>
+      {% empty %}
+      <p class="mt-4">Nenhuma participação encontrada.</p>
+      {% endfor %}
+      <nav class="mt-5">
+        {% if page.has_previous %}
+        <a class="gf-btn alt" href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>
+        {% endif %}
+        <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}
+        <a class="gf-btn alt" href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>
+        {% endif %}
+      </nav>
+    </div>
+  </section>
+</section>
+{% endblock %}

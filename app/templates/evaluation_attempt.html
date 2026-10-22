@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block heading %}PROVA — TENTATIVA {{ attempt.number }}{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel">
+    <div class="gf-body space-y-4">
+      <h2 class="text-xl font-bold">{{ training.employee }} — {{ attempt.exam.title }}</h2>
+      <p>Autorizada por {{ attempt.authorized_by }}. {{ attempt.authorization_reason }}</p>
+      {% if attempt.finalized %}
+      <p>{{ attempt.result }} · {{ attempt.total }} / {{ attempt.maximum }} pontos · {{ attempt.percent|floatformat:2 }}% · {{ attempt.grade20|floatformat:2 }}/20</p>
+      <p>Critério: {{ attempt.threshold }}% · {{ attempt.validation }} · {{ attempt.date|date:'d/m/Y' }} · {{ attempt.evaluator }}</p>
+      <p>Fonte: {{ attempt.source|linebreaksbr }}</p>
+      <p>Tentativa concluída e conservada. Para uma nova avaliação, autorize outra tentativa com motivo.</p>
+      {% for answer in answers %}
+      <article class="border-b border-white/10 py-4">
+        <h3>{{ answer.question.number }}. {{ answer.question.prompt|linebreaksbr }}</h3>
+        <p>Critério: {{ answer.question.expected_answer|linebreaksbr }}</p>
+        <p>Resposta: {{ answer.response|linebreaksbr }}</p>
+        <p>{{ answer.awarded }} / {{ answer.question.points }} pontos</p>
+        <p>{{ answer.comment|linebreaksbr }}</p>
+      </article>
+      {% endfor %}
+      {% else %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.revision }}{{ form.revision.errors }}
+        <div class="gf-form-grid">
+          {% for field in form.metadata %}
+          <label for="{{ field.id_for_label }}">
+            <span class="gf-label">{{ field.label }}</span>
+            {{ field }}{{ field.errors }}
+          </label>
+          {% endfor %}
+        </div>
+        {% for answer, fields in form.answer_rows %}
+        <fieldset class="border-b border-white/10 py-4">
+          <legend>{{ answer.question.number }}. {{ answer.question.prompt }}</legend>
+          <p>Critério: {{ answer.question.expected_answer|linebreaksbr }}</p>
+          <p>Referência: {{ answer.question.reference }} · Cotação: {{ answer.question.points }}</p>
+          <div class="gf-form-grid">
+            {% for field in fields %}
+            <label for="{{ field.id_for_label }}">
+              <span class="gf-label">{{ field.label }}</span>
+              {{ field }}{{ field.errors }}
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        {% endfor %}
+        <p class="mt-4">Ao concluir, respostas, pontuações e critério ficam conservados. Campos vazios não são classificados como zero.</p>
+        <button class="gf-btn mt-4" name="action" value="save">Guardar rascunho</button>
+        <button class="gf-btn alt" name="action" value="finalize">Concluir correcção</button>
+      </form>
+      {% endif %}
+      <a class="gf-btn alt" href="{% url 'evaluation_detail' training.pk %}">Voltar à participação</a>
+    </div>
+  </section>
+</section>
+{% endblock %}

@@ -51,6 +51,7 @@
     </details>{% endif %}{% if user.is_staff %}
     <div class="mt-4 flex flex-wrap gap-3 text-xs no-print">
       <a class="text-primary hover:text-white" href="{% url 'certificate_edit' t.pk %}">Certificado e entregas</a>
+      <a class="text-primary hover:text-white" href="{% url 'evaluation_detail' t.pk %}">Avaliação e provas</a>
       <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Atualizar turma</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
     </div>
     {% endif %}
