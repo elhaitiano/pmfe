@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
-{% block heading %}COMPETÊNCIAS E AVALIAÇÃO 360°{% endblock %}
+{% block heading %}AVALIAÇÃO · GESTÃO DE CICLOS E COMPETÊNCIAS{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' with employee=cycle.employee %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <p>Prepare o catálogo e as regras RH, crie um ciclo, autorize as contas dos avaliadores e confirme a abertura. Apenas o responsável ou um superutilizador gere o ciclo e consulta os seus resultados agregados.</p>

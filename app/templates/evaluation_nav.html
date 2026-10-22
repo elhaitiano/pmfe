@@ -1,0 +1,7 @@
+<nav class="flex flex-wrap gap-3 mb-5" aria-label="Secções da avaliação">
+  <a class="gf-btn alt" href="{% url 'evaluation_index' %}">Formandos e avaliações</a>
+  {% if employee %}
+  <a class="gf-btn alt" href="{% url 'evaluation_profile' employee.pk %}">Mapa de competências · Visão 360°</a>
+  {% endif %}
+  <a class="gf-btn alt" href="{% url 'competency_index' %}">Gerir ciclos e competências</a>
+</nav>

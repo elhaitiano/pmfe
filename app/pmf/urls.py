@@ -1,8 +1,9 @@
 from django.contrib.auth import views as auth
 from django.urls import path
-from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations, competencies, indicators
+from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations, competencies, indicators, evaluation_profile
 
 urlpatterns = [
+    path('avaliacao/formandos/<int:pk>/360/', evaluation_profile.profile, name='evaluation_profile'),
     path('competencias/', competencies.index, name='competency_index'),
     path('competencias/catalogo/', competencies.catalog, name='competency_catalog'),
     path('competencias/nova/', competencies.catalog_edit, {'kind':'competency'}, name='competency_create'),

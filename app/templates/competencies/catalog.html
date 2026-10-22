@@ -2,6 +2,7 @@
 {% block heading %}CATÁLOGO DE COMPETÊNCIAS E FUNÇÕES{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' with employee=cycle.employee %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <p>O catálogo não substitui automaticamente o texto Função no cadastro. Cada ciclo conserva uma cópia das regras aprovadas quando é aberto.</p>

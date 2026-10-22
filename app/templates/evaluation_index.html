@@ -2,6 +2,7 @@
 {% block heading %}AVALIAÇÃO DA FORMAÇÃO{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' %}
   <section class="gf-panel">
     <div class="gf-body">
       <p>Seleccione uma participação. Aprendizagem, logística e reacção são registos distintos.</p>
@@ -10,6 +11,12 @@
         <input class="gf-field" id="evaluation-search" name="q" value="{{ q }}">
         <button class="gf-btn mt-4">Pesquisar</button>
       </form>
+      <h2 class="font-bold mt-5">Percurso do formando · Mapa de competências 360°</h2>
+      <p class="text-sm text-slate-400">Seleccione o formando para consultar o radar e a evolução. Até 30 resultados; use a pesquisa para localizar outros formandos.</p>
+      {% for person in people %}
+      <p class="mt-3"><a class="text-secondary" href="{% url 'evaluation_profile' person.pk %}">{{ person }} — Abrir visão 360°</a></p>
+      {% empty %}<p>Sem formandos encontrados.</p>{% endfor %}
+      <h2 class="font-bold mt-5">Avaliação por participação</h2>
       {% for row in page %}
       <article class="mt-5 border-b border-white/10 pb-4">
         <a class="text-secondary" href="{% url 'evaluation_detail' row.pk %}">

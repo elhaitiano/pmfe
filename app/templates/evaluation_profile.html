@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block heading %}AVALIAÇÃO · PERCURSO DO FORMANDO{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'pmf/evaluation-radar.css' %}">
+{% endblock %}
+{% block content %}
+<section id="viewAvaliacao" class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' %}
+  <section class="eval-hero">
+    <p class="text-xs text-secondary">PMF | Monitorização Pós-Formação</p>
+    <h2 class="text-2xl font-black mt-2">CENTRO DE AVALIAÇÃO DE DESEMPENHO</h2>
+    <p class="mt-3">{{ employee.name }} · N.º {{ employee.number }} · {{ employee.function|default:'Função por confirmar' }}</p>
+    <p class="text-slate-400 mt-2">Acompanhar o percurso formativo, o perfil de competências e a evolução entre avaliações.</p>
+  </section>
+  <div class="eval-grid">
+    <article class="eval-card"><h3>Formações registadas</h3><strong class="text-2xl">{{ metrics.total }}</strong></article>
+    <article class="eval-card"><h3>Nota final confirmada</h3><strong class="text-2xl">{{ metrics.learning|floatformat:2|default:'—' }}</strong><p>/20 · {{ metrics.learning_count }} notas</p></article>
+    <article class="eval-card"><h3>Presença confirmada</h3><strong class="text-2xl">{{ metrics.attendance|floatformat:1|default:'—' }}</strong><p>% · {{ metrics.attendance_count }} participações</p></article>
+    <article class="eval-card"><h3>Perfil de competências</h3><strong class="text-2xl">{{ selected.result.overall|floatformat:2|default:'—' }}</strong><p>/5 · ciclo seleccionado</p></article>
+  </div>
+  <section class="eval-panel eval-small">
+    <form method="get">
+      <div class="gf-form-grid">
+        <label for="profile-cycle"><span class="gf-label">Avaliação actual</span>
+          <select class="gf-field" id="profile-cycle" name="cycle">
+            {% for row in history %}
+            <option value="{{ row.cycle.pk }}" {% if row.cycle.pk == selected.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · {{ row.cycle.get_state_display }}</option>
+            {% empty %}<option value="">Sem ciclos disponíveis</option>{% endfor %}
+          </select>
+        </label>
+        <label for="profile-previous"><span class="gf-label">Comparar com avaliação anterior compatível</span>
+          <select class="gf-field" id="profile-previous" name="previous">
+            <option value="none">Sem comparação</option>
+            {% for row in previous_options %}
+            <option value="{{ row.cycle.pk }}" {% if row.cycle.pk == comparison.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <button class="gf-btn mt-4">Actualizar mapa</button>
+    </form>
+    <p class="text-sm text-slate-400 mt-3">A comparação exige as mesmas competências, descrições, metas e pesos. Seleccione primeiro o ciclo e actualize para listar as comparações disponíveis. Ausência de avaliação não equivale a zero.</p>
+  </section>
+  <div class="eval-layout">
+    <section class="eval-panel">
+      <div class="eval-panel-head">
+        <div><h3 class="font-bold">Mapa de Competências</h3><p class="text-sm text-slate-400">Seleccione uma competência para explorar os seus resultados.</p></div>
+        {% if radar %}
+        <div class="radar-controls" hidden data-radar-controls>
+          <button type="button" id="radarOverviewBtn" class="radar-control active">Visão geral</button>
+          <button type="button" id="radar360Btn" class="radar-control" aria-pressed="false">Visão 360°</button>
+        </div>
+        {% endif %}
+      </div>
+      <div class="eval-radar-wrap">
+        <div id="evalRadar">
+          {% if radar %}
+          <svg class="radar-svg" viewBox="0 0 440 440" role="img" aria-labelledby="radar-title radar-description">
+            <title id="radar-title">Mapa de competências de {{ employee.name }}</title>
+            <desc id="radar-description">Escala 0 a 5. Eixos numerados pela lista. Verde: actual; azul: anterior; tracejado: nível esperado. Valores exactos na tabela abaixo.</desc>
+            {% for ring in radar.rings %}<polygon points="{{ ring }}" class="profile-radar-ring"/>{% endfor %}
+            {% for axis in radar.axes %}
+            <line x1="220" y1="220" x2="{{ axis.x }}" y2="{{ axis.y }}" class="profile-radar-axis" data-axis="{{ axis.number }}"/>
+            <text x="{{ axis.lx }}" y="{{ axis.ly }}" text-anchor="middle" dominant-baseline="middle" class="profile-radar-label">{{ axis.number }}</text>
+            {% endfor %}
+            <polygon points="{{ radar.target }}" class="profile-radar-target"/>
+            {% if radar.previous %}<polygon points="{{ radar.previous }}" class="profile-radar-previous"/>{% endif %}
+            {% if radar.current %}<polygon points="{{ radar.current }}" class="radar-area profile-radar-current"/>{% endif %}
+            {% for axis in radar.axes %}
+            {% if axis.dx != None %}<circle cx="{{ axis.dx }}" cy="{{ axis.dy }}" r="4" class="profile-radar-dot" data-axis="{{ axis.number }}"><title>{{ axis.name }}</title></circle>{% endif %}
+            {% endfor %}
+          </svg>
+          <p class="text-sm text-center">Verde: actual · Azul: anterior · Tracejado: meta /5</p>
+          {% else %}
+          <div class="eval-empty">{% if items %}São necessárias pelo menos três competências para um radar. Consulte os valores na tabela.{% else %}Sem competências avaliadas para representar. Prepare um ciclo; nenhum valor demonstrativo é acrescentado.{% endif %}</div>
+          {% endif %}
+          {% if selected and not selected.result.available %}<p class="eval-empty">{{ selected.result.reason }} O mapa não contém notas não divulgáveis.</p>{% endif %}
+        </div>
+        <div id="evalCompetencies" class="comp-list">
+          <div id="compDetail" class="comp-detail" role="status">Seleccione uma competência ou active Visão 360° para percorrer as dimensões.</div>
+          {% for item in items %}
+          <button type="button" class="comp-row profile-comp" data-competency="{{ forloop.counter }}" aria-pressed="false">
+            <span>{{ forloop.counter }}. {{ item.name }}</span><strong>{{ item.score|floatformat:2|default:'—' }} /5</strong>
+            <span class="comp-meta">Meta {{ item.expected }} /5 · Anterior {{ item.previous|floatformat:2|default:'—' }}</span>
+            <span class="profile-comp-description">{{ item.description }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    <div class="space-y-5">
+      <section class="eval-panel eval-small"><h3 class="font-bold">Pontos Fortes</h3>
+        {% for item in strengths %}<p class="strength-item">{{ item.name }} · {{ item.score|floatformat:2 }}/5</p>{% empty %}<p class="eval-empty">Sem resultados confirmados que atinjam a meta.</p>{% endfor %}
+      </section>
+      <section class="eval-panel eval-small"><h3 class="font-bold">Áreas a Desenvolver</h3>
+        {% for item in gaps %}<p class="gap-item">{{ item.name }} · Lacuna {{ item.gap|floatformat:2 }}</p><a class="text-secondary" href="{% url 'development_create' item.id %}">Planear desenvolvimento</a>{% empty %}<p class="eval-empty">Sem lacunas confirmadas disponíveis.</p>{% endfor %}
+      </section>
+      <section class="eval-panel eval-small"><h3 class="font-bold">Estado da Avaliação</h3>
+        {% if selected %}<p>Ciclo #{{ selected.cycle.pk }} · {{ selected.cycle.get_state_display }} · {{ selected.cycle.moment }}</p><a class="text-secondary" href="{% url 'cycle_detail' selected.cycle.pk %}">Consultar ciclo e evidências</a>{% else %}<p class="eval-empty">Sem ciclo sob a sua responsabilidade para este formando.</p>{% endif %}
+      </section>
+    </div>
+  </div>
+  <section class="eval-panel eval-small">
+    <h3 class="font-bold">Evolução por competência</h3>
+    <div class="overflow-x-auto"><table class="w-full text-sm">
+      <thead><tr><th class="p-3 text-left">Competência</th><th>Anterior /5</th><th>Actual /5</th><th>Variação</th><th>Meta /5</th></tr></thead>
+      <tbody>{% for item in items %}<tr><td class="p-3">{{ item.name }}</td><td>{{ item.previous|floatformat:2|default:'—' }}</td><td>{{ item.score|floatformat:2|default:'—' }}</td><td>{{ item.delta|floatformat:2|default:'—' }}</td><td>{{ item.expected }}</td></tr>{% empty %}<tr><td colspan="5">Sem avaliações disponíveis.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  <section class="eval-panel eval-small">
+    <h3 class="font-bold">Percurso formativo e avaliações</h3>
+    {% for training in trainings %}
+    <article class="border-b border-white/10 py-4">
+      <a class="text-secondary" href="{% url 'evaluation_detail' training.pk %}">{{ training.start|date:'d/m/Y' }} — {{ training.title }}</a>
+      <p>{{ training.status }} · Nota registada {{ training.grade|default_if_none:'—' }}/20 · {{ training.result }}</p>
+    </article>
+    {% empty %}<p>Sem participações registadas.</p>{% endfor %}
+    <h4 class="font-bold mt-4">Momentos de avaliação</h4>
+    {% for row in history %}<p><a class="text-secondary" href="?cycle={{ row.cycle.pk }}">{{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · #{{ row.cycle.pk }}</a> — {{ row.result.overall|floatformat:2|default:'Sem resultado divulgável' }}</p>{% empty %}<p>Sem ciclos disponíveis.</p>{% endfor %}
+  </section>
+</section>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'pmf/evaluation-radar.js' %}" defer></script>{% endblock %}

@@ -283,7 +283,7 @@ Os registos são privados aos administradores; não existe portal de realizaçã
 
 ## Competências e avaliação 360°
 
-1. Em **Competências e 360° → Catálogo e funções**, crie competências e funções de referência. Cada regra define nível esperado (1–5), peso relativo da competência e validação RH com responsável e data. Pode desactivar entradas; os ciclos antigos conservam as suas regras.
+1. Em **Avaliação → Gerir ciclos e competências → Catálogo e funções**, crie competências e funções de referência. Cada regra define nível esperado (1–5), peso relativo da competência e validação RH com responsável e data. Pode desactivar entradas; os ciclos antigos conservam as suas regras.
 2. Crie um ciclo para um trabalhador. A função do catálogo é escolhida explicitamente: o texto `Função` do cadastro não é substituído nem convertido automaticamente. Pode associar a participação do mesmo trabalhador ou uma turma com inscrição activa.
 3. Defina momento, período, pesos dos tipos de avaliador, cobertura mínima por tipo e mínimo de colegas. Os pesos propostos são 10% autoavaliação, 40% superior, 25% colegas e 25% formador; devem somar 100% e são confirmados pelo responsável ao abrir. Tipos com peso zero não recebem avaliadores autorizados.
 4. Autorize contas individuais e confirme a identidade e o tipo de cada avaliador. Cada conta participa uma única vez por ciclo; só existe uma autoavaliação. A aplicação não deduz a identidade de uma conta a partir do nome do trabalhador.
@@ -332,3 +332,12 @@ O filtro temporal usa a data de início da participação ou do ciclo. Não é u
 Os totais são derivados das relações existentes, sem tabelas duplicadas para reproduzir folhas de resumo. Os indicadores mostram os registos excluídos/provisórios e permitem conciliá-los com a participação ou ciclo de origem. Os relatórios executivos anteriores conservam a análise histórica e os seus avisos de dados provisórios; não são apresentados como exportação dos novos indicadores confirmados.
 
 Após a migração, avaliações antigas conservam as notas e fontes, mas não recebem uma confirmação de nota inventada. Para incluí-las na aprendizagem confirmada, reveja e guarde a avaliação com estado **Validado**. Se a nota ou o resultado mudar depois, é necessária nova validação. A importação real de dados e a aceitação visual/manual no Windows permanecem fases posteriores.
+
+
+### Avaliação — mapa de competências e percurso do formando
+
+O mapa encontra-se dentro de **Avaliação**, sem entrada 360° independente na navegação principal. Seleccione um formando para abrir o **Centro de Avaliação de Desempenho**: radar de competências, pontos fortes, áreas a desenvolver, tabela de evolução, participações e momentos de avaliação. A avaliação de uma participação também permite abrir este perfil.
+
+O radar utiliza a apresentação original do centro de avaliação e os resultados reais dos ciclos autorizados ao utilizador. Verde representa o ciclo seleccionado, azul uma avaliação anterior compatível e o tracejado o nível esperado, sempre na escala explícita /5. **Visão 360°** percorre as competências; pode parar a exploração ou seleccionar uma dimensão directamente. A tabela permanece disponível sem JavaScript. Com movimento reduzido, o avanço faz-se manualmente.
+
+A comparação só inclui ciclos anteriores fechados com a mesma função de referência, competências, descrições, níveis esperados e pesos. Valores ausentes ou não divulgáveis não se tornam zero; não se geram notas demonstrativas. Com menos de três competências, apresentam-se os valores em tabela, sem inventar eixos para completar o radar. O percurso de formação e as notas /20 permanecem separados das competências /5.

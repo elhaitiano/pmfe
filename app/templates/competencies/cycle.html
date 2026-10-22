@@ -2,6 +2,7 @@
 {% block heading %}CICLO 360° #{{ cycle.pk }}{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' with employee=cycle.employee %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <h2 class="text-xl font-bold">{{ cycle.employee }} — {{ cycle.moment }}</h2>

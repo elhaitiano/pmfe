@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from .forms import StyledModelForm
-from .models import Training, TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
+from .models import Employee, Training, TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
 from .views import staff_required, record
 
 EVIDENCE = ['date', 'evaluator', 'source', 'validation']
@@ -108,7 +108,10 @@ def index(request):
     if query:
         rows = rows.filter(Q(title__icontains=query) | Q(employee__name__icontains=query) |
                            Q(employee__number__icontains=query))
-    return render(request, 'evaluation_index.html', {'page': Paginator(rows, 30).get_page(request.GET.get('page')), 'q': query})
+    people = Employee.objects.all()
+    if query:
+        people = people.filter(Q(name__icontains=query) | Q(number__icontains=query))
+    return render(request, 'evaluation_index.html', {'people': people[:30], 'page': Paginator(rows, 30).get_page(request.GET.get('page')), 'q': query})
 
 
 @login_required

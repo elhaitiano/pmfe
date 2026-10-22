@@ -44,9 +44,7 @@
         {% endif %}
         <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'employee_data' or request.resolver_match.url_name == 'employee_data_select' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% if employee %}{% url 'employee_data' employee.pk %}{% else %}{% url 'employee_data_select' %}{% endif %}" id="navFicha"><span class="material-symbols-outlined">person</span>Ficha Individual</a>{% if user.is_staff %}<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'assistant_admin' %}"><span class="material-symbols-outlined">support_agent</span>Administrar assistente</a>{% endif %}
         {% if user.is_staff %}
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'competency_index' %}">
-          <span class="material-symbols-outlined">psychology</span>Competências e 360°
-        </a>
+
         <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'development_index' %}">
           <span class="material-symbols-outlined">trending_up</span>Desenvolvimento
         </a>

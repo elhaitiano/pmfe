@@ -1,0 +1,76 @@
+/* Uses the original evaluation layout and palette already in platform-original.css. */
+#viewAvaliacao [data-radar-controls][hidden] {
+  display: none;
+}
+#viewAvaliacao .radar-svg {
+  max-width: 440px;
+  overflow: visible;
+}
+#viewAvaliacao .profile-radar-ring {
+  fill: none;
+  stroke: rgba(173, 199, 255, .18);
+  stroke-width: 1;
+}
+#viewAvaliacao .profile-radar-axis {
+  stroke: rgba(173, 199, 255, .25);
+}
+#viewAvaliacao .profile-radar-axis.active {
+  stroke: #fff;
+  stroke-width: 2;
+}
+#viewAvaliacao .profile-radar-label {
+  fill: #adc7ff;
+  font-size: 12px;
+}
+#viewAvaliacao .profile-radar-target {
+  fill: none;
+  stroke: #e6bc68;
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+#viewAvaliacao .profile-radar-previous {
+  fill: rgba(93, 142, 234, .08);
+  stroke: #5d8eea;
+  stroke-width: 2;
+}
+#viewAvaliacao .profile-radar-current {
+  fill: rgba(65, 228, 192, .18);
+  stroke: #41e4c0;
+  stroke-width: 2;
+}
+#viewAvaliacao .profile-radar-dot {
+  fill: #41e4c0;
+}
+#viewAvaliacao .profile-radar-dot.active {
+  stroke: white;
+  stroke-width: 3;
+}
+#viewAvaliacao .profile-comp {
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+#viewAvaliacao .profile-comp:focus-visible,
+#viewAvaliacao .radar-control:focus-visible {
+  outline: 2px solid #41e4c0;
+  outline-offset: 3px;
+}
+#viewAvaliacao .profile-comp-description {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: #adc7ff;
+}
+#viewAvaliacao .profile-comp.active {
+  background: rgba(65, 228, 192, .1);
+}
+#viewAvaliacao td,
+#viewAvaliacao th {
+  padding: 12px;
+  text-align: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  #viewAvaliacao .radar-svg,
+  #viewAvaliacao .eval-card {
+    transition: none;
+  }
+}
