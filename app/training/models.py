@@ -43,6 +43,17 @@ class Employee(models.Model):
 
 
 class Training(models.Model):
+    course = models.ForeignKey('Course', on_delete=models.PROTECT, null=True, blank=True,
+        related_name='participations', verbose_name='Acção do catálogo')
+    plan_status = models.CharField('Status do plano', max_length=30, default='Por confirmar',
+        choices=[(x, x) for x in ['Por confirmar', 'No Plano', 'Fora do Plano']])
+    source_course_code = models.CharField('Código da formação na origem', max_length=80, blank=True)
+    historical_name = models.CharField('Nome histórico Pilar 3B', max_length=250, blank=True)
+    identity_quality = models.CharField('Qualidade da identidade', max_length=200, blank=True)
+    matching_method = models.CharField('Método de correspondência', max_length=250, blank=True)
+    source_row = models.PositiveIntegerField('Linha fonte Pilar 3B', null=True, blank=True,
+        validators=[MinValueValidator(1)])
+
     group = models.ForeignKey('TrainingGroup', on_delete=models.PROTECT, null=True, blank=True, related_name='trainings')
     attendance_confirmed = models.BooleanField('Presenças verificadas (incluindo zero)', default=False)
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='trainings')
@@ -53,8 +64,8 @@ class Training(models.Model):
     location = models.CharField('Local da formação', max_length=200, blank=True)
     start = models.DateField('Data de início')
     end = models.DateField('Data de fim')
-    days = models.PositiveIntegerField('Duração (dias)', validators=[MinValueValidator(1)])
-    hours_per_day = models.DecimalField('Horas por dia', max_digits=4, decimal_places=2,
+    days = models.PositiveIntegerField('Duração (dias)', null=True, blank=True, validators=[MinValueValidator(1)])
+    hours_per_day = models.DecimalField('Horas por dia', max_digits=4, decimal_places=2, null=True, blank=True,
         validators=[MinValueValidator(Decimal('0.5')), MaxValueValidator(24)])
     attendance = models.PositiveIntegerField('N.º de presenças')
     grade = models.DecimalField('Média final /20', max_digits=4, decimal_places=2,
@@ -73,6 +84,8 @@ class Training(models.Model):
     class Meta:
         ordering = ['-start', '-pk']
         constraints = [
+            models.UniqueConstraint(fields=['group', 'employee'], condition=models.Q(group__isnull=False),
+                name='unique_group_employee_training'),
             models.CheckConstraint(condition=models.Q(days__gte=1), name='training_positive_days'),
             models.CheckConstraint(condition=models.Q(attendance__lte=models.F('days')), name='training_attendance'),
             models.CheckConstraint(condition=models.Q(end__gte=models.F('start')), name='training_dates'),
@@ -81,7 +94,23 @@ class Training(models.Model):
         ]
 
     def clean(self):
+        super().clean()
         errors = {}
+        if self.group_id:
+            if self.course_id and self.course_id != self.group.course_id:
+                errors['course'] = 'A acção deve corresponder ao catálogo da turma.'
+            if self.days is None or self.hours_per_day is None:
+                errors['days'] = 'Uma participação de turma exige duração conhecida.'
+            if not Enrollment.objects.filter(group_id=self.group_id, employee_id=self.employee_id, state='Activa').exists():
+                errors['group'] = 'A participação exige uma inscrição activa do mesmo formando nesta turma.'
+        if self.pk:
+            linked = Enrollment.objects.filter(training_id=self.pk).first()
+            if linked and (linked.employee_id != self.employee_id or linked.group_id != self.group_id):
+                errors['employee'] = 'Não pode alterar a identidade ou turma de uma participação inscrita.'
+            original = type(self).objects.filter(pk=self.pk).values_list('source_key', flat=True).first()
+            if original and original != self.source_key:
+                errors['source_key'] = 'O identificador histórico não pode ser alterado.'
+
         if self.certified is True and not self.certificate_delivery_date:
             errors['certificate_delivery_date'] = 'Indique a data efectiva da entrega.'
         if self.certificate_delivery_date and self.certified is not True:
@@ -111,17 +140,39 @@ class Training(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    def save(self, *args, **kwargs):
+        if self.group_id and self.course_id and self.group.course_id != self.course_id:
+            raise ValidationError({'course': 'A acção deve corresponder à turma.'})
+        if self.pk:
+            linked = Enrollment.objects.filter(training_id=self.pk).first()
+            if linked and (linked.employee_id != self.employee_id or linked.group_id != self.group_id):
+                raise ValidationError('A participação não pode mudar de formando ou turma após inscrição.')
+            original = type(self).objects.filter(pk=self.pk).values_list('source_key', flat=True).first()
+            if original and original != self.source_key:
+                raise ValidationError('O identificador histórico não pode ser alterado.')
+        return super().save(*args, **kwargs)
+
+    @property
+    def participation_id(self):
+        return (self.source_key or '').removeprefix('pilar3b:')
+
+    @property
+    def attendance_label(self):
+        return 'Verificadas' if self.attendance_confirmed else 'Por confirmar'
+
     @property
     def completed_hours(self):
+        if self.hours_per_day is None:
+            return None
         return self.attendance * self.hours_per_day
 
     @property
     def planned_hours(self):
-        return self.days * self.hours_per_day
+        return self.days * self.hours_per_day if self.days is not None and self.hours_per_day is not None else None
 
     @property
     def absences(self):
-        return self.days - self.attendance if self.status in ('Concluído', 'Desistência') else None
+        return self.days - self.attendance if self.days is not None and self.status in ('Concluído', 'Desistência') and (self.attendance > 0 or self.attendance_confirmed) else None
 
     @property
     def certificate_label(self):
@@ -129,7 +180,7 @@ class Training(models.Model):
 
     @property
     def attendance_percent(self):
-        if not self.days or self.status == 'Planeado':
+        if not self.days or self.status == 'Planeado' or (self.attendance == 0 and not self.attendance_confirmed):
             return None
         from decimal import ROUND_HALF_UP
         return (Decimal(self.attendance) * 100 / self.days).quantize(Decimal('.1'), rounding=ROUND_HALF_UP)
@@ -159,14 +210,16 @@ class ExecutiveReport(models.Model):
 
 
 class Course(models.Model):
+    validation_status = models.CharField('Validação do catálogo', max_length=30, default='Por confirmar',
+        choices=[(x, x) for x in ['Por confirmar', 'Validado', 'Rever']])
     code = models.CharField('Código da formação', max_length=40, blank=True,
         help_text='Identificador do catálogo, independente do título. Pode ficar vazio enquanto não estiver confirmado.')
     key = models.CharField(max_length=1000, unique=True, editable=False)
     title = models.CharField('Acção de formação', max_length=1000)
     area = models.CharField('Área / Categoria', max_length=200, blank=True)
     contents = models.TextField('Conteúdos / Objectivos', blank=True)
-    default_days = models.PositiveIntegerField('Dias previstos', default=1, validators=[MinValueValidator(1), MaxValueValidator(366)])
-    default_hours = models.DecimalField('Horas por dia', max_digits=4, decimal_places=2, default=7, validators=[MinValueValidator(Decimal('.5')), MaxValueValidator(24)])
+    default_days = models.PositiveIntegerField('Dias previstos', default=1, null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(366)])
+    default_hours = models.DecimalField('Horas por dia', max_digits=4, decimal_places=2, default=7, null=True, blank=True, validators=[MinValueValidator(Decimal('.5')), MaxValueValidator(24)])
     active = models.BooleanField('Disponível no catálogo', default=True)
     next_group = models.PositiveIntegerField(default=1)
     aliases = models.JSONField(default=list, blank=True)
@@ -241,6 +294,19 @@ class Enrollment(models.Model):
     class Meta:
         ordering = ['employee__name','employee__number','pk']
         constraints = [models.UniqueConstraint(fields=['group','employee'], name='unique_group_employee')]
+
+    def clean(self):
+        super().clean()
+        if self.training_id:
+            training = self.training
+            if training.employee_id != self.employee_id or training.group_id != self.group_id:
+                raise ValidationError({'training': 'A participação deve pertencer ao mesmo formando e à mesma turma.'})
+            if self.state != 'Activa':
+                raise ValidationError({'state': 'Uma inscrição com participação deve conservar o estado activo; registe a desistência na participação.'})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super().save(*args, **kwargs)
 
 
 class AssistantGuide(models.Model):

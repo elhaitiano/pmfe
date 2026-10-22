@@ -47,8 +47,8 @@ def executive_data(rows, employees, year=''):
     else:
         timeline.update({str(y): Decimal(0) for y in sorted({r.start.year for r in rows})})
     for row in rows:
-        areas[row.area or 'Área por confirmar'] += row.completed_hours
-        timeline[months[row.start.month - 1] if year else str(row.start.year)] += row.completed_hours
+        areas[row.area or 'Área por confirmar'] += (row.completed_hours or Decimal(0))
+        timeline[months[row.start.month - 1] if year else str(row.start.year)] += (row.completed_hours or Decimal(0))
     by_direction = {}
     for person in employees:
         label = person.direction or 'Direcção por confirmar'
@@ -59,7 +59,7 @@ def executive_data(rows, employees, year=''):
         item = by_direction[label]
         if row.employee_id in present:
             item['present'].add(row.employee_id)
-        item['hours'] += row.completed_hours
+        item['hours'] += (row.completed_hours or Decimal(0))
         item['certificates'] += row.certified is True
     directions = [{'label': label, 'total': x['total'], 'present': len(x['present']),
                    'coverage': len(x['present']) * 100 / x['total'], 'hours': x['hours'], 'certificates': x['certificates']}

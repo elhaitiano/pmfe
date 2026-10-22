@@ -5,6 +5,10 @@ ANÁLISE EXECUTIVA{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}">
 {% endblock %}
 {% block content %}
+{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
+<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
+{% endif %}
+
 <div class="executive">
   <div class="exec-hero">
     <div class="exec-badge-live">

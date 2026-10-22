@@ -6,14 +6,17 @@ from django.utils import timezone
 def statistics(rows):
     rows = list(rows)
     attended = [row for row in rows if row.status != 'Planeado']
-    days = sum(row.days for row in attended)
-    presences = sum(row.attendance for row in attended)
+    measurable = [row for row in attended if row.days is not None and (row.attendance > 0 or row.attendance_confirmed)]
+    days = sum(row.days for row in measurable)
+    presences = sum(row.attendance for row in measurable)
     grades = [row.grade for row in rows if row.grade is not None]
     attendance = (Decimal(presences) * 100 / days).quantize(Decimal('.1'), rounding=ROUND_HALF_UP) if days else None
-    return {'total': len(rows), 'hours': sum((row.completed_hours for row in rows), Decimal(0)),
-        'planned_hours': sum((row.planned_hours for row in rows), Decimal(0)),
+    return {'total': len(rows), 'hours': sum((row.completed_hours for row in rows if row.completed_hours is not None), Decimal(0)),
+        'planned_hours': sum((row.planned_hours for row in rows if row.planned_hours is not None), Decimal(0)),
         'attendance': attendance, 'attendance_days': days, 'presences': presences,
-        'attendance_provisional': any(row.status in ('Em Curso', 'Por confirmar') for row in attended),
+        'attendance_provisional': any(row.status in ('Em Curso', 'Por confirmar') or not row.attendance_confirmed or row.days is None for row in attended),
+        'unknown_duration_count': sum(row.days is None or row.hours_per_day is None for row in rows),
+        'unconfirmed_attendance_count': sum(not row.attendance_confirmed for row in attended),
         'certificates': sum(row.certified is True for row in rows),
         'certificates_pending': sum(row.certified is None for row in rows),
         'certificates_not_delivered': sum(row.certified is False for row in rows),
@@ -28,7 +31,7 @@ def distribution(rows):
     for row in rows:
         label = row.area or 'Área por confirmar'
         item = grouped.setdefault(label, {'hours': Decimal(0), 'count': 0})
-        item['hours'] += row.completed_hours
+        item['hours'] += row.completed_hours or Decimal(0)
         item['count'] += 1
     total = sum((x['hours'] for x in grouped.values()), Decimal(0))
     if not total:

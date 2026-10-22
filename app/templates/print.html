@@ -188,7 +188,7 @@
                   <span class="period-dates">{{ t.start|date:'d/m/y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/y' }}</span>
                 </td>
                 <td>
-                  {{ t.completed_hours|floatformat:1 }}
+                  {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
                 </td>
                 <td>
                   {% if t.attendance_percent is not None %}
@@ -205,7 +205,10 @@
             </tbody>
           </table>
         </div>
-        <div class="final-block">
+        {% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
+<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
+{% endif %}
+<div class="final-block">
           <div class="signature">
             <div class="signature-line">
             </div>

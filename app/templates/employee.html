@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block heading %}
 HISTÓRICO DO(A) FORMANDO(A){% endblock %}{% block content %}
+{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
+<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
+{% endif %}
+
 <section class="content p-10 space-y-6" id="viewHistorico">
   <section class="glass rounded-xl p-6 grid grid-cols-[auto_1fr_auto] gap-6 items-center">
     <div class="profile-photo-wrap">

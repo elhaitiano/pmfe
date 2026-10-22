@@ -44,4 +44,5 @@ class EmployeeExcelMigrationTests(TransactionTestCase):
             self.assertEqual(restored.source_data['Nº BI'], '000456LA045')
             self.assertEqual(restored.source_data['Outra coluna'], 'preservar')
         finally:
-            MigrationExecutor(connection).migrate(after)
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes())

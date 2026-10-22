@@ -1,4 +1,5 @@
 """Offline vector PDF reports. All prose is derived from the selected data."""
+from decimal import Decimal
 import io, math
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -103,6 +104,8 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     if data['selected'].get('area') or data['selected'].get('status'):
         story.append(para('Filtros adicionais: área '+(data['selected'].get('area') or 'Todas')+'; situação '+(data['selected'].get('status') or 'Todas')+'.'))
     story.extend([Spacer(1,8),para('1. Síntese executiva','ExecHeading')])
+    if data['stats'].get('unknown_duration_count') or data['stats'].get('unconfirmed_attendance_count'):
+        story.append(para('Totais provisórios: existem durações incompletas ou presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.'))
     for text in data['insights']:story.append(para(text))
     cards=[]
     for item in data['kpis']:
@@ -134,7 +137,7 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.extend([PageBreak(),para('4. Actividades e turmas do período','ExecHeading')])
     editions={}
     for row in data['rows']:
-        key=tuple(getattr(row,f) for f in EDITION_FIELDS);item=editions.setdefault(key,{'row':row,'count':0,'hours':0});item['count']+=1;item['hours']+=row.completed_hours
+        key=tuple(getattr(row,f) for f in EDITION_FIELDS);item=editions.setdefault(key,{'row':row,'count':0,'hours':0});item['count']+=1;item['hours']+=(row.completed_hours or Decimal(0))
     story.append(table(['Formação / Formador(a)','Período','Inscrições','Horas de participantes'],[[x['row'].title+' / '+(x['row'].trainer or 'Por confirmar'),f"{x['row'].start:%d/%m/%y} - {x['row'].end:%d/%m/%y}",str(x['count']),fmt(x['hours'])] for x in editions.values()],[WIDTH*.48,WIDTH*.24,WIDTH*.12,WIDTH*.16]))
     story.extend([Spacer(1,12),para('5. Entregas de certificados datadas no período','ExecHeading'),para('Lista por data efectiva de entrega, independente da data de início da formação. Mantém os filtros de direcção, área e situação.')])
     story.append(table(['Técnico / N.º mecanográfico','Formação','Entrega / Referência'],[[r.employee.name+' / '+r.employee.number,r.title,f"{r.certificate_delivery_date:%d/%m/%y} / "+(r.certificate_reference or 'Sem referência')] for r in data['deliveries']],[WIDTH*.36,WIDTH*.4,WIDTH*.24]))

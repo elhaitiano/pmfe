@@ -10,6 +10,9 @@
       <form method="post" id="trainingForm">
         {% csrf_token %}
         {{ form.non_field_errors }}
+        {% if form.instance.participation_id %}
+        <p class="text-xs text-slate-400">ID de origem: {{ form.instance.participation_id }}</p>
+        {% endif %}
         {% for hidden in form.hidden_fields %}
         {{ hidden }}{% endfor %}
         <div class="p-4 rounded-2xl bg-black/15 border border-white/10">

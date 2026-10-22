@@ -6,6 +6,10 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
 <link rel="stylesheet" href="{% static 'pmf/ficha-original.css' %}">
 {% endblock %}
 {% block content %}
+{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
+<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
+{% endif %}
+
 <section id="viewFicha" class="content p-10 space-y-6 ficha-view">
   {% if employee %}
   <div class="institutional-header">
@@ -232,7 +236,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ t.start|date:'d/m/y' }} – {{ t.end|date:'d/m/y' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-primary">
-                  {{ t.completed_hours|floatformat:1 }}
+                  {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-slate-200">
                   {{ t.grade|default_if_none:'—' }}
@@ -257,7 +261,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
   {% for c in competencies %}
   <template id="competency-{{ forloop.counter }}">
   <div class="tt-grid">
-    <span class="tt-label">Nota</span><span class="tt-value">{% if c.training.grade is not None %}{{ c.training.grade|floatformat:1 }}/20{% else %}Sem nota{% endif %}</span><span class="tt-label">Carga horária</span><span class="tt-value">{{ c.training.completed_hours|floatformat:1 }} H</span><span class="tt-label">Categoria</span><span class="tt-value">{{ c.training.area|default:'—' }}</span><span class="tt-label">Situação</span><span class="tt-value">{{ c.training.status }}</span>
+    <span class="tt-label">Nota</span><span class="tt-value">{% if c.training.grade is not None %}{{ c.training.grade|floatformat:1 }}/20{% else %}Sem nota{% endif %}</span><span class="tt-label">Carga horária</span><span class="tt-value">{{ c.training.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }} H</span><span class="tt-label">Categoria</span><span class="tt-value">{{ c.training.area|default:'—' }}</span><span class="tt-label">Situação</span><span class="tt-value">{{ c.training.status }}</span>
   </div>
   <div class="tt-note">
     {% if c.training.grade is not None %}

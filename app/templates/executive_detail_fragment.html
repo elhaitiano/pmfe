@@ -46,7 +46,7 @@
             {{ row.start|date:'d/m/y' }}<br>{{ row.end|date:'d/m/y' }}
           </td>
           <td>
-            {{ row.completed_hours|floatformat:1 }}
+            {{ row.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
           </td>
           <td>
             {% if row.attendance_percent is None %}

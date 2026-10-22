@@ -62,7 +62,7 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
             {{ edition.trainer|default:'—' }}<small>{{ edition.provider|default:'—' }}</small>
           </td>
           <td>
-            {{ edition.location|default:'—' }}<small>{{ edition.days }} dias · {{ edition.hours_per_day|floatformat:1 }} h/dia</small>
+            {{ edition.location|default:'—' }}<small>{{ edition.days|default_if_none:'Por confirmar' }} dias · {{ edition.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia</small>
           </td>
           <td>
             {{ edition.participants }}

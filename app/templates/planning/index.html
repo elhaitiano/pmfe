@@ -25,9 +25,9 @@
         {% if course.code %}{{ course.code }} · {% endif %}{{ course.title }}
       </h3>
       <p>
-        {{ course.default_days }} dia(s) previstos · {{ course.default_hours|floatformat:1 }} h/dia · {{ course.group_count }} grupo(s)
+        {{ course.default_days|default_if_none:'Por confirmar' }} dia(s) previstos · {{ course.default_hours|floatformat:1|default_if_none:'—'|default:'—' }} h/dia · {{ course.group_count }} grupo(s)
       </p>
-      <small>{% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small>
+      <small>{{ course.validation_status }} · {% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small>
       <div class="plan-actions">
         {% if user.is_staff %}
         {% if course.active %}
@@ -80,7 +80,7 @@
             <strong>{% if group.course.code %}{{ group.course.code }} · {% endif %}{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
           </td>
           <td>
-            {{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days }} dias efectivos</small>
+            {{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days|default_if_none:'Por confirmar' }} dias efectivos</small>
           </td>
           <td>
             {{ group.location }}<small>{{ group.trainer }}</small>

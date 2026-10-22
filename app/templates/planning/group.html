@@ -6,7 +6,7 @@
       <span class="plan-code">{{ group.code }}</span>{{ group.title }}
     </h2>
     <p>
-      {{ group.state }} · {{ active_count }} / {{ group.capacity }} inscritos · {{ group.days }} dias · {{ group.hours_per_day|floatformat:1 }} h/dia
+      {{ group.state }} · {{ active_count }} / {{ group.capacity }} inscritos · {{ group.days|default_if_none:'Por confirmar' }} dias · {{ group.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia
     </p>
     <p>
       {{ group.location }} · {{ group.trainer }} · {{ group.provider|default:'Entidade por definir' }}

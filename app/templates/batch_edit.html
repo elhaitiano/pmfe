@@ -25,7 +25,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
     <a class="gf-btn alt" href="{% url 'batch_index' %}">Escolher outra turma</a>
   </div>
   <div class="batch-note">
-    {{ formset.total_form_count }} participações · {{ seed.days }} dias · {{ seed.hours_per_day|floatformat:1 }} h/dia. Notas finais de 0 a 20; resultado validado pelo formador. O certificado só conta depois de confirmar a entrega efetiva e a data.
+    {{ formset.total_form_count }} participações · {{ seed.days|default_if_none:'Por confirmar' }} dias · {{ seed.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia. Notas finais de 0 a 20; resultado validado pelo formador. O certificado só conta depois de confirmar a entrega efetiva e a data.
   </div>
   {% if batch_error %}
   <div class="batch-error" role="alert">
@@ -86,7 +86,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
               {{ form.cleaned_data.status }}
             </td>
             <td>
-              {{ form.cleaned_data.attendance }} / {{ form.instance.days }}<small>{% if form.cleaned_data.attendance_confirmed %}Verificadas{% else %}Por confirmar{% endif %}</small>
+              {{ form.cleaned_data.attendance }} / {{ form.instance.days|default_if_none:'Por confirmar' }}<small>{% if form.cleaned_data.attendance_confirmed %}Verificadas{% else %}Por confirmar{% endif %}</small>
             </td>
             <td>
               {{ form.cleaned_data.grade|default_if_none:'—' }}
@@ -109,7 +109,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
               {{ form.status }}{{ form.status.errors }}
             </td>
             <td>
-              {{ form.attendance }}<small>de {{ form.instance.days }} dias</small>{{ form.attendance.errors }}
+              {{ form.attendance }}<small>de {{ form.instance.days|default_if_none:'Por confirmar' }} dias</small>{{ form.attendance.errors }}
               <label>
                 {{ form.attendance_confirmed }} Verificadas
               </label>

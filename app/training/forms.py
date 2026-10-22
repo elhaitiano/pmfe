@@ -67,28 +67,35 @@ class TrainingForm(StyledModelForm):
         if not self.instance.pk:
             self.initial['status'] = 'Planeado'
         if self.instance.group_id:
-            for name in ['title','area','trainer','provider','location','start','end','days','hours_per_day']:
+            for name in ['course','title','area','trainer','provider','location','start','end','days','hours_per_day']:
                 if name in self.fields:self.fields[name].disabled=True
         if 'attendance_confirmed' in self.fields:
             self.fields['attendance_confirmed'].help_text='Marque após verificar a lista assinada. Zero só representa ausência confirmada quando esta opção está marcada.'
         self.fields['grade'].help_text = 'Nota final de 0 a 20. Não é calculada pela assiduidade.'
         self.fields['result'].help_text = 'Decisão da avaliação final; não é inferida a partir da nota.'
+        if 'plan_status' in self.fields:
+            self.fields['plan_status'].required = False
         if 'days' in self.fields:
-            self.fields['days'].help_text = 'Dias de formação previstos, que podem não ser consecutivos.'
+            self.fields['days'].help_text = 'Dias efectivos, que podem não ser consecutivos. No histórico sem turma, deixe vazio se desconhecido.'
+
+    def clean_plan_status(self):
+        return self.cleaned_data.get('plan_status') or self.instance.plan_status or 'Por confirmar'
 
     revision = forms.IntegerField(widget=forms.HiddenInput, required=False)
 
     @property
     def design_groups(self):
         return [(title, [self[name] for name in names]) for title, names in [
-            ('', ['title', 'area', 'trainer', 'provider', 'start', 'end']),
+            ('', ['course', 'title', 'area', 'plan_status', 'trainer', 'provider', 'start', 'end']),
             ('Duração da formação', ['days', 'hours_per_day']),
             ('Participação e resultados', ['location', 'attendance', 'attendance_confirmed', 'grade', 'result', 'status']),
             ('Certificado entregue', ['certificate_reference', 'certified', 'certificate_delivery_date', 'observations']),
+            ('Rastreabilidade do histórico', ['source_course_code', 'historical_name', 'identity_quality', 'matching_method', 'source_row']),
         ]]
 
     class Meta:
         model = Training
-        fields = ['title', 'area', 'trainer', 'provider', 'location', 'start', 'end',
+        fields = ['course', 'plan_status', 'source_course_code', 'historical_name', 'identity_quality', 'matching_method', 'source_row',
+                  'title', 'area', 'trainer', 'provider', 'location', 'start', 'end',
                   'days', 'hours_per_day', 'attendance', 'attendance_confirmed', 'grade', 'result', 'certified', 'status', 'certificate_reference', 'certificate_delivery_date', 'observations']
         widgets = {key: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}) for key in ['start', 'end', 'certificate_delivery_date']}

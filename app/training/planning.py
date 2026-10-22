@@ -27,11 +27,15 @@ class CourseForm(StyledModelForm):
     revision = forms.IntegerField(widget=forms.HiddenInput, required=False)
     class Meta:
         model = Course
-        fields = ['code','title','area','contents','default_days','default_hours','active']
+        fields = ['code','title','area','contents','default_days','default_hours','validation_status','active']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['validation_status'].required = False
         if self.instance.pk and self.instance.code:
             self.fields['code'].disabled = True
+
+    def clean_validation_status(self):
+        return self.cleaned_data.get('validation_status') or self.instance.validation_status or 'Por confirmar'
 
     def clean_code(self):
         value = self.cleaned_data['code'].strip().upper()
@@ -103,7 +107,7 @@ def history_rows(group, people):
     titles={normalise(t) for t in [group.course.title,*group.course.aliases,group.title]}
     by_person={p.pk:{'person':p,'warnings':[],'other':[],'blocked':p.pk in existing,'fingerprint':[]} for p in people}
     for row in old:
-        same = row.group.course_id==group.course_id if row.group_id else normalise(row.title) in titles
+        same = row.group.course_id==group.course_id if row.group_id else (row.course_id==group.course_id if row.course_id else normalise(row.title) in titles)
         if not same:continue
         entry=by_person[row.employee_id]
         label=f'{row.group.code if row.group_id else "Registo anterior sem grupo"} · {row.start:%d/%m/%Y} · {row.status}'
@@ -284,11 +288,16 @@ def transition(request,pk):
                 active=list(current.enrollments.filter(state='Activa').select_related('employee'))
                 if not active:raise ValidationError('Adicione pelo menos um formando antes de iniciar.')
                 for en in active:
-                    t=Training(employee=en.employee,group=current,title=current.title,area=current.area,trainer=current.trainer,provider=current.provider,location=current.location,start=current.start,end=current.end,days=current.days,hours_per_day=current.hours_per_day,attendance=0,status='Em Curso',result='Pendente')
-                    t.full_clean();t.save();en.training=t;en.save(update_fields=['training'])
+                    if en.training_id or Training.objects.filter(group=current, employee=en.employee).exists():
+                        raise ValidationError('Já existe uma participação para este formando e turma. Reveja a ligação antes de iniciar.')
+                    t=Training(employee=en.employee,group=current,course=current.course,plan_status='No Plano',title=current.title,area=current.area,trainer=current.trainer,provider=current.provider,location=current.location,start=current.start,end=current.end,days=current.days,hours_per_day=current.hours_per_day,attendance=0,status='Em Curso',result='Pendente')
+                    t.full_clean();t.save();en.training=t;en.full_clean();en.save(update_fields=['training'])
                 current.state='Em Curso'
             elif action=='finish':
                 if current.end>timezone.localdate():raise ValidationError('O grupo ainda não chegou à data final.')
+                active = current.enrollments.filter(state='Activa')
+                if not active.exists() or active.filter(training__isnull=True).exists():
+                    raise ValidationError('Todas as inscrições activas devem ter uma participação antes de concluir.')
                 if current.trainings.exclude(status__in=['Concluído','Desistência']).exists():raise ValidationError('Finalize os resultados de todos os formandos na grelha antes de concluir o grupo.')
                 if current.trainings.filter(attendance_confirmed=False).exists():raise ValidationError('Verifique as presenças de todos os formandos, incluindo as ausências, antes de concluir.')
                 current.state='Concluída'
@@ -298,6 +307,8 @@ def transition(request,pk):
                 current.state='Cancelada';current.enrollments.filter(state='Activa').update(state='Cancelada',reason='Grupo cancelado: '+reason[:1000])
             current.save(update_fields=['state']);record(request,'PLANNING_STATE',f'{current.code}, acção {current.course_id}: {current.state}')
         messages.success(request,'Estado do grupo actualizado.')
+    except IntegrityError:
+        messages.error(request, 'A operação entrou em conflito com uma participação existente. Reabra a turma.')
     except ValidationError as exc:messages.error(request,' '.join(exc.messages))
     return redirect('group_detail',pk=pk)
 
@@ -371,6 +382,8 @@ def group_deletion_allowed(group):
 
 
 def course_deletion_allowed(course):
+    if course.participations.exists():
+        return False
     if course.groups.exists() or Training.objects.filter(group__course=course).exists():
         return False
     titles = {normalise(title) for title in [course.title, *course.aliases] if title}

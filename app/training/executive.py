@@ -116,7 +116,7 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         data['timeline_bars']=data['timeline_bars'][start.month-1:end.month]
     if selected.get('period')=='month':
         daily={}
-        for row in rows:daily[row.start.isoformat()]=daily.get(row.start.isoformat(),Decimal(0))+row.completed_hours
+        for row in rows:daily[row.start.isoformat()]=daily.get(row.start.isoformat(),Decimal(0))+(row.completed_hours or Decimal(0))
         peak=max(daily.values(),default=0)
         data['timeline_bars']=[{'label':date.fromisoformat(k).strftime('%d/%m'),'value':v,'width':float(v/peak*100) if peak else 0,'href':drill('time',k,k)} for k,v in sorted(daily.items())]
         data['timeline_title']='Horas por dia de início (dias com registos)'

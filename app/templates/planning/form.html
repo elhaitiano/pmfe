@@ -17,7 +17,7 @@
       Primeiro dia<input id="planFirstDay" class="gf-field" type="date">
     </label>
     <label>
-      Número de dias<input id="planDayCount" class="gf-field" type="number" min="1" max="366" value="{{ course.default_days }}">
+      Número de dias<input id="planDayCount" class="gf-field" type="number" min="1" max="366" value="{{ course.default_days|default_if_none:'' }}">
     </label>
     <label>
       <input id="planWeekdaysOnly" type="checkbox" checked> Apenas segunda a sexta
