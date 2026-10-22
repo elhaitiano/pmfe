@@ -6,7 +6,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
 <link rel="stylesheet" href="{% static 'pmf/ficha-original.css' %}">
 {% endblock %}
 {% block content %}
-<p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p>
+<!-- <p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p> -->
 {% if employee and user.is_staff %}
 <div class="mx-10 mt-4"><a class="gf-btn alt" href="{% url 'employee_documents' employee.pk %}">Documentos privados</a></div>
 {% endif %}
@@ -36,9 +36,9 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
     <div class="ficha-shell space-y-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 class="text-2xl font-black text-white">
+          <!-- <h2 class="text-2xl font-black text-white">
             EPAL <span class="text-primary">|</span>
-          </h2>
+          </h2> -->
           <p class="text-sm uppercase tracking-[.16em] text-slate-400 mt-1">
             Dados do Formando
           </p>
