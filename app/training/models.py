@@ -18,6 +18,16 @@ class Employee(models.Model):
     phone = models.CharField('Telefone', max_length=80, blank=True)
     birth_date = models.DateField('Data de nascimento', null=True, blank=True)
     admission_date = models.DateField('Data de admissão', null=True, blank=True)
+    gender = models.CharField('Género', max_length=40, blank=True)
+    identity_number = models.CharField('Nº BI', max_length=80, blank=True)
+    social_security_number = models.CharField('Nº INSS', max_length=80, blank=True)
+    marital_status = models.CharField('Estado civil', max_length=80, blank=True)
+    company = models.CharField('Empresa', max_length=200, blank=True)
+    cost_center = models.CharField('Centro de Custo', max_length=200, blank=True)
+    registration_origin = models.TextField('Origem do cadastro', blank=True)
+    review_status = models.CharField('Estado de revisão', max_length=100, blank=True)
+    registration_validation = models.CharField('Validação Cadastro EPAL', max_length=250, blank=True)
+    source_row = models.PositiveIntegerField('Linha fonte EPAL', null=True, blank=True, validators=[MinValueValidator(1)])
     # Retains unmapped source fields for subsequent migration stages.
     source_data = models.JSONField(default=dict, blank=True)
 
@@ -29,7 +39,7 @@ class Employee(models.Model):
 
     @property
     def validation_status(self):
-        return self.source_data.get('Validação Cadastro EPAL', 'Por confirmar')
+        return self.registration_validation or (self.source_data or {}).get('Validação Cadastro EPAL', 'Por confirmar')
 
 
 class Training(models.Model):
