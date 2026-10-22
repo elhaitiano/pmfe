@@ -1,7 +1,36 @@
-<nav class="flex flex-wrap gap-3 mb-5" aria-label="Secções da avaliação">
-  <a class="gf-btn alt" href="{% url 'evaluation_index' %}">Formandos e avaliações</a>
-  {% if employee %}
-  <a class="gf-btn alt" href="{% url 'evaluation_profile' employee.pk %}">Mapa de competências · Visão 360°</a>
+<nav class="evaluation-sections" aria-label="Secções da avaliação">
+  {% if user.is_staff %}
+  <a class="evaluation-section" href="{% url 'evaluation_index' %}" {% if request.resolver_match.url_name == 'evaluation_index' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">analytics</span>
+    <span>Formandos e avaliações</span>
+    <span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span>
+  </a>
   {% endif %}
-  <a class="gf-btn alt" href="{% url 'competency_index' %}">Gerir ciclos e competências</a>
+  {% if user.is_staff %}
+  <a class="evaluation-section" href="{% url 'indicator_index' %}" {% if request.resolver_match.url_name == 'indicator_index' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">query_stats</span>
+    <span>Indicadores</span>
+    <span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span>
+  </a>
+  {% endif %}
+  {% if user.is_staff %}
+  <a class="evaluation-section" href="{% url 'development_index' %}" {% if request.resolver_match.url_name == 'development_index' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">trending_up</span>
+    <span>Desenvolvimento</span>
+    <span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span>
+  </a>
+  {% endif %}
+  <a class="evaluation-section" href="{% url 'my_ratings' %}" {% if request.resolver_match.url_name == 'my_ratings' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">rate_review</span>
+    <span>Minhas avaliações</span>
+    <span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span>
+  </a>
 </nav>
+{% if user.is_staff %}
+<div class="evaluation-context-links">
+  {% if employee %}
+  <a href="{% url 'evaluation_profile' employee.pk %}">Mapa de competências · Visão 360°</a>
+  {% endif %}
+  <a href="{% url 'competency_index' %}">Gerir ciclos e competências</a>
+</div>
+{% endif %}

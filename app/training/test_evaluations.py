@@ -53,6 +53,12 @@ class EvaluationTests(TestCase):
         for url in urls:
             self.assertEqual(self.client.get(url).status_code, 200, url)
         self.assertContains(self.client.get(reverse('evaluation_index')), 'Pessoa fictícia')
+        centre = self.client.get(reverse('evaluation_index'))
+        sidebar = centre.content.decode().split('<aside', 1)[1].split('</aside>', 1)[0]
+        for route in ['indicator_index', 'development_index', 'my_ratings']:
+            self.assertNotIn('href="' + reverse(route) + '"', sidebar)
+            self.assertContains(centre, 'href="' + reverse(route) + '"')
+            self.assertContains(self.client.get(reverse(route)), 'Secções da avaliação')
         csrf = Client(enforce_csrf_checks=True)
         csrf.force_login(self.staff)
         for url in urls:
@@ -61,7 +67,12 @@ class EvaluationTests(TestCase):
         for url in urls:
             self.assertEqual(self.client.get(url).status_code, 403)
             self.assertEqual(self.client.post(url, {}).status_code, 403)
-        self.assertNotContains(self.client.get(reverse('home')), 'id="navAvaliacao"')
+        home = self.client.get(reverse('home'))
+        self.assertContains(home, 'id="navAvaliacao"')
+        personal = self.client.get(reverse('my_ratings'))
+        self.assertContains(personal, 'Minhas avaliações')
+        self.assertNotContains(personal, 'href="' + reverse('indicator_index') + '"')
+        self.assertNotContains(personal, 'href="' + reverse('development_index') + '"')
         self.client.logout()
         for url in urls:
             self.assertEqual(self.client.get(url).status_code, 302)

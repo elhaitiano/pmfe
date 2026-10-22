@@ -2,6 +2,7 @@
 {% block heading %}RESPOSTA PRIVADA 360°{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
+  {% include 'evaluation_nav.html' %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <h2>{{ rater.cycle.employee }} — {{ rater.get_kind_display }}</h2>
