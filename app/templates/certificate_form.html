@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block heading %}CERTIFICADO E ENTREGAS{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6"><section class="gf-panel"><div class="gf-body">
+  <h2 class="text-xl font-bold">{{ employee.name }} — {{ training.title }}</h2>
+  <p class="text-sm text-slate-400">Registe a declaração quando faltam documentos. Uma declaração não substitui a confirmação e a data efectiva de entrega.</p>
+  <form method="post">
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+    {% for title, fields in form.design_groups %}
+    <h3 class="mt-5 mb-2 text-secondary font-bold">{{ title }}</h3>
+    <div class="gf-form-grid">
+      {% for field in fields %}
+      <label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}</span>{{ field }}{{ field.errors }}<small>{{ field.help_text }}</small></label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <button class="gf-btn mt-4">Guardar</button>
+    <a class="gf-btn alt" href="{% url 'employee_documents' employee.pk %}">Documentos e comprovativos</a>
+    <a class="gf-btn alt" href="{% url 'employee_detail' employee.pk %}">Cancelar</a>
+  </form>
+</div></section></section>
+{% endblock %}

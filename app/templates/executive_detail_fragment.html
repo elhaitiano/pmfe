@@ -56,7 +56,10 @@
             {{ row.grade|default_if_none:'—' }}/20<small>{{ row.result }}</small>
           </td>
           <td>
-            {{ row.certificate_label }}<small>{{ row.certificate_delivery_date|date:'d/m/y' }} {{ row.certificate_reference }}</small>
+            Participante: {{ row.certificate_label }}
+            <small>Emissão: {{ row.certificate_issue_label }} · RH: {{ row.certificate_hr_label }}</small>
+            {% if row.certificate_declaration %}<small>Declaração registada (não equivale a entrega confirmada)</small>{% endif %}
+            <small>{{ row.certificate_delivery_date|date:'d/m/y' }} {{ row.certificate_reference }}</small>
           </td>
         </tr>
         {% empty %}

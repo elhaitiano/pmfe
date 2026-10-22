@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block heading %}
 HISTÓRICO DO(A) FORMANDO(A){% endblock %}{% block content %}
+{% if employee and user.is_staff %}
+<div class="mx-10 mt-4"><a class="gf-btn alt" href="{% url 'employee_documents' employee.pk %}">Documentos privados</a></div>
+{% endif %}
+
 {% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
 <p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
 {% endif %}

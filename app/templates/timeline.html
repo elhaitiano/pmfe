@@ -31,6 +31,18 @@
       <p>Linha de origem: {{ t.source_row|default_if_none:'—' }} · Código de origem: {{ t.source_course_code|default:'—' }}</p>
     </details>
     {% endif %}
+    <div class="mt-3 text-xs text-slate-400">
+      Emissão: {{ t.certificate_issue_label }}{% if t.certificate_issue_date %} · {{ t.certificate_issue_date|date:'d/m/Y' }}{% endif %}
+      · Entrega aos RH: {{ t.certificate_hr_label }}{% if t.certificate_hr_delivery_date %} · {{ t.certificate_hr_delivery_date|date:'d/m/Y' }}{% endif %}
+    </div>
+    {% if t.certificate_declaration %}
+    <details class="mt-3 text-xs text-slate-400">
+      <summary>Declaração registada — não equivale a entrega documentada</summary>
+      <p>{{ t.certificate_declaration }}</p>
+      <p>Responsável: {{ t.certificate_declared_by|default:'Por identificar' }} · Data da declaração: {{ t.certificate_declaration_date|date:'d/m/Y'|default:'Por confirmar' }}</p>
+      <p>Origem: {{ t.certificate_declaration_source|default:'Por identificar' }}</p>
+    </details>
+    {% endif %}
     {% if t.observations %}
     <details class="mt-3 text-xs text-slate-400"><summary class="cursor-pointer">Observações</summary>
     <p class="mt-2 whitespace-pre-wrap">
@@ -38,6 +50,7 @@
     </p>
     </details>{% endif %}{% if user.is_staff %}
     <div class="mt-4 flex flex-wrap gap-3 text-xs no-print">
+      <a class="text-primary hover:text-white" href="{% url 'certificate_edit' t.pk %}">Certificado e entregas</a>
       <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Atualizar turma</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
     </div>
     {% endif %}

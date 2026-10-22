@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block heading %}DOCUMENTOS PRIVADOS{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6">
+  <section class="gf-panel"><div class="gf-body">
+    <h2 class="text-xl font-bold">{{ employee.name }}</h2>
+    <p class="text-sm text-slate-400">Acesso reservado a administradores. Anexar um PDF não confirma emissão nem entrega de certificado.</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}{{ form.non_field_errors }}
+      <div class="gf-form-grid mt-4">
+        {% for field in form %}
+        <label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}</span>
+          {{ field }}{{ field.errors }}<small>{{ field.help_text }}</small>
+        </label>
+        {% endfor %}
+      </div>
+      <button class="gf-btn mt-4">Guardar documento</button>
+      <a class="gf-btn alt" href="{% url 'employee_detail' employee.pk %}">Voltar ao histórico</a>
+    </form>
+  </div></section>
+  <section class="gf-panel"><div class="gf-body space-y-4">
+    {% for document in documents %}
+    <article class="p-4 rounded-xl border border-white/10">
+      <h3>{{ document.get_kind_display }} — {{ document.original_name }}</h3>
+      <p class="text-sm text-slate-400">{{ document.created|date:'d/m/Y H:i' }} · {{ document.actor }} · {% if document.active %}Activo{% else %}Arquivado{% endif %}</p>
+      {% if document.training %}<p>{{ document.training.title }} · {{ document.training.start|date:'d/m/Y' }}</p>{% endif %}
+      <p>{{ document.note }}</p>
+      <a class="gf-btn alt mt-2" href="{% url 'document_download' document.pk %}">Descarregar PDF</a>
+      <form method="post" action="{% url 'document_archive' document.pk %}" class="mt-3">
+        {% csrf_token %}
+        <label><span class="gf-label">Motivo da alteração</span><input class="gf-field" name="reason" maxlength="1000" required></label>
+        <button class="gf-btn alt mt-2" name="action" value="{% if document.active %}archive{% else %}restore{% endif %}">{% if document.active %}Arquivar{% else %}Reactivar{% endif %}</button>
+      </form>
+    </article>
+    {% empty %}<p>Nenhum documento guardado.</p>{% endfor %}
+  </div></section>
+</section>
+{% endblock %}

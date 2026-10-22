@@ -21,7 +21,8 @@ A aplicação funciona localmente num único computador, através do navegador, 
 | Dashboard executivo | Consultar indicadores e gráficos, filtrar por período, direcção, área e situação, e explorar os registos correspondentes. |
 | Relatórios e arquivo | Pré-visualizar, gerar, arquivar e descarregar relatórios PDF por período ou direcção. |
 | Assistente EPAL | Pesquisar orientações locais, seguir passos e utilizar atalhos. Os administradores podem editar e publicar os guias. |
-| Cópias de segurança e auditoria | Exportar a base e os relatórios, conservar cópias antes das migrações e consultar o registo das operações administrativas. |
+| Certificados e documentos privados | Distinguir emissão, declaração e entregas ao participante/RH; anexar CV, certificados e comprovativos PDF até 10 MB, com acesso administrativo. |
+| Cópias de segurança e auditoria | Exportar a base, os relatórios e os documentos privados, conservar cópias antes das migrações e consultar o registo das operações administrativas. |
 
 A eliminação de turmas preparatórias e de acções criadas por engano exige acesso administrativo, motivo e confirmação `ELIMINAR`. Turmas com histórico e acções com grupos ou histórico associado ficam protegidas contra eliminação.
 
@@ -69,6 +70,7 @@ frontend: Nginx
                          ├── pmf.sqlite3
                          ├── secret.key
                          ├── reports/
+                         ├── documents/ (PDFs privados)
                          └── backups/
 ```
 
@@ -148,18 +150,34 @@ Na importação integrada, o número mecanográfico identifica o técnico e o ID
 
 Os caminhos `/tmp` e `/data` destes comandos pertencem ao contentor. Os ficheiros Excel de origem e os relatórios com dados pessoais devem permanecer fora do repositório público.
 
+## Certificados e documentos privados
+
+No histórico, os administradores encontram **Certificado e entregas** em cada participação. A emissão, a declaração do responsável, a entrega confirmada ao participante e a entrega confirmada aos RH têm campos separados. Declarações conservam origem e responsável, sem inventar datas; não aumentam o indicador de entregas confirmadas. A entrega confirmada exige a data efectiva.
+
+O acesso **Documentos privados**, na ficha ou histórico, permite anexar CV ao trabalhador e certificados/comprovativos à participação correcta. Apenas administradores podem carregar, consultar e descarregar os PDFs. Os ficheiros ficam fora dos recursos públicos, com nomes internos UUID e verificação SHA-256. O controlo do formato é básico; o conteúdo não é convertido nem executado pelo servidor.
+
+Arquivar preserva o ficheiro e o histórico; reactivar exige um motivo, tal como arquivar. Anexar um comprovativo não altera automaticamente os estados do certificado. Participações com documentos associados ficam protegidas contra eliminação.
+
 ## Cópias de segurança e persistência
 
 A base fica em `/data/pmf.sqlite3` dentro do backend. O volume `database` conserva os dados quando os contentores são substituídos ou removidos sem apagar o volume.
 
 Para exportar uma cópia, entre como administrador e escolha **Cópia de segurança**:
 
-- Sem relatórios arquivados, a aplicação fornece um ficheiro SQLite.
-- Com relatórios arquivados, fornece um ZIP com a base e os PDFs. Conserve o ZIP completo.
+- Sem relatórios nem documentos privados, a aplicação fornece um ficheiro SQLite.
+- Com relatórios ou documentos privados, fornece um ZIP com a base, os PDFs (incluindo documentos arquivados) e a chave local quando disponível. Conserve o ZIP completo. A exportação recusa documentos privados ausentes ou alterados.
 
-No arranque com uma base existente, o script Docker guarda uma cópia da base, dos relatórios e da chave em `/data/backups/` antes das migrações. Estas cópias acumulam-se no mesmo volume; mantenha também uma cópia noutro suporte para protecção contra perda do disco.
+No arranque com uma base existente, o script Docker guarda uma cópia da base, dos relatórios, dos documentos privados e da chave em `/data/backups/` antes das migrações. Estas cópias acumulam-se no mesmo volume; mantenha também uma cópia noutro suporte para protecção contra perda do disco.
 
-Para restaurar, pare a aplicação, conserve uma cópia dos dados actuais e reponha a base e os respectivos relatórios no volume de dados. Os ficheiros devem continuar acessíveis ao utilizador do backend (`10001:10001`). Uma exportação SQL de SQLite deve ser restaurada com uma ferramenta compatível com SQLite.
+Para recuperar um ZIP ou SQLite exportado pela aplicação, execute no ambiente Python do backend:
+
+```bash
+python manage.py restore_backup COPIA.zip --destination NOVA_PASTA
+```
+
+A cópia tem de estar acessível nesse ambiente; em Docker, disponibilize-a num volume ou copie-a para o contentor. A pasta principal do destino deve existir, ser gravável pelo backend, e `NOVA_PASTA` não pode existir. A recuperação verifica a integridade SQLite, as relações e as assinaturas dos PDFs; não substitui uma base em uso. O limite é 5 GB por arquivo e 1 GB por ficheiro.
+
+Depois da validação, pare a aplicação, conserve a instalação anterior e configure `PMF_DATA_DIR`/o volume para utilizar a pasta recuperada. Os ficheiros devem continuar acessíveis ao utilizador do backend (`10001:10001`). Não elimine a cópia anterior antes de testar o arranque. Uma exportação SQL exige uma ferramenta SQLite; este comando aceita SQLite binário ou ZIP da aplicação.
 
 **Não utilize `docker compose down -v` numa actualização normal: essa opção remove o volume de dados do projecto.**
 
@@ -236,7 +254,7 @@ Entre os documentos Markdown, apenas o `README.md` da raiz está previsto para p
 ## Limitações actuais
 
 - A configuração destina-se a um único computador e a uma única instância backend com SQLite.
-- A avaliação no terreno/360°, o dossier profissional e a gestão de CV ainda não estão activos.
+- A avaliação no terreno/360° e o plano de desenvolvimento ainda não estão activos. O arquivo privado de CV já está disponível para administradores.
 - O assistente utiliza guias locais; não é uma IA generativa nem aprende automaticamente novas funcionalidades.
 - Existem listas diárias de presença, mas o cálculo de horas utiliza os totais de dias de presença registados.
 - A plataforma acompanha a entrega de certificados; a emissão automática a partir de um modelo ainda não está implementada.

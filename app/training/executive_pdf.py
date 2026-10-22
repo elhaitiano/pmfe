@@ -106,6 +106,7 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.extend([Spacer(1,8),para('1. Síntese executiva','ExecHeading')])
     if data['stats'].get('unknown_duration_count') or data['stats'].get('unconfirmed_attendance_count'):
         story.append(para('Totais provisórios: existem durações incompletas ou presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.'))
+    story.append(para(f"Certificados: {data['stats']['certificates_issued']} emitidos confirmados; {data['stats']['certificate_declarations']} declarações; {data['stats']['certificates']} entregues ao participante; {data['stats']['certificates_hr']} entregues aos RH. Declarações não contam como entrega confirmada."))
     for text in data['insights']:story.append(para(text))
     cards=[]
     for item in data['kpis']:

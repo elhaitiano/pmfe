@@ -17,6 +17,8 @@ if database.exists():
         source.backup(destination)
     if (data / 'reports').exists():
         shutil.copytree(data / 'reports', snapshot / 'reports')
+    if (data / 'documents').exists():
+        shutil.copytree(data / 'documents', snapshot / 'documents')
     if (data / 'secret.key').exists():
         shutil.copy2(data / 'secret.key', snapshot / 'secret.key')
 

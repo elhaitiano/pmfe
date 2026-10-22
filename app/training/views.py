@@ -192,6 +192,9 @@ def training_edit(request, pk):
 @staff_required
 def training_delete(request, pk):
     training = get_object_or_404(Training, pk=pk)
+    if training.documents.exists():
+        messages.error(request, 'Esta participação tem documentos privados. Conserve o histórico e corrija os dados, se necessário.')
+        return redirect('employee_detail', pk=training.employee_id)
     if training.group_id:
         messages.error(request, 'Este registo pertence a um grupo. Corrija a participação ou registe a desistência; o histórico da inscrição será conservado.')
         return redirect('group_detail', pk=training.group_id)
@@ -228,7 +231,7 @@ def audit(request):
 @staff_required
 @require_POST
 def backup(request):
-    record(request, 'BACKUP', 'Exportação da base e dos relatórios arquivados')
+    record(request, 'BACKUP', 'Exportação da base, relatórios e documentos privados')
     with tempfile.TemporaryDirectory() as folder:
         target = Path(folder) / 'backup.sqlite3'
         with sqlite3.connect(settings.DATABASES['default']['NAME']) as source, sqlite3.connect(target) as destination:
@@ -236,7 +239,9 @@ def backup(request):
         with sqlite3.connect(target) as copy:
             has_archive = copy.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='training_executivereport'").fetchone()
             report_ids = [str(uuid.UUID(x[0])) for x in copy.execute('SELECT id FROM training_executivereport')] if has_archive else []
-        if report_ids:
+            has_documents = copy.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='training_privatedocument'").fetchone()
+            documents = list(copy.execute('SELECT id, sha256, size FROM training_privatedocument')) if has_documents else []
+        if report_ids or documents:
             payload = io.BytesIO()
             with zipfile.ZipFile(payload, 'w', zipfile.ZIP_DEFLATED) as bundle:
                 bundle.write(target, 'pmf.sqlite3')
@@ -246,7 +251,22 @@ def backup(request):
                         from django.http import HttpResponse
                         return HttpResponse('Falta um PDF do arquivo. Reponha o ficheiro antes de exportar a cópia completa.', status=409)
                     bundle.write(pdf, f'reports/{identifier}.pdf')
-                bundle.writestr('REPOR_COPIA.txt', 'Com a plataforma parada, reponha pmf.sqlite3 e a pasta reports na pasta de dados que estava em uso. Guarde uma cópia dos ficheiros actuais antes de substituir. Não copie estes dados para uma nova base por engano.')
+                import hashlib
+                for raw_id, expected_hash, expected_size in documents:
+                    identifier = str(uuid.UUID(raw_id))
+                    pdf = Path(settings.DATA_DIR) / 'documents' / f'{identifier}.pdf'
+                    if pdf.is_symlink() or not pdf.is_file():
+                        from django.http import HttpResponse
+                        return HttpResponse('Falta um documento privado. Reponha o ficheiro antes de exportar.', status=409)
+                    content = pdf.read_bytes()
+                    if len(content) != expected_size or hashlib.sha256(content).hexdigest() != expected_hash:
+                        from django.http import HttpResponse
+                        return HttpResponse('Um documento privado falhou a verificação de integridade.', status=409)
+                    bundle.writestr(f'documents/{identifier}.pdf', content)
+                secret = Path(settings.DATA_DIR) / 'secret.key'
+                if secret.is_file():
+                    bundle.write(secret, 'secret.key')
+                bundle.writestr('REPOR_COPIA.txt', 'Com a plataforma parada, utilize: python manage.py restore_backup COPIA.zip --destination NOVA_PASTA. A pasta de destino não pode existir. A recuperação valida a base, relatórios e documentos privados antes de criar o destino. Depois configure PMF_DATA_DIR para a pasta recuperada e arranque a aplicação. Guarde a instalação anterior. Nunca extraia sobre uma base em utilização.')
             payload.seek(0)
             return FileResponse(payload, as_attachment=True, filename=f'PMF-{timezone.now():%Y%m%d-%H%M%S}.zip')
         payload = io.BytesIO(target.read_bytes())

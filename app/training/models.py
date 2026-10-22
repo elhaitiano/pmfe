@@ -43,6 +43,15 @@ class Employee(models.Model):
 
 
 class Training(models.Model):
+    certificate_issued = models.BooleanField('Certificado emitido', null=True, blank=True, default=None)
+    certificate_issue_date = models.DateField('Data de emissão', null=True, blank=True)
+    certificate_declaration = models.TextField('Declaração sobre o certificado', blank=True)
+    certificate_declaration_source = models.TextField('Origem / evidência da declaração', blank=True)
+    certificate_declared_by = models.CharField('Responsável pela declaração', max_length=200, blank=True)
+    certificate_declaration_date = models.DateField('Data da declaração', null=True, blank=True)
+    certificate_hr_delivered = models.BooleanField('Entregue aos RH', null=True, blank=True, default=None)
+    certificate_hr_delivery_date = models.DateField('Data de entrega aos RH', null=True, blank=True)
+
     course = models.ForeignKey('Course', on_delete=models.PROTECT, null=True, blank=True,
         related_name='participations', verbose_name='Acção do catálogo')
     plan_status = models.CharField('Status do plano', max_length=30, default='Por confirmar',
@@ -111,6 +120,28 @@ class Training(models.Model):
             if original and original != self.source_key:
                 errors['source_key'] = 'O identificador histórico não pode ser alterado.'
 
+        for date_field, flag in [('certificate_issue_date', 'certificate_issued'),
+                                 ('certificate_hr_delivery_date', 'certificate_hr_delivered')]:
+            value = getattr(self, date_field)
+            if value and getattr(self, flag) is not True:
+                errors[flag] = 'Uma data exige confirmação do estado correspondente.'
+            if value and value > timezone.localdate():
+                errors[date_field] = 'A data não pode estar no futuro.'
+        if self.certificate_hr_delivered is True:
+            if not self.certificate_hr_delivery_date:
+                errors['certificate_hr_delivery_date'] = 'Indique a data efectiva de entrega aos RH.'
+            if self.status != 'Concluído':
+                errors['certificate_hr_delivered'] = 'Finalize a formação antes de confirmar a entrega aos RH.'
+        if self.certificate_issued is False and (self.certified is True or self.certificate_hr_delivered is True):
+            errors['certificate_issued'] = 'Uma entrega confirmada não é compatível com certificado não emitido.'
+        for field in ['certificate_delivery_date', 'certificate_hr_delivery_date']:
+            value = getattr(self, field)
+            if value and self.certificate_issue_date and value < self.certificate_issue_date:
+                errors[field] = 'A entrega não pode anteceder a emissão.'
+        if self.certificate_hr_delivery_date and self.end and self.certificate_hr_delivery_date < self.end:
+            errors['certificate_hr_delivery_date'] = 'A entrega não pode anteceder o fim da formação.'
+        if self.certificate_declaration_date and self.certificate_declaration_date > timezone.localdate():
+            errors['certificate_declaration_date'] = 'A declaração não pode ter uma data futura.'
         if self.certified is True and not self.certificate_delivery_date:
             errors['certificate_delivery_date'] = 'Indique a data efectiva da entrega.'
         if self.certificate_delivery_date and self.certified is not True:
@@ -138,6 +169,10 @@ class Training(models.Model):
         if self.attendance is not None and self.days is not None and self.attendance > self.days:
             errors['attendance'] = 'As presenças não podem ultrapassar a duração em dias.'
         if errors:
+            # Other participation forms do not expose the certificate-specific fields.
+            for name in list(errors):
+                if name.startswith('certificate_') and name not in ('certificate_delivery_date', 'certificate_reference'):
+                    errors.setdefault('__all__', []).append(f'{self._meta.get_field(name).verbose_name}: {errors.pop(name)}')
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
@@ -184,6 +219,43 @@ class Training(models.Model):
             return None
         from decimal import ROUND_HALF_UP
         return (Decimal(self.attendance) * 100 / self.days).quantize(Decimal('.1'), rounding=ROUND_HALF_UP)
+
+    @property
+    def certificate_issue_label(self):
+        return 'Sim' if self.certificate_issued is True else 'Não' if self.certificate_issued is False else 'Por confirmar'
+
+    @property
+    def certificate_hr_label(self):
+        return 'Sim' if self.certificate_hr_delivered is True else 'Não' if self.certificate_hr_delivered is False else 'Por confirmar'
+
+
+class PrivateDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='documents')
+    training = models.ForeignKey(Training, on_delete=models.PROTECT, null=True, blank=True, related_name='documents')
+    kind = models.CharField('Tipo de documento', max_length=30, choices=[
+        ('cv', 'CV'), ('certificate', 'Certificado'),
+        ('participant_receipt', 'Comprovativo de entrega ao participante'),
+        ('hr_receipt', 'Comprovativo de entrega aos RH')])
+    original_name = models.CharField(max_length=200)
+    sha256 = models.CharField(max_length=64)
+    size = models.PositiveIntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    actor = models.CharField(max_length=150)
+    note = models.TextField('Observações', blank=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-created', '-pk']
+
+    def clean(self):
+        if self.kind == 'cv' and self.training_id:
+            raise ValidationError({'training': 'O CV pertence ao trabalhador, sem participação associada.'})
+        if self.kind != 'cv' and not self.training_id:
+            raise ValidationError({'training': 'Seleccione a participação do certificado.'})
+        if self.training_id and self.training.employee_id != self.employee_id:
+            raise ValidationError({'training': 'A participação pertence a outro trabalhador.'})
+
 
 
 class AuditEvent(models.Model):
