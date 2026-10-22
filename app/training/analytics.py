@@ -70,7 +70,7 @@ def years_since(value):
 def profile_fields(employee):
     source = employee.source_data or {}
     age, seniority = years_since(employee.birth_date), years_since(employee.admission_date)
-    return [('N.º Mecanográfico', employee.number), ('Direcção', employee.direction),
+    return [('N.º Mecanográfico', employee.number), ('Direcção', employee.direction), ('Função', employee.function),
         ('Categoria', employee.category), ('Antiguidade', f'{seniority} anos' if seniority is not None else ''),
         ('N.º BI', source.get('Nº do BI', '')), ('Idade', f'{age} anos' if age is not None else ''),
         ('Género', source.get('Sexo', '')), ('N.º Telemóvel', format_phone(employee.phone)),

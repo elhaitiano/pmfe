@@ -15,13 +15,11 @@ class StyledModelForm(forms.ModelForm):
 
 
 class EmployeeForm(StyledModelForm):
-    function = forms.CharField(label='Função', required=False, max_length=200)
     phone_secondary = forms.CharField(label='Telefone 2', required=False, max_length=80)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         source = self.instance.source_data or {}
-        self.initial['function'] = source.get('Função', '')
         self.initial['phone_secondary'] = source.get('Telefone 2', '')
 
     def save(self, commit=True):
@@ -35,7 +33,7 @@ class EmployeeForm(StyledModelForm):
 
     class Meta:
         model = Employee
-        fields = ['number', 'name', 'direction', 'category', 'area', 'email', 'phone', 'birth_date', 'admission_date']
+        fields = ['number', 'name', 'direction', 'function', 'category', 'area', 'email', 'phone', 'birth_date', 'admission_date']
         widgets = {key: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'})
                    for key in ['birth_date', 'admission_date']}
 

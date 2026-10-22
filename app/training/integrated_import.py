@@ -30,6 +30,8 @@ def import_integrated(workbook,apply,source):
                     try:validate_email(email)
                     except ValidationError:report['issues'].append({'sheet':s.title,'row':i,'reason':'E-mail inválido preservado nos dados de origem; contacto não utilizado'});email=''
                 fields=dict(name=name,birth_date=parse_date(row[4]),phone=text(row[8]),admission_date=parse_date(row[9]),category=text(row[10]),email=email,direction=text(row[12]),area=text(row[13]),source_data=source_json(heads,row))
+                if 'Função' in fields['source_data']:
+                    fields['function'] = text(fields['source_data']['Função'])
                 if e:
                     changes={k:{'before':str(getattr(e,k)),'after':str(v)}for k,v in fields.items() if k!='source_data' and getattr(e,k)!=v}
                     if changes:report['changes'].append({'number':n,'fields':changes});report['employees_updated']+=1

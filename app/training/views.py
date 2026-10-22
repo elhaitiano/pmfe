@@ -220,7 +220,7 @@ def employee_print(request, pk):
         'print_name': ' '.join(employee.name.split()[::max(1, len(employee.name.split()) - 1)]),
         'print_fields': [('Nº Mec.', employee.number), ('Género', source.get('Sexo', '')),
             ('Categoria', employee.category), ('Nº BI', source.get('Nº do BI', '')),
-            ('Função', source.get('Função', '')),
+            ('Função', employee.function),
             ('Idade', f'{age} anos' if age is not None else ''),
             ('Direcção', employee.direction), ('Tel. 1', format_phone(employee.phone)),
             ('Antiguidade', f'{seniority} anos' if seniority is not None else ''),

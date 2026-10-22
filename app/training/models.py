@@ -10,6 +10,8 @@ class Employee(models.Model):
     number = models.CharField('N.º Mecanográfico', max_length=40, unique=True)
     name = models.CharField('Nome completo', max_length=200)
     direction = models.CharField('Direcção / Gabinete', max_length=200, blank=True)
+    function = models.CharField('Função', max_length=200, blank=True)
+    # emp_function = models.CharField('Função execida',)
     category = models.CharField('Categoria', max_length=200, blank=True)
     area = models.CharField('Área alocada', max_length=200, blank=True)
     email = models.EmailField('E-mail', blank=True)

@@ -48,7 +48,7 @@ def build_attendance(group,day,enrollments):
     prepared=[]
     for index,en in enumerate(enrollments,1):
         e=en.employee;source=e.source_data or {}
-        values=[str(index),e.number,e.name,source.get('Função') or e.category,e.direction or e.area,format_phone(e.phone),e.email,'EPAL','','']
+        values=[str(index),e.number,e.name,e.function or e.category,e.direction or e.area,format_phone(e.phone),e.email,'EPAL','','']
         cells=[p(v) for v in values];height=max(11*mm,max(cell.wrap(COLS[i]-3*mm,H)[1]+4*mm for i,cell in enumerate(cells)))
         if height>available:raise ValueError('Um campo do cadastro é demasiado extenso para imprimir numa linha. Reveja o nome, função, direcção ou contacto.')
         prepared.append((cells,height))

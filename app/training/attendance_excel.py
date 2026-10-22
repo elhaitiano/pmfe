@@ -91,7 +91,7 @@ def fill_template(template, group, day, enrollments):
                 employee = enrollments[index].employee
                 source = employee.source_data or {}
                 values = [str(index + 1), employee.number, employee.name,
-                    source.get('Função') or employee.category,
+                    employee.function or employee.category,
                     employee.direction or employee.area, format_phone(employee.phone),
                     employee.email, 'EPAL', '', '']
             for column, value in zip('ABCDEFGHIJ', values):

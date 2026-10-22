@@ -104,7 +104,7 @@ class Command(BaseCommand):
                         if existing:
                             report['employees_existing'] += 1
                             continue
-                        employee = Employee(number=number, name=name, birth_date=parse_date(row[4]),
+                        employee = Employee(number=number, name=name, function=text(source_json(headers, row).get('Função')), birth_date=parse_date(row[4]),
                             phone=text(row[8]), admission_date=parse_date(row[9]), category=text(row[10]),
                             email=text(row[11]), direction=text(row[12]), area=text(row[13]),
                             source_data=source_json(headers, row))

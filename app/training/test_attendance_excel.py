@@ -20,7 +20,7 @@ class AttendanceExcelTests(TestCase):
         self.client.force_login(self.user)
 
     def people(self, count):
-        return [SimpleNamespace(employee=SimpleNamespace(number=f'00{i:03}',name=f'Técnico fictício {i:02} António Manuel',source_data={'Função':'Chefe de Secção'},category='Categoria',direction='Direcção de demonstração',area='',phone='923000000',email=f'tecnico{i}@example.org')) for i in range(count)]
+        return [SimpleNamespace(employee=SimpleNamespace(number=f'00{i:03}',name=f'Técnico fictício {i:02} António Manuel',source_data={'Função':'Chefe de Secção'},function='Chefe de Secção',category='Categoria',direction='Direcção de demonstração',area='',phone='923000000',email=f'tecnico{i}@example.org')) for i in range(count)]
 
     def inspect(self, data):
         archive=ZipFile(io.BytesIO(data));sheet=ET.fromstring(archive.read('xl/worksheets/sheet1.xml'))

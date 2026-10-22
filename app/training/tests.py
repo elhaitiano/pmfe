@@ -45,6 +45,7 @@ class WorkflowTests(TestCase):
         employee.name = 'Ana Maria de Exemplo'
         employee.area = 'CENTRO TESTE'
         employee.phone = '923255256'
+        employee.function = 'Operadora'
         employee.source_data = {'Função': 'Operadora', 'Telefone 2': '924123456'}
         employee.save()
         self.create_training()
