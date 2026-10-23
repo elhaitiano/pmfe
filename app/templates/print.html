@@ -189,7 +189,7 @@
                   {{ t.area|default:'-' }}
                 </td>
                 <td>
-                  <span class="period-dates">{{ t.start|date:'d/m/y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/y' }}</span>
+                  <span class="period-dates">{{ t.start|date:'d/m/Y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/Y' }}</span>
                 </td>
                 <td>
                   {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}

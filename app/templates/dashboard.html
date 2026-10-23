@@ -172,7 +172,7 @@ DASHBOARD EXECUTIVO{% endblock %}
       <div class="exec-conclusion">
         <span class="material-symbols-outlined">compare_arrows</span>
         <p>
-          Período anterior: {{ previous.start|date:'d/m/y' }} a {{ previous.end|date:'d/m/y' }} · {{ previous.hours|floatformat:1 }} h. Variação: {% if previous.change is None %}sem base percentual{% else %}{{ previous.change|floatformat:1 }}%{% endif %}.
+          Período anterior: {{ previous.start|date:'d/m/Y' }} a {{ previous.end|date:'d/m/Y' }} · {{ previous.hours|floatformat:1 }} h. Variação: {% if previous.change is None %}sem base percentual{% else %}{{ previous.change|floatformat:1 }}%{% endif %}.
         </p>
       </div>
       {% endif %}

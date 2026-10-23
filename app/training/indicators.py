@@ -1,6 +1,7 @@
 """Explicit indicator denominators with participation-level reconciliation."""
 from decimal import Decimal
 from django import forms
+from .widgets import date_widgets
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import Employee, Training, ReactionEvaluation
@@ -16,6 +17,7 @@ class IndicatorFilter(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        date_widgets(self.fields)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'gf-field'
 

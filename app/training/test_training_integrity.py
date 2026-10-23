@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from datetime import date, time
 from decimal import Decimal
 from django.contrib.auth import get_user_model
@@ -14,6 +15,9 @@ from .planning import create_group
 
 class TrainingIntegrityTests(TestCase):
     def setUp(self):
+        clock = patch('training.planning.timezone.localdate', return_value=date(2025, 1, 1))
+        clock.start()
+        self.addCleanup(clock.stop)
         self.person = Employee.objects.create(number='INT01', name='Pessoa de teste')
         self.other = Employee.objects.create(number='INT02', name='Outra pessoa')
         self.course = Course.objects.create(title='Curso de teste', code='INT')

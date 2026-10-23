@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from datetime import date, time
 from decimal import Decimal
 import io
@@ -14,6 +15,9 @@ from .planning import create_group
 
 class AttendanceExcelTests(TestCase):
     def setUp(self):
+        clock = patch('training.planning.timezone.localdate', return_value=date(2026, 10, 1))
+        clock.start()
+        self.addCleanup(clock.stop)
         self.course=Course.objects.create(title='Liderança e Gestão')
         self.group=create_group(self.course,dict(dates=[date(2026,10,1)],trainer='Formador',provider='EPAL',location='Kikuxi',capacity=40,hours_per_day=Decimal('7'),break_hours=Decimal('1'),start_time=time(8),end_time=time(16)))
         self.user=get_user_model().objects.create_user('excel-reader')
@@ -73,7 +77,7 @@ class AttendanceExcelTests(TestCase):
         self.assertEqual(response.status_code,200);self.assertIn('.xlsx',response['Content-Disposition'])
         self.assertTrue(b''.join(response.streaming_content).startswith(b'PK'))
         self.group.refresh_from_db();self.assertEqual(before,(self.group.revision,self.group.trainings.count(),Enrollment.objects.count()))
-        self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Gerar lista em Excel')
+        self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Gerar lista dos formandos em Excel')
         self.assertEqual(self.client.get(url,{'date':'2026-10-02'}).status_code,400)
         self.assertEqual(self.client.get(url,{'date':'invalid'}).status_code,400)
         self.group.state='Cancelada';self.group.save();self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,400)

@@ -50,23 +50,15 @@
     "route": "planning",
     "steps": [
       {
-        "text": "Abra o grupo planeado pretendido e escolha Adicionar formandos.",
+        "text": "Guarde primeiro o grupo. Abra-o em Ver grupos e escolha Seleccionar formandos para a lista.",
         "target": "a[href$=\"/inscrever/\"]"
       },
       {
-        "text": "Pesquise por nome ou número mecanográfico e filtre por direcção. Seleccione os participantes; a selecção acompanha as páginas nesta janela.",
+        "text": "A selecção só está disponível em grupos planeados cuja data de fim ainda não passou. A lista mostra apenas quem não tem histórico nem inscrição na mesma formação.",
         "target": "#planSelectPage"
       },
       {
-        "text": "Escolha Rever selecção. Leia os avisos: presença efectiva, ausência confirmada e participação por confirmar têm significados diferentes.",
-        "target": "#planSelection"
-      },
-      {
-        "text": "Escolha a decisão para cada pessoa. Uma repetição ou transferência exige justificação; não é possível duplicar a inscrição no mesmo grupo.",
-        "target": "select[name^=\"choice_\"]"
-      },
-      {
-        "text": "Reveja os nomes e confirme as inscrições. O servidor verifica capacidade e duplicados.",
+        "text": "Reveja e confirme os formandos. Não são permitidas repetição ou transferência para outro grupo da mesma formação.",
         "target": "#planConfirm"
       }
     ],
@@ -86,19 +78,23 @@
     "route": "planning",
     "steps": [
       {
-        "text": "Em Planeamento e Turmas, abra o grupo que pretende imprimir.",
-        "target": "a[href^=\"/planeamento/grupos/\"]"
+        "text": "Crie o grupo, preencha o calendário e seleccione o formador. Clique em Guardar.",
+        "target": "button[value=\"save\"]"
       },
       {
-        "text": "Na secção Lista de presença por dia, seleccione o dia efectivo da formação.",
-        "target": "select[name=\"date\"]"
+        "text": "Depois de guardar, abra o grupo em Ver grupos. Na secção Lista de presença dos formandos, escolha Seleccionar formandos para a lista.",
+        "target": "a[href$=\"/inscrever/\"]"
       },
       {
-        "text": "Escolha Gerar lista em Excel para obter o modelo preenchido, ou Imprimir lista PDF. Os botões ficam indisponíveis quando não há inscritos activos.",
-        "target": "button[formaction$=\"/lista-excel/\"]"
+        "text": "Seleccione apenas pessoas disponíveis, reveja e confirme. Quem já tem histórico ou inscrição na mesma formação não aparece na selecção.",
+        "target": "#planSelectPage"
       },
       {
-        "text": "Abra o Excel descarregado e use Ctrl+P. O modelo tem 12 participantes por página; chegada e rubrica permanecem em branco para preenchimento presencial.",
+        "text": "Na página do grupo, seleccione o dia e gere o Excel. A opção exige calendário e inscritos, e fica disponível até à data de fim, incluindo esse dia. Grupos concluídos ou cancelados não permitem gerar novas listas.",
+        "target": "#lista-presenca"
+      },
+      {
+        "text": "O Excel contém formandos, com chegada e rubrica em branco. Não é necessário iniciar o grupo para gerar a lista.",
         "target": null
       }
     ],

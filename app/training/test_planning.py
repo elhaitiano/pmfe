@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from datetime import date, time
 from decimal import Decimal
 import io
@@ -5,7 +6,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from .models import Course, TrainingGroup, Enrollment, Employee, Training
+from .models import Course, TrainingGroup, Enrollment, Employee, Training, Trainer
 from .planning import create_group, history_rows, enrol_reviewed, GroupForm
 from .batch import edition_queryset
 from .dashboard import executive_data
@@ -13,6 +14,9 @@ from .dashboard import executive_data
 
 class PlanningTests(TestCase):
     def setUp(self):
+        clock = patch('training.planning.timezone.localdate', return_value=date(2026, 1, 3))
+        clock.start()
+        self.addCleanup(clock.stop)
         self.staff=get_user_model().objects.create_user('planning-admin',password='qa',is_staff=True)
         self.reader=get_user_model().objects.create_user('planning-reader',password='qa')
         self.client.force_login(self.staff)
@@ -44,9 +48,9 @@ class PlanningTests(TestCase):
         self.assertEqual(response.status_code,200);self.assertEqual(Course.objects.count(),2)
 
     def test_calendar_checks_duplicate_days_and_hours(self):
-        data={**self.values,'dates':'2026-01-01\n2026-01-01'}
+        data={**self.values,'start':'2026-01-03','end':'2026-01-01', 'trainer':Trainer.objects.create(name='Formador A').pk}
         self.assertFalse(GroupForm(data).is_valid())
-        data['dates']='2026-01-01\n2026-01-03';data['end_time']='12:00'
+        data['start']='2026-01-01';data['end']='2026-01-03';data['end_time']='12:00'
         self.assertFalse(GroupForm(data).is_valid());data['end_time']='16:00'
         self.assertTrue(GroupForm(data).is_valid())
 
@@ -68,14 +72,15 @@ class PlanningTests(TestCase):
         self.assertEqual([e['warnings'][0]['kind'] for e in entries],['Participação anterior','Ausência confirmada','Participação por confirmar'])
         with self.assertRaises(ValidationError):self.add(self.group,self.people[:1])
         with self.assertRaises(ValidationError):self.add(self.group,self.people[:1],choice='repeat')
-        self.add(self.group,self.people[:1],choice='repeat',reason='Actualização de competências')
-        self.add(self.group,self.people[1:2]);self.assertEqual(Training.objects.count(),3)
+        with self.assertRaises(ValidationError):self.add(self.group,self.people[:1],choice='repeat',reason='Actualização de competências')
+        with self.assertRaises(ValidationError):self.add(self.group,self.people[1:2])
+        self.assertEqual(Training.objects.count(),3)
 
     def test_transfer_multiple_people_preserves_origin_and_versions(self):
         self.add(self.group,self.people[:2]);target=create_group(self.course,self.values)
-        self.add(target,self.people[:2],choice='transfer',reason='Alteração de disponibilidade')
-        self.assertEqual(self.group.enrollments.filter(state='Transferida').count(),2)
-        self.assertEqual(target.enrollments.filter(state='Activa').count(),2)
+        with self.assertRaises(ValidationError):self.add(target,self.people[:2],choice='transfer',reason='Alteração de disponibilidade')
+        self.assertEqual(self.group.enrollments.filter(state='Activa').count(),2)
+        self.assertEqual(target.enrollments.filter(state='Activa').count(),0)
         self.assertEqual(Training.objects.count(),0)
         with self.assertRaises(ValidationError):self.add(self.group,self.people[:1])
 
@@ -84,7 +89,7 @@ class PlanningTests(TestCase):
         target=create_group(self.course,self.values)
         with self.assertRaises(ValidationError):self.add(target,self.people[:1],choice='transfer',reason='Mudar grupo')
         self.assertEqual(Enrollment.objects.filter(state='Activa').count(),1)
-        self.add(target,self.people[:1],choice='repeat',reason='Participação anterior por confirmar')
+        with self.assertRaises(ValidationError):self.add(target,self.people[:1],choice='repeat',reason='Participação anterior por confirmar')
         self.assertEqual(Training.objects.count(),1)
 
     def test_capacity_and_stale_review_rollback_entire_selection(self):
@@ -102,8 +107,21 @@ class PlanningTests(TestCase):
         review=self.client.post(url,{'action':'review','employees':[self.people[0].pk]})
         self.assertContains(review,'Já participou');self.assertFalse(Enrollment.objects.exists())
         data={'action':'confirm','employees':[self.people[0].pk],'review_token':review.context['review_token'],f'choice_{self.people[0].pk}':'repeat',f'reason_{self.people[0].pk}':'Reciclagem'}
-        result=self.client.post(url,data);self.assertEqual(result.status_code,302);self.assertEqual(Enrollment.objects.count(),1)
-        self.assertEqual(self.client.post(url,data).status_code,200);self.assertEqual(Enrollment.objects.count(),1)
+        result=self.client.post(url,data);self.assertEqual(result.status_code,200);self.assertEqual(Enrollment.objects.count(),0)
+        self.assertEqual(self.client.post(url,data).status_code,200);self.assertEqual(Enrollment.objects.count(),0)
+
+    def test_prior_course_code_blocks_legacy_record_and_other_course_remains_available(self):
+        self.course.code = 'MACHIN'
+        self.course.save()
+        self.prior(self.people[0], title='Nome antigo desconhecido', source_course_code='machin', attendance=1)
+        self.assertTrue(history_rows(self.group, self.people[:1])[0]['blocked'])
+        with self.assertRaises(ValidationError):
+            self.add(self.group, self.people[:2])
+        self.assertFalse(self.group.enrollments.exists())
+        other = Course.objects.create(title='Outra formação', code='OTHER')
+        target = create_group(other, self.values)
+        self.add(target, self.people[:1])
+        self.assertEqual(target.enrollments.count(), 1)
 
     def test_parallel_groups_with_identical_dates_stay_separate(self):
         self.add(self.group,self.people[:1]);self.start(self.group)

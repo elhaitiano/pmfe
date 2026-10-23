@@ -39,7 +39,7 @@
   </div>
   <div class="plan-actions">
     {% if user.is_staff and group.state == 'Planeada' %}
-    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}"><span class="material-symbols-outlined">group_add</span>Adicionar formandos</a><a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar calendário</a>
+<a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar calendário</a>
     <form method="post" action="{% url 'group_transition' group.pk %}">
       {% csrf_token %}
       <input type="hidden" name="revision" value="{{ group.revision }}">
@@ -63,16 +63,21 @@
     A inscrição prepara a lista. Ao iniciar o grupo, os registos são ligados ao histórico e à grelha existente, com zero presenças por confirmar e sem notas ou certificados presumidos.
   </p>
 </section>
-<section class="plan-panel">
+<section class="plan-panel" id="lista-presenca">
   <div class="plan-heading">
     <h2>
-      <span class="material-symbols-outlined">print</span>Lista de presença por dia
+      <span class="material-symbols-outlined">print</span>Lista de presença dos formandos
     </h2>
     <p>
       Escolha um dia efectivo. Hora de chegada e rubrica ficam em branco para assinatura presencial.
     </p>
   </div>
-  {% if group.state != 'Cancelada' %}
+  {% if attendance_open %}
+  {% if user.is_staff and group.state == 'Planeada' %}
+  <div class="plan-actions">
+    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Seleccionar formandos para a lista</a>
+  </div>
+  {% endif %}
   <form method="get" action="{% url 'attendance_pdf' group.pk %}" class="plan-search">
     <label>
       Dia da formação
@@ -85,16 +90,16 @@
       </select>
     </label>
     <span class="plan-note">{{ group.start_time|time:'H:i' }} — {{ group.end_time|time:'H:i' }} · Pausas: {{ group.break_hours|floatformat:1 }} h/dia</span>
-    <button class="gf-btn"{% if not active_count %} disabled{% endif %}>
+    <button class="gf-btn"{% if not active_count or not sessions %} disabled{% endif %}>
       Imprimir lista PDF
     </button>
-    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not active_count %} disabled{% endif %}>
-      Gerar lista em Excel
+    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not active_count or not sessions %} disabled{% endif %}>
+      Gerar lista dos formandos em Excel
     </button>
   </form>
   {% else %}
   <p>
-    Grupo cancelado; calendário e inscrições conservados.
+    Preparação da lista encerrada: grupo concluído, cancelado ou com data de fim ultrapassada.
   </p>
   {% endif %}
 </section>

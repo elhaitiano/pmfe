@@ -7,7 +7,7 @@
       {{ group.code }} · {{ group.title }}
     </h2>
     <p>
-      Pesquise, seleccione vários formandos e reveja os avisos antes de confirmar.
+      Seleccione os formandos disponíveis para esta formação. Pessoas com histórico ou inscrição na mesma formação não aparecem nesta lista.
     </p>
     <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar ao grupo</a>
   </div>
@@ -21,7 +21,7 @@
     {% csrf_token %}
     <input type="hidden" name="action" value="confirm"><input type="hidden" name="review_token" value="{{ review_token }}">
     <div class="plan-warning">
-      Revisão da selecção: nenhum registo foi gravado ainda. Uma repetição exige motivo; uma transferência conserva a inscrição no grupo de origem.
+      Quem já tem histórico ou inscrição noutro grupo da mesma formação não pode ser adicionado.
     </div>
     {% for item in review %}
     <article class="plan-review">
@@ -31,7 +31,7 @@
       </h3>
       {% if item.blocked %}
       <p class="plan-warning">
-        Este formando já consta deste grupo. Não é possível repetir a inscrição.
+        {{ item.block_reason }}
       </p>
       {% endif %}
       {% for warning in item.warnings %}
@@ -50,25 +50,12 @@
             Não adicionar
           </option>
           {% if not item.blocked %}
-          {% if not item.needs_reason %}
+          
           <option value="add"{% if item.choice == 'add' or not item.choice %} selected{% endif %}>
             Adicionar ao grupo
           </option>
           {% endif %}
-          <option value="repeat"{% if item.choice == 'repeat' %} selected{% endif %}>
-            Manter nova inscrição com justificação
-          </option>
-          {% if item.can_transfer %}
-          <option value="transfer"{% if item.choice == 'transfer' %} selected{% endif %}>
-            Transferir do(s) grupo(s) planeado(s)
-          </option>
-          {% endif %}
-          {% endif %}
         </select>
-      </label>
-      <label>
-        Motivo (obrigatório para repetição ou transferência)
-        <textarea class="gf-field" name="reason_{{ item.person.pk }}" rows="2" maxlength="1000">{{ item.reason }}</textarea>
       </label>
     </article>
     {% endfor %}
@@ -80,21 +67,6 @@
     </div>
   </form>
   {% else %}
-  {% if reuse_groups %}
-  <details class="plan-reuse"><summary>Reutilizar participantes de um grupo anterior</summary>
-  <form method="get" class="plan-search">
-    <select class="gf-field" name="reuse" aria-label="Grupo de origem">
-      {% for old in reuse_groups %}
-      <option value="{{ old.pk }}">
-        {{ old.code }} · {{ old.start|date:'d/m/y' }} · {{ old.state }}
-      </option>
-      {% endfor %}
-    </select>
-    <button class="gf-btn alt">
-      Rever estes participantes
-    </button>
-  </form>
-  </details>{% endif %}
   <form method="get" class="plan-search">
     <input class="gf-field" name="q" value="{{ q }}" placeholder="Nome ou número mecanográfico" aria-label="Pesquisar formando">
     <select name="direction" class="gf-field" aria-label="Filtrar direcção">
@@ -158,7 +130,7 @@
             </td>
             <td>
               {% if item.blocked %}
-              <span class="plan-warning">Já consta deste grupo</span>{% else %}{% for warning in item.warnings %}
+              <span class="plan-warning">{{ item.block_reason }}</span>{% else %}{% for warning in item.warnings %}
               <div class="plan-warning">
                 <strong>{{ warning.kind }}</strong><small>{{ warning.note }} {{ warning.label }}</small>
               </div>

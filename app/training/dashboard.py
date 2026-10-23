@@ -105,7 +105,7 @@ def dashboard(request):
                 raw_writer.writerow(["'" + v if isinstance(v, str) and v.startswith(('=', '+', '-', '@', '\t', '\r', '\n')) else v for v in values])
         writer = SafeWriter()
         writer.writerow(['Dashboard Executivo EPAL — Base provisória'])
-        writer.writerow(['Gerado em', data['generated_at'].isoformat()])
+        writer.writerow(['Gerado em', data['generated_at'].strftime('%d/%m/%Y %H:%M')])
         for key, value in selected.items():
             writer.writerow([form.fields[key].label, value or 'Todos'])
         writer.writerow(['Indicador', 'Valor', 'Critério'])

@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 from urllib.parse import urlencode
 from django import forms
+from .widgets import date_widgets
 from django.urls import reverse
 from django.utils import timezone
 from .dashboard import DashboardFilters, executive_data
@@ -23,6 +24,7 @@ class ExecutiveFilters(DashboardFilters):
 
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
+        date_widgets(self.fields)
         years = {timezone.localdate().year} | {int(v) for v,_ in self.fields['year'].choices if v}
         years |= {d.year for d in Training.objects.dates('certificate_delivery_date','year')}
         self.fields['year'].choices = [('', 'Todos os anos')] + [(str(y),str(y)) for y in sorted(years,reverse=True)]
@@ -118,7 +120,7 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         daily={}
         for row in rows:daily[row.start.isoformat()]=daily.get(row.start.isoformat(),Decimal(0))+(row.completed_hours or Decimal(0))
         peak=max(daily.values(),default=0)
-        data['timeline_bars']=[{'label':date.fromisoformat(k).strftime('%d/%m'),'value':v,'width':float(v/peak*100) if peak else 0,'href':drill('time',k,k)} for k,v in sorted(daily.items())]
+        data['timeline_bars']=[{'label':date.fromisoformat(k).strftime('%d/%m/%Y'),'value':v,'width':float(v/peak*100) if peak else 0,'href':drill('time',k,date.fromisoformat(k).strftime('%d/%m/%Y'))} for k,v in sorted(daily.items())]
         data['timeline_title']='Horas por dia de início (dias com registos)'
     for bar in data['timeline_bars']:
         if 'href' in bar:continue

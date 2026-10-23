@@ -43,7 +43,7 @@
             {{ row.title }}<small>{{ row.trainer|default:'Formador por confirmar' }} · {{ row.status }}</small>
           </td>
           <td>
-            {{ row.start|date:'d/m/y' }}<br>{{ row.end|date:'d/m/y' }}
+            {{ row.start|date:'d/m/Y' }}<br>{{ row.end|date:'d/m/Y' }}
           </td>
           <td>
             {{ row.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
@@ -59,7 +59,7 @@
             Participante: {{ row.certificate_label }}
             <small>Emissão: {{ row.certificate_issue_label }} · RH: {{ row.certificate_hr_label }}</small>
             {% if row.certificate_declaration %}<small>Declaração registada (não equivale a entrega confirmada)</small>{% endif %}
-            <small>{{ row.certificate_delivery_date|date:'d/m/y' }} {{ row.certificate_reference }}</small>
+            <small>{{ row.certificate_delivery_date|date:'d/m/Y' }} {{ row.certificate_reference }}</small>
           </td>
         </tr>
         {% empty %}

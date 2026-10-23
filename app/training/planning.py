@@ -1,6 +1,6 @@
 """Catalogue, numbered groups and reviewed enrolments. No attendance is inferred."""
 import hashlib, json, unicodedata
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from django import forms
 from django.contrib import messages
@@ -17,8 +17,8 @@ from django.views.decorators.http import require_POST, require_http_methods
 from .forms import StyledModelForm
 from .models import Course, TrainingGroup, GroupSession, Enrollment, Employee, Training
 from .views import staff_required, record
-from .widgets import numeric_text_widgets
-from .models import AuditEvent
+from .widgets import numeric_text_widgets, date_widgets
+from .models import AuditEvent, Trainer
 
 
 def normalise(value):
@@ -53,8 +53,9 @@ class CourseForm(StyledModelForm):
 
 
 class GroupForm(forms.Form):
-    dates = forms.CharField(label='Dias da formação', widget=forms.Textarea(attrs={'rows':4}), help_text='Uma data por linha no formato AAAA-MM-DD. Indique apenas os dias efectivos, mesmo que não sejam consecutivos.')
-    trainer = forms.CharField(label='Formador(a)',max_length=200)
+    start = forms.DateField(label='Data de início', input_formats=['%d/%m/%Y', '%Y-%m-%d'], widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'dd/mm/aaaa', 'inputmode': 'numeric', 'maxlength': '10', 'pattern': '[0-9]{2}/[0-9]{2}/[0-9]{4}'}))
+    end = forms.DateField(label='Data de fim', input_formats=['%d/%m/%Y', '%Y-%m-%d'], widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'dd/mm/aaaa', 'inputmode': 'numeric', 'maxlength': '10', 'pattern': '[0-9]{2}/[0-9]{2}/[0-9]{4}'}))
+    trainer = forms.ModelChoiceField(label='Formador(a)', queryset=Trainer.objects.none(), empty_label='Seleccione o formador')
     provider = forms.CharField(label='Entidade formadora',max_length=200,required=False)
     location = forms.CharField(label='Local',max_length=200)
     capacity = forms.IntegerField(label='Capacidade',min_value=1,max_value=1000,initial=30)
@@ -64,21 +65,27 @@ class GroupForm(forms.Form):
     end_time = forms.TimeField(label='Hora de fim',widget=forms.TimeInput(attrs={'type':'time'}))
     revision = forms.IntegerField(widget=forms.HiddenInput,required=False)
     def __init__(self,*a,**kw):
+        current_trainer = kw.pop('current_trainer', None)
         super().__init__(*a,**kw)
+        self.fields['trainer'].queryset = Trainer.objects.filter(Q(active=True) | Q(pk=current_trainer)).order_by('name', 'pk')
         numeric_text_widgets(self.fields)
+        date_widgets(self.fields)
         self.fields['location'].widget.attrs['list'] = 'training-sites'
         for f in self.fields.values():f.widget.attrs['class']='gf-field'
     @property
     def design_groups(self):return [('',self.visible_fields())]
-    def clean_dates(self):
-        try:
-            values=[date.fromisoformat(x.strip()) for x in self.cleaned_data['dates'].replace(',','\n').splitlines() if x.strip()]
-        except ValueError:raise ValidationError('Use datas válidas no formato AAAA-MM-DD.')
-        if not 1<=len(values)<=366:raise ValidationError('Indique entre 1 e 366 dias efectivos.')
-        if len(set(values))!=len(values):raise ValidationError('Há datas repetidas. Cada dia deve aparecer uma vez.')
-        return sorted(values)
     def clean(self):
-        data=super().clean();start=data.get('start_time');end=data.get('end_time')
+        data=super().clean()
+        first, last = data.get('start'), data.get('end')
+        if first and last:
+            count = (last - first).days + 1
+            if count < 1:
+                self.add_error('end', 'A data de fim não pode ser anterior à data de início.')
+            elif count > 366:
+                self.add_error('end', 'A duração não pode ultrapassar 366 dias.')
+            else:
+                data['dates'] = [first + timedelta(days=i) for i in range(count)]
+        start=data.get('start_time');end=data.get('end_time')
         if start and end:
             duration=Decimal((end.hour*60+end.minute)-(start.hour*60+start.minute))/60
             if duration<=0:self.add_error('end_time','A hora de fim deve ser posterior à hora de início, no mesmo dia.')
@@ -89,6 +96,8 @@ class GroupForm(forms.Form):
 
 def group_values(data):
     days=data['dates']
+    if isinstance(data['trainer'], Trainer):
+        data = {**data, 'trainer_record': data['trainer'], 'trainer': data['trainer'].name}
     return {**({'trainer_record': data['trainer_record']} if 'trainer_record' in data else {}), **{k:data[k] for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time']},'start':days[0],'end':days[-1],'days':len(days)}
 
 
@@ -109,26 +118,27 @@ def history_rows(group, people):
     other=list(Enrollment.objects.filter(employee_id__in=ids,state='Activa',group__course=group.course).exclude(group=group).select_related('group'))
     existing=set(group.enrollments.filter(employee_id__in=ids).values_list('employee_id',flat=True))
     titles={normalise(t) for t in [group.course.title,*group.course.aliases,group.title]}
-    by_person={p.pk:{'person':p,'warnings':[],'other':[],'blocked':p.pk in existing,'fingerprint':[]} for p in people}
+    by_person={p.pk:{'person':p,'warnings':[],'other':[],'blocked':p.pk in existing,'block_reason':'Já inscrito neste grupo.' if p.pk in existing else '', 'fingerprint':[]} for p in people}
     for row in old:
-        same = row.group.course_id==group.course_id if row.group_id else (row.course_id==group.course_id if row.course_id else normalise(row.title) in titles)
+        same = row.group.course_id==group.course_id if row.group_id else (row.course_id==group.course_id if row.course_id else (normalise(row.title) in titles or bool(group.course.code and row.source_course_code and normalise(row.source_course_code)==normalise(group.course.code))))
         if not same:continue
         entry=by_person[row.employee_id]
         label=f'{row.group.code if row.group_id else "Registo anterior sem grupo"} · {row.start:%d/%m/%Y} · {row.status}'
         if row.attendance>0:kind='Participação anterior';note='Já participou nesta acção de formação.'
-        elif row.status in ['Concluído','Desistência'] and row.attendance_confirmed:kind='Ausência confirmada';note='Foi inscrito, mas tem zero presenças verificadas. Pode participar no novo grupo.'
+        elif row.status in ['Concluído','Desistência'] and row.attendance_confirmed:kind='Ausência confirmada';note='Existe um registo anterior desta formação, com zero presenças verificadas.'
         else:kind='Participação por confirmar';note='Não existem presenças verificadas que permitam confirmar a ausência.'
+        entry['blocked'] = True
+        entry['block_reason'] = 'Já tem histórico nesta formação. Não pode entrar noutro grupo da mesma formação.'
         entry['warnings'].append({'kind':kind,'note':note,'label':label})
         entry['fingerprint'].append(('t',row.pk,row.version,row.attendance,row.attendance_confirmed,row.status,row.group_id))
     for old_en in other:
         entry=by_person[old_en.employee_id]
         entry['other'].append(old_en)
+        entry['blocked'] = True
+        entry['block_reason'] = 'Já está inscrito noutro grupo desta formação.'
         entry['warnings'].append({'kind':'Inscrição noutro grupo','note':f'Já está inscrito no {old_en.group.code} ({old_en.group.state}).','label':old_en.group.title})
         entry['fingerprint'].append(('e',old_en.pk,old_en.state,old_en.group.revision,old_en.training_id))
     for entry in by_person.values():
-        # Transfers are only possible before an attendance record exists.
-        entry['can_transfer']=bool(entry['other']) and all(e.training_id is None and e.group.state=='Planeada' for e in entry['other'])
-        entry['needs_reason']=any(w['kind']!='Ausência confirmada' for w in entry['warnings'])
         entry['key']=hashlib.sha256(json.dumps([entry['fingerprint'],entry['blocked']],sort_keys=True,default=str).encode()).hexdigest()
     return list(by_person.values())
 
@@ -143,28 +153,22 @@ def selected_people(request):
 
 @transaction.atomic
 def enrol_reviewed(group, people, decisions, expected_keys, revision):
-    if TrainingGroup.objects.filter(pk=group.pk,state='Planeada',revision=revision).update(revision=F('revision')+1)!=1:
-        raise ValidationError('A turma foi alterada. Reveja novamente a selecção.')
+    if TrainingGroup.objects.filter(pk=group.pk,state='Planeada',end__gte=timezone.localdate(),revision=revision).update(revision=F('revision')+1)!=1:
+        raise ValidationError('A turma foi alterada ou a data de fim já passou. Reveja a selecção.')
     group.refresh_from_db()
     entries=history_rows(group,people)
     if {str(x['person'].pk):x['key'] for x in entries}!=expected_keys:
         raise ValidationError('O histórico ou as inscrições mudaram. Reveja novamente os avisos.')
-    accepted=[];bumped=set()
+    accepted=[]
     for item in entries:
         pid=str(item['person'].pk);choice,reason=decisions[pid];reason=reason.strip()
         if choice=='skip':continue
-        if item['blocked']:raise ValidationError('O formando já consta deste grupo. Não pode ser inscrito novamente.')
-        if choice not in ['add','repeat','transfer']:raise ValidationError('Escolha uma opção válida para cada formando.')
-        if item['needs_reason'] and choice not in ['repeat','transfer']:raise ValidationError('Reveja os avisos e escolha repetir ou transferir.')
-        if (item['needs_reason'] or choice in ['repeat','transfer']) and not reason:raise ValidationError('Indique o motivo da repetição ou transferência.')
-        if len(reason)>1000:raise ValidationError('O motivo não pode ultrapassar 1.000 caracteres.')
-        if choice=='transfer':
-            if not item['can_transfer']:raise ValidationError('Só é possível transferir inscrições de grupos planeados, sem registo de participação. Nos restantes casos, mantenha o histórico e justifique uma nova inscrição.')
-            for old in item['other']:
-                if old.group_id not in bumped:
-                    if TrainingGroup.objects.filter(pk=old.group_id,state='Planeada',revision=old.group.revision).update(revision=F('revision')+1)!=1:raise ValidationError('O grupo de origem mudou. Reveja a transferência.')
-                    bumped.add(old.group_id)
-                old.state='Transferida';old.reason=f'Transferida para {group.code}. {reason}';old.save(update_fields=['state','reason'])
+        if item['blocked']:
+            raise ValidationError(item['block_reason'])
+        if choice != 'add':
+            raise ValidationError('Apenas novas inscrições são permitidas. Não é possível repetir ou transferir a mesma formação.')
+        if len(reason)>1000:
+            raise ValidationError('O motivo não pode ultrapassar 1.000 caracteres.')
         accepted.append((item['person'],reason))
     if group.enrollments.filter(state='Activa').count()+len(accepted)>group.capacity:raise ValidationError('A selecção ultrapassa a capacidade do grupo. Retire formandos ou aumente a capacidade.')
     for person,reason in accepted:Enrollment.objects.create(group=group,employee=person,reason=reason)
@@ -220,7 +224,12 @@ def group_edit(request,course_pk=None,pk=None):
     if group and group.state!='Planeada':messages.error(request,'O calendário fica fechado após iniciar ou cancelar o grupo.');return redirect('group_detail',pk=group.pk)
     initial={'hours_per_day':course.default_hours,'start_time':'08:00','end_time':'16:00'}
     if group:initial.update({k:getattr(group,k) for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time','revision']});initial['dates']='\n'.join(d.isoformat() for d in group.sessions.values_list('date',flat=True))
-    form=GroupForm(request.POST if request.method=='POST' else None,initial=initial)
+    if group:
+        initial['trainer'] = group.trainer_record_id
+        initial['start'] = group.start
+        initial['end'] = group.end
+    form=GroupForm(request.POST if request.method=='POST' else None, initial=initial,
+                   current_trainer=group.trainer_record_id if group else None)
     if request.method=='POST' and form.is_valid():
         try:
             with transaction.atomic():
@@ -229,9 +238,10 @@ def group_edit(request,course_pk=None,pk=None):
                     if TrainingGroup.objects.filter(pk=pk,revision=form.cleaned_data['revision'],state='Planeada').update(**group_values(form.cleaned_data),revision=F('revision')+1)!=1:raise ValidationError('O grupo foi alterado. Reabra o calendário.')
                     group.sessions.all().delete();GroupSession.objects.bulk_create([GroupSession(group=group,date=d) for d in form.cleaned_data['dates']])
                 else:group=create_group(course,form.cleaned_data)
-                record(request,'PLANNING_GROUP',f'Acção {course.pk}, {group.code}: calendário guardado.');return redirect('group_detail',pk=group.pk)
+                record(request,'PLANNING_GROUP',f'Acção {course.pk}, {group.code}: calendário guardado.')
+                return redirect('group_detail',pk=group.pk)
         except ValidationError as exc:form.add_error(None,' '.join(exc.messages))
-    return render(request,'planning/form.html',{'form':form,'title':f'Calendário — {group.code}' if group else 'Criar grupo (numeração automática)','course':course})
+    return render(request,'planning/form.html',{'form':form,'title':f'Calendário — {group.code}' if group else 'Criar grupo (numeração automática)','course':course, 'group':group})
 
 
 @login_required
@@ -249,14 +259,16 @@ def group_detail(request,pk):
             source_ids.extend('pilar3b:' + value.strip() for value in
                               payload.get('source', {}).get('IDs de participação', '').split('|') if value.strip())
     source_trainings = Training.objects.filter(source_key__in=source_ids).select_related('employee').order_by('employee__name')
-    return render(request,'planning/group.html',{'source_trainings':source_trainings,'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'seed':group.trainings.order_by('pk').first()})
+    return render(request,'planning/group.html',{'attendance_open':group.end >= timezone.localdate() and group.state not in ['Cancelada','Concluída'], 'source_trainings':source_trainings,'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'seed':group.trainings.order_by('pk').first()})
 
 
 @login_required
 @staff_required
 def enrol(request,pk):
     group=get_object_or_404(TrainingGroup.objects.select_related('course'),pk=pk)
-    if group.state!='Planeada':messages.error(request,'Adicione os formandos enquanto o grupo está planeado.');return redirect('group_detail',pk=pk)
+    if group.state!='Planeada' or group.end < timezone.localdate():
+        messages.error(request,'Seleccione formandos num grupo planeado cuja data de fim ainda não passou.')
+        return redirect('group_detail',pk=pk)
     q=request.GET.get('q','').strip();direction=request.GET.get('direction','');people=Employee.objects.all()
     if q:people=people.filter(Q(name__icontains=q)|Q(number__icontains=q))
     if direction:people=people.filter(direction=direction)
@@ -276,15 +288,10 @@ def enrol(request,pk):
         except (ValidationError,signing.BadSignature,signing.SignatureExpired) as exc:
             error=' '.join(exc.messages) if isinstance(exc,ValidationError) else 'A revisão expirou. Reveja novamente os formandos.'
             if review:token=signing.dumps({'user':request.user.pk,'group':pk,'revision':group.revision,'keys':{str(x['person'].pk):x['key'] for x in review}},salt='planning-enrol')
-    if request.method=='GET' and request.GET.get('reuse','').isdecimal():
-        source=get_object_or_404(TrainingGroup,pk=request.GET['reuse'],course=group.course)
-        selected=list(Employee.objects.filter(enrollments__group=source,enrollments__state='Activa'))
-        if selected:
-            review=history_rows(group,selected)
-            token=signing.dumps({'user':request.user.pk,'group':pk,'revision':group.revision,'keys':{str(x['person'].pk):x['key'] for x in review}},salt='planning-enrol')
-        else:error='O grupo escolhido não tem inscritos activos para reutilizar.'
+    eligible_ids = [entry['person'].pk for entry in history_rows(group, list(people)) if not entry['blocked']]
+    people = people.filter(pk__in=eligible_ids)
     page=Paginator(people,30).get_page(request.GET.get('page'))
-    return render(request,'planning/enrol.html',{'group':group,'page':page,'candidates':history_rows(group,list(page)),'directions':Employee.objects.exclude(direction='').values_list('direction',flat=True).distinct().order_by('direction'),'q':q,'direction':direction,'review':review,'review_token':token,'error':error,'reuse_groups':TrainingGroup.objects.filter(course=group.course).exclude(pk=pk)})
+    return render(request,'planning/enrol.html',{'group':group,'page':page,'candidates':history_rows(group,list(page)),'directions':Employee.objects.exclude(direction='').values_list('direction',flat=True).distinct().order_by('direction'),'q':q,'direction':direction,'review':review,'review_token':token,'error':error})
 
 
 @login_required
@@ -361,6 +368,8 @@ def enrollment_edit(request,pk,en_pk):
 def attendance_pdf(request,pk):
     group=get_object_or_404(TrainingGroup,pk=pk)
     if group.state=='Cancelada':return HttpResponseBadRequest('O grupo está cancelado.')
+    if group.end < timezone.localdate() or group.state == 'Concluída':
+        return HttpResponseBadRequest('A lista de presença só pode ser gerada até à data de fim de um grupo não concluído.')
     try:day=date.fromisoformat(request.GET.get('date',''))
     except ValueError:return HttpResponseBadRequest('Seleccione um dia do calendário.')
     if not group.sessions.filter(date=day).exists():return HttpResponseBadRequest('Este dia não pertence ao calendário do grupo.')
@@ -382,6 +391,8 @@ def attendance_pdf(request,pk):
 def attendance_excel(request,pk):
     group=get_object_or_404(TrainingGroup,pk=pk)
     if group.state=='Cancelada':return HttpResponseBadRequest('O grupo está cancelado.')
+    if group.end < timezone.localdate() or group.state == 'Concluída':
+        return HttpResponseBadRequest('A lista de presença só pode ser gerada até à data de fim de um grupo não concluído.')
     try:day=date.fromisoformat(request.GET.get('date',''))
     except ValueError:return HttpResponseBadRequest('Seleccione um dia do calendário.')
     if not group.sessions.filter(date=day).exists():return HttpResponseBadRequest('Este dia não pertence ao calendário do grupo.')

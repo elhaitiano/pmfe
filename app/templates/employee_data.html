@@ -53,7 +53,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
               {{ employee.name }}
             </h3>
             <p class="text-primary uppercase tracking-[.12em] font-semibold mt-2">
-              {{ employee.function|default:"Formando" }}
+              {{ employee.function|default:"Função por indicar" }}
             </p>
             <div class="profile-detail-grid grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-7 text-sm">
               {% for label,value in data_fields %}
@@ -235,7 +235,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ t.area|default:'—' }}
                 </td>
                 <td class="py-5 text-slate-300 whitespace-nowrap period">
-                  {{ t.start|date:'d/m/y' }} – {{ t.end|date:'d/m/y' }}
+                  {{ t.start|date:'d/m/Y' }} – {{ t.end|date:'d/m/Y' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-primary">
                   {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}

@@ -56,7 +56,7 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
             <strong>{% if edition.group_id %}G{{ edition.group__number }} · {% endif %}{{ edition.title }}</strong><small>{{ edition.area|default:'Área por confirmar' }}</small>
           </td>
           <td>
-            {{ edition.start|date:'d/m/y' }} – {{ edition.end|date:'d/m/y' }}
+            {{ edition.start|date:'d/m/Y' }} – {{ edition.end|date:'d/m/Y' }}
           </td>
           <td>
             {{ edition.trainer|default:'—' }}<small>{{ edition.provider|default:'—' }}</small>

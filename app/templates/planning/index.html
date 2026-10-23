@@ -85,7 +85,7 @@
             <strong>{% if group.course.code %}{{ group.course.code }} · {% endif %}{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
           </td>
           <td>
-            {{ group.start|date:'d/m/y' }} — {{ group.end|date:'d/m/y' }}<small>{{ group.days|default_if_none:'Por confirmar' }} dias efectivos</small>
+            {{ group.start|date:'d/m/Y' }} — {{ group.end|date:'d/m/Y' }}<small>{{ group.days|default_if_none:'Por confirmar' }} dias efectivos</small>
           </td>
           <td>
             {{ group.location }}<small>{{ group.trainer }}</small>
