@@ -66,6 +66,8 @@ def analyse_indicators(rows):
     certificates = {
         'issued':sum(r.certificate_issued is True for r in rows),
         'issued_unknown':sum(r.certificate_issued is None for r in rows),
+        'participant_reported':sum(r.delivery_reported for r in rows),
+        'participant_declared':sum(r.declared_delivery_date is not None for r in rows),
         'participant':sum(r.certified is True for r in rows),
         'participant_unknown':sum(r.certified is None for r in rows),
         'hr':sum(r.certificate_hr_delivered is True for r in rows),

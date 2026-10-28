@@ -1,5 +1,12 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
+{% if user.is_staff %}<p><a class="gf-btn" href="{% url 'planning_resources' %}">Centros e salas</a></p>{% endif %}
+<p>Reservas provisórias não estão confirmadas. Abra o grupo para rever recursos e dias efectivos.</p>
+<section class="plan-panel" aria-label="Indicadores de planeamento">
+<p>{{ planning_summary.total }} grupos no filtro; {{ planning_summary.confirmed }} confirmados;
+{{ planning_summary.provisional }} provis&oacute;rios; {{ planning_summary.missing_room }} sem sala.</p>
+<p>Grupos planeados n&atilde;o representam forma&ccedil;&otilde;es realizadas.</p>
+</section>
 <form method="get" class="plan-search">
   <input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar código, acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos">
   <button class="gf-btn">
@@ -95,8 +102,11 @@
           </td>
           <td>
             <span class="plan-pill">{{ group.state }}</span>
+            <small>{{ group.get_planning_confirmation_display }}</small>
+            {% if not group.room_id %}<small role="status">Sala por definir</small>{% endif %}
           </td>
           <td>
+            <a class="gf-btn" href="{% url 'group_detail' group.pk %}#lista-presenca">Lista de presença</a>
             <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Ver formandos</a>
           </td>
         </tr>

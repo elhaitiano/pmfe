@@ -1,3 +1,4 @@
+from .ui_language import display_label
 """Bootstrap administration; business writes use the validated application workflows."""
 from django.contrib.admin import AdminSite, ModelAdmin
 from django.contrib.auth import get_user_model
@@ -23,19 +24,19 @@ class PMFAdminSite(AdminSite):
         labels = {'Employee':'Trabalhadores', 'Course':'Catálogo de formação',
                   'Competency':'Competências', 'RoleProfile':'Funções e regras RH', 'User':'Contas de utilizador'}
         for app in apps:
-            app['name'] = 'Cadastros iniciais' if app['app_label'] == 'training' else 'Contas e acessos'
+            app['name'] = 'Registos iniciais' if app['app_label'] == 'training' else 'Contas e acessos'
             for model in app['models']:
                 model['name'] = labels.get(model['object_name'], model['name'])
         return apps
 
     def index(self, request, extra_context=None):
         steps = [
-            ('Formadores', 'Gerir o cadastro e os contactos dos formadores.', reverse('trainer_index'), Trainer.objects.count()),
+            ('Formadores', 'Gerir o registo e os contactos dos formadores.', reverse('trainer_index'), Trainer.objects.count()),
             ('1. Contas e acessos', 'Crie contas individuais. Defina o nível de acesso após criar a conta.',
              reverse('admin:auth_user_changelist'), get_user_model().objects.count()),
-            ('2. Trabalhadores', 'Registe o cadastro antes das inscrições ou avaliações.',
+            ('2. Trabalhadores', 'Registe o registo antes das inscrições ou avaliações.',
              reverse('admin:training_employee_changelist'), Employee.objects.count()),
-            ('3. Catálogo de formação', 'Crie as acções; depois prepare turmas e inscrições em Planeamento.',
+            ('3. Catálogo de formação', 'Crie as acções; depois prepare grupos e inscrições em Planeamento.',
              reverse('admin:training_course_changelist'), Course.objects.count()),
             ('4. Competências', 'Defina as competências que serão representadas no mapa de avaliação.',
              reverse('admin:training_competency_changelist'), Competency.objects.count()),
@@ -82,6 +83,13 @@ site.register(get_user_model(), AccountAdmin)
 
 
 class WorkflowAdmin(ModelAdmin):
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        field = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if field is not None:
+            field.label = display_label(field.label)
+            field.help_text = display_label(field.help_text)
+        return field
+
     """Searchable entry points, without a second writer bypassing versions/audit."""
     add_route = None
     change_route = None

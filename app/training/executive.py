@@ -91,10 +91,10 @@ def slice_rows(rows,kind,value):
     if kind=='area':return [r for r in rows if (r.area in ('','Área por confirmar') if value=='__unconfirmed__' else r.area==value)]
     if kind=='direction':return [r for r in rows if (r.employee.direction in ('','Direcção por confirmar') if value=='__unconfirmed__' else r.employee.direction==value)]
     if kind=='status':return [r for r in rows if r.status==value]
-    if kind=='result':return [r for r in rows if r.status=='Concluído' and r.result==value]
+    if kind=='result':return [r for r in rows if r.status=='Concluído' and r.presentation_result==value]
     if kind=='time':return [r for r in rows if str(r.start.year)==value or r.start.strftime('%Y-%m')==value or r.start.isoformat()==value]
     if kind=='person':return [r for r in rows if str(r.employee_id)==value]
-    if kind=='certificate':return [r for r in rows if (r.certified is True if value=='yes' else r.certified is False if value=='no' else r.certified is None)]
+    if kind=='certificate':return [r for r in rows if (r.delivery_reported if value=='yes' else r.certified is False and not r.delivery_reported if value=='no' else r.certified is None and not r.delivery_reported)]
     return rows
 
 
@@ -135,7 +135,7 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         people.setdefault(row.employee_id,{'employee':row.employee,'rows':[]})['rows'].append(row)
     talents=[]
     for person in people.values():
-        stats=statistics(person['rows']);grades=[r.grade for r in person['rows'] if r.status=='Concluído' and r.grade is not None]
+        stats=statistics(person['rows']);grades=[r.presentation_grade for r in person['rows'] if r.status=='Concluído' and r.presentation_grade is not None]
         average=sum(grades)/len(grades) if grades else None
         person.update(stats=stats,average=average,graded=len(grades),href=drill('person',person['employee'].pk,person['employee'].name))
         if average is not None:talents.append(person)
@@ -144,25 +144,25 @@ def analyse(rows,employees,selected,start,end,label,base=None):
     data['scatter']=[{'name':p['employee'].name,'x':55+float(p['stats']['attendance'])*4.8,'y':220-float(p['average'])*9,'radius':min(14,4+len(p['rows'])),'href':p['href'],'average':p['average'],'attendance':p['stats']['attendance']} for p in talents if p['stats']['attendance'] is not None]
     for d in data['directions_table']:
         group=[r for r in rows if (r.employee.direction or 'Direcção por confirmar')==d['label']]
-        ds=statistics(group);grades=[r.grade for r in group if r.status=='Concluído' and r.grade is not None]
+        ds=statistics(group);grades=[r.presentation_grade for r in group if r.status=='Concluído' and r.presentation_grade is not None]
         d.update(attendance=ds['attendance'],average=sum(grades)/len(grades) if grades else None,href=drill('direction','__unconfirmed__' if d['label']=='Direcção por confirmar' else d['label'],d['label']))
     data['directions_active']=len({r.employee.direction for r in rows if r.employee.direction})
     data['locations']=len({r.location for r in rows if r.location})
     data['trainers']=len({r.trainer for r in rows if r.trainer})
     data['completion_rate']=data['stats']['completed_count']*100/len(rows) if rows else None
-    data['delivery_rate']=data['stats']['certificates']*100/len(rows) if rows else None
+    data['delivery_rate']=data['stats']['certificates_reported']*100/len(rows) if rows else None
     data['main_kpis']=[data['kpis'][1],data['kpis'][5],{'label':'Média de desempenho','value':data['average_final'],'decimal':True,'suffix':'/20','note':f"{data['final_grades_count']} participações concluídas com nota final",'icon':'stars'},data['kpis'][4]]
     for item,color,icon in zip(data['main_kpis'],[COLORS[1],COLORS[0],COLORS[2],COLORS[3]],['groups','how_to_reg','stars','timelapse']):item.update(color=color,icon=icon)
     data['secondary_kpis']=[data['kpis'][i] for i in (0,2,3,6,7)]
     number=lambda value:f'{value:.1f}'.replace('.',',')
     data['insights']=[]
     if rows:
-        data['insights'].append(f"{len(rows)} participações, em {data['kpis'][2]['value']} turmas, totalizaram {number(total)} horas de participantes.")
+        data['insights'].append(f"{len(rows)} participações, em {data['kpis'][2]['value']} grupos, totalizaram {number(total)} horas de participantes.")
         if data['area_bars'] and total:
             leading=data['area_bars'][0];data['insights'].append(f"{leading['label']} concentra {number(leading['percent'])}% das horas realizadas no universo seleccionado.")
-        if data['stats']['certificates_pending']:data['insights'].append(f"{data['stats']['certificates_pending']} participações têm a entrega do certificado por confirmar.")
+        if data['stats']['certificates_reported_pending']:data['insights'].append(f"{data['stats']['certificates_reported_pending']} participações têm a entrega do certificado por confirmar.")
     else:data['insights'].append('Sem formações iniciadas no período seleccionado. Consulte também as entregas datadas e as conclusões no período.')
-    missing_final=sum(r.status=='Concluído' and (r.grade is None or r.result=='Pendente') for r in rows)
+    missing_final=sum(r.status=='Concluído' and (r.presentation_grade is None or r.presentation_result=='Pendente') for r in rows)
     data['missing_final']=missing_final
     if missing_final:data['insights'].append(f'{missing_final} participações concluídas têm nota final ou resultado por completar.')
     data['previous']=None
@@ -172,7 +172,7 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         change=(total-ps['hours'])*100/ps['hours'] if ps['hours'] else None
         data['previous']={'start':prev_start,'end':prev_end,'hours':ps['hours'],'participations':len(previous),'change':change}
     operational=list(base) if base is not None else rows
-    deliveries=[r for r in operational if r.certified is True and r.certificate_delivery_date and (not start or start<=r.certificate_delivery_date<=end)]
+    deliveries=[r for r in operational if r.delivery_reported and r.delivery_date_for_reporting and (not start or start<=r.delivery_date_for_reporting<=end)]
     endings=[r for r in operational if r.status=='Concluído' and (not start or start<=r.end<=end)]
-    data.update(deliveries=deliveries,ended=endings,delivery_dates_missing=sum(r.certified is True and not r.certificate_delivery_date for r in operational),delivery_href=drill('certificate','yes','Certificados entregues'))
+    data.update(deliveries=deliveries,ended=endings,delivery_dates_missing=sum(r.delivery_reported and not r.delivery_date_for_reporting for r in operational),delivery_href=drill('certificate','yes','Certificados entregues'))
     return data

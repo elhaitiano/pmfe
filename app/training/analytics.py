@@ -9,9 +9,21 @@ def statistics(rows):
     measurable = [row for row in attended if row.days is not None and (row.attendance > 0 or row.attendance_confirmed)]
     days = sum(row.days for row in measurable)
     presences = sum(row.attendance for row in measurable)
-    grades = [row.grade for row in rows if row.grade is not None]
+    original = [row.original_assessment for row in rows if row.original_assessment]
+    from .original_assessments import percentage
+    percentages = [percentage(x) for x in original if percentage(x) is not None]
+    grades = [row.presentation_grade for row in rows if row.presentation_grade is not None]
     attendance = (Decimal(presences) * 100 / days).quantize(Decimal('.1'), rounding=ROUND_HALF_UP) if days else None
-    return {'total': len(rows), 'hours': sum((row.completed_hours for row in rows if row.completed_hours is not None), Decimal(0)),
+    return {'certificates_reported':sum(row.delivery_reported for row in rows),
+        'certificates_reported_pending':sum(row.certified is None and not row.delivery_reported for row in rows),
+        'simulated_graded_count':sum(row.simulated_grade is not None for row in rows),
+        'certificates_delivery_undeclared':sum(row.certified is None and row.declared_delivery_date is None for row in rows),
+        'certificates_delivery_declared':sum(row.declared_delivery_date is not None for row in rows),
+        'certificates_receipt_associated':sum(row.delivery_receipt_associated for row in rows),
+        'original_assessments_count':len(original), 'original_percentages_count':len(percentages),
+        'original_classifications_count':len(original)-len(percentages),
+        'original_percentage_average':sum(percentages)/len(percentages) if percentages else None,
+        'total': len(rows), 'hours': sum((row.completed_hours for row in rows if row.completed_hours is not None), Decimal(0)),
         'planned_hours': sum((row.planned_hours for row in rows if row.planned_hours is not None), Decimal(0)),
         'attendance': attendance, 'attendance_days': days, 'presences': presences,
         'attendance_provisional': any(row.status in ('Em Curso', 'Por confirmar') or not row.attendance_confirmed or row.days is None for row in attended),
@@ -85,22 +97,18 @@ def profile_fields(employee):
         ('Estado civil', employee.marital_status), ('Empresa', employee.company),
         ('Data de Nascimento', employee.birth_date), ('Data de Admissão', employee.admission_date),
         ('Telefone 2', format_phone(source.get('Telefone 2', ''))),
-        ('Origem do cadastro', employee.registration_origin), ('Estado de revisão', employee.review_status),
-        ('Validação Cadastro EPAL', employee.registration_validation), ('Linha fonte EPAL', employee.source_row)]
+        ('Origem do registo', employee.registration_origin), ('Estado de revisão', employee.review_status),
+        ('Validação do registo EPAL', employee.registration_validation), ('Linha fonte EPAL', employee.source_row)]
 
 
 def registration_header_fields(employee):
-    """Compact registration header shared by the screen and printable sheet."""
+    """Row-major pairs from the approved EPAL registration sheet."""
     fields = dict(profile_fields(employee))
-    phones = [format_phone(employee.phone), format_phone((employee.source_data or {}).get('Telefone 2', ''))]
     return [
-        ('N.º Mecanográfico', employee.number),
-        ('Direcção', employee.direction),
-        ('Categoria', employee.category),
-        ('Antiguidade', fields['Antiguidade']),
-        ('N.º BI', employee.identity_number),
-        ('Idade', fields['Idade']),
-        ('Género', employee.gender),
-        ('Tel.', ' | '.join(phone or '—' for phone in phones)),
+        ('Nº Mec.', employee.number), ('Género', employee.gender),
+        ('Categoria', employee.category), ('Nº BI', employee.identity_number),
+        ('Função', employee.function), ('Idade', fields['Idade']),
+        ('Direcção', employee.direction), ('Tel. 1', format_phone(employee.phone)),
+        ('Antiguidade', fields['Antiguidade']), ('Tel. 2', format_phone((employee.source_data or {}).get('Telefone 2', ''))),
         ('E-mail', employee.email),
     ]

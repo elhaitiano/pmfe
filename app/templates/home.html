@@ -11,11 +11,11 @@
           Colaboradores &amp; Formação
         </h2>
         <p class="text-sm text-slate-400 mt-2 max-w-3xl">
-          Consulte todo o universo de funcionários EPAL, identifique quem já possui formação e registe novas acções sem duplicar o cadastro do colaborador.
+          Consulte todo o universo de funcionários EPAL, identifique quem já possui formação e registe novas acções sem duplicar o registo do colaborador.
         </p>
       </div>
       {% if user.is_staff and employee %}
-      <a class="gf-btn" href="{% if employee %}{% url 'training_create' employee.pk %}{% endif %}" id="gfNewTrainingTop"><span class="material-symbols-outlined text-base">add_circle</span>Nova Formação</a>{% endif %}<a href="{% url 'planning' %}" class="gf-btn alt"><span class="material-symbols-outlined">event_note</span>Planeamento e Turmas</a>{% if user.is_staff %}<a href="{% url 'batch_index' %}" class="gf-btn alt">Atualizar turma</a><a href="{% url 'employee_create' %}" class="gf-btn alt"><span class="material-symbols-outlined text-base">person_add</span>Novo funcionário</a>{% endif %}
+      <a class="gf-btn" href="{% if employee %}{% url 'training_create' employee.pk %}{% endif %}" id="gfNewTrainingTop"><span class="material-symbols-outlined text-base">add_circle</span>Nova Formação</a>{% endif %}<a href="{% url 'planning' %}" class="gf-btn alt"><span class="material-symbols-outlined">event_note</span>Planeamento e Grupos</a>{% if user.is_staff %}<a href="{% url 'batch_index' %}" class="gf-btn alt">Actualizar grupo</a><a href="{% url 'employee_create' %}" class="gf-btn alt"><span class="material-symbols-outlined text-base">person_add</span>Novo funcionário</a>{% endif %}
     </div>
   </section>
   <div class="gf-kpis">
@@ -97,7 +97,7 @@
           Funcionário seleccionado
         </h3>
         <p class="text-xs text-slate-500 mt-1">
-          Cadastro provisório da EPAL
+          Registo provisório da EPAL
         </p>
       </div>
       <div class="gf-body" id="gfEmployeeDetail">

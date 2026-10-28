@@ -3,14 +3,12 @@
 {% block heading %}
 FICHA INDIVIDUAL DO FORMANDO{% endblock %}
 {% block extra_styles %}
-<link rel="stylesheet" href="{% static 'pmf/ficha-original.css' %}">
+<link rel="stylesheet" href="{% static 'pmf/ficha-original.css' %}?v=reporting-integers-20261023">
 {% endblock %}
 {% block content %}
-<!-- <p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p> -->
+<!-- <p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates_delivery_declared }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p> -->
 
-{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
-<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
-{% endif %}
+
 
 <section id="viewFicha" class="content p-10 space-y-6 ficha-view">
   {% if employee %}
@@ -78,7 +76,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
         <div class="glass-panel rounded-2xl p-6 text-center">
           <span class="material-symbols-outlined text-primary text-3xl">timelapse</span>
           <div class="text-3xl font-black mt-3">
-            {{ stats.hours|floatformat:1 }} h
+            {{ stats.hours|floatformat:0 }} h
           </div>
           <div class="text-[11px] uppercase tracking-[.16em] text-slate-500 mt-2">
             Horas
@@ -93,21 +91,17 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
           <div class="text-[11px] uppercase tracking-[.16em] text-slate-500 mt-2">
             Assiduidade
           </div>
-          {% if stats.attendance_provisional %}
-          <p class="text-[10px] text-slate-400 mt-2" title="Inclui participações em curso ou com situação por confirmar.">
-            Provisória
-          </p>
-          {% endif %}
+
         </div>
-        <div class="glass-panel rounded-2xl p-6 text-center" title="Certificados entregues confirmados: {{ stats.certificates }}. {{ unconfirmed_certificates }} entrega{{ unconfirmed_certificates|pluralize }} por confirmar.">
+        <div class="glass-panel rounded-2xl p-6 text-center" title="Certificados com entrega declarada: {{ stats.certificates_delivery_declared }}.">
           <span class="material-symbols-outlined text-primary text-3xl">verified</span>
           <div class="text-3xl font-black mt-3">
-            {{ stats.certificates }}
+            {{ stats.certificates_delivery_declared }}
           </div>
           <div class="text-[11px] uppercase tracking-[.16em] text-slate-500 mt-2">
-            Certificados entregues
+            Certificados
           </div>
-          <span class="text-[10px] text-slate-400 block mt-2">{{ unconfirmed_certificates }} entrega{{ unconfirmed_certificates|pluralize }} por confirmar</span>
+
         </div>
       </section>
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 ficha-charts">
@@ -126,8 +120,8 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ c.training.title }}
                 </div>
                 <div class="text-xs text-primary whitespace-nowrap">
-                  {% if c.training.grade is not None %}
-                  {{ c.training.grade|floatformat:1 }}/20{% else %}Sem nota{% endif %}
+                  {% if c.training.presentation_grade is not None %}
+                  {{ c.training.presentation_grade|floatformat:1 }}/20{% else %}Sem nota /20{% endif %}{% if c.training.original_assessment_label %}<span class="block">Original: {{ c.training.original_assessment_label }} (demonstra&ccedil;&atilde;o)</span>{% endif %}
                 </div>
               </div>
               <div class="progress-bar">
@@ -153,7 +147,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                 <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90" aria-label="Distribuição da carga horária por categoria"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="14"/>{% for item in distribution %}<circle tabindex="0" class="pmf-donut-segment chart-hover" cx="50" cy="50" r="40" fill="none" stroke="{{ item.color }}" stroke-width="14" pathLength="100" stroke-dasharray="{{ item.percent|unlocalize }} {{ item.remainder|unlocalize }}" stroke-dashoffset="{{ item.offset|unlocalize }}" data-tip-kicker="Carga horária" data-tip-title="{{ item.label }}" data-tip-id="distribution-{{ forloop.counter }}"/>{% endfor %}</svg>
                 <div class="absolute inset-[32px] rounded-full bg-[#111b1d] flex flex-col items-center justify-center shadow-inner pointer-events-none">
                   <div class="text-3xl font-black">
-                    {{ stats.hours|floatformat:1 }}
+                    {{ stats.hours|floatformat:0 }}
                   </div>
                   <div class="text-xs uppercase tracking-wider text-slate-400 mt-1">
                     Horas
@@ -238,10 +232,10 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ t.start|date:'d/m/Y' }} – {{ t.end|date:'d/m/Y' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-primary">
-                  {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+                  {{ t.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-slate-200">
-                  {{ t.grade|default_if_none:'—' }}
+                  {% include 'original_note_cell.html' %}
                 </td>
                 <td class="py-5 text-center">
                   <span class="inline-flex px-3 py-1 rounded-full border text-xs {% if t.status == 'Concluído' or t.status == 'Concluída' %}border-primary/40 bg-primary/10 text-primary{% else %}border-white/10 bg-white/5 text-slate-300{% endif %}">{{ t.status|default:'—' }}</span>
@@ -264,16 +258,16 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
   {% for c in competencies %}
   <template id="competency-{{ forloop.counter }}">
   <div class="tt-grid">
-    <span class="tt-label">Nota</span><span class="tt-value">{% if c.training.grade is not None %}{{ c.training.grade|floatformat:1 }}/20{% else %}Sem nota{% endif %}</span><span class="tt-label">Carga horária</span><span class="tt-value">{{ c.training.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }} H</span><span class="tt-label">Categoria</span><span class="tt-value">{{ c.training.area|default:'—' }}</span><span class="tt-label">Situação</span><span class="tt-value">{{ c.training.status }}</span>
+    <span class="tt-label">Nota</span><span class="tt-value">{% if c.training.presentation_grade is not None %}{{ c.training.presentation_grade|floatformat:1 }}/20{% else %}Sem nota /20{% endif %}{% if c.training.original_assessment_label %}<span class="block">Original: {{ c.training.original_assessment_label }} (demonstra&ccedil;&atilde;o)</span>{% endif %}</span><span class="tt-label">Carga horária</span><span class="tt-value">{{ c.training.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }} H</span><span class="tt-label">Categoria</span><span class="tt-value">{{ c.training.area|default:'—' }}</span><span class="tt-label">Situação</span><span class="tt-value">{{ c.training.status }}</span>
   </div>
   <div class="tt-note">
-    {% if c.training.grade is not None %}
-    A barra representa a nota convertida proporcionalmente para uma escala visual de 0 a 100%.{% else %}A nota ainda não está registada. A barra vazia não representa uma nota igual a zero.{% endif %}
+    {% if c.training.presentation_grade is not None %}
+    A barra representa a nota de apresenta&ccedil;&atilde;o (simulada quando identificada) convertida proporcionalmente para uma escala visual de 0 a 100%.{% else %}A nota ainda não está registada. A barra vazia não representa uma nota igual a zero.{% endif %}
   </div>
   </template>{% endfor %}
   {% for item in distribution %}<template id="distribution-{{ forloop.counter }}">
   <div class="tt-grid">
-    <span class="tt-label">Horas</span><span class="tt-value">{{ item.hours|floatformat:1 }} H</span><span class="tt-label">Peso no total</span><span class="tt-value">{{ item.percent|floatformat:1 }}%</span><span class="tt-label">Formações</span><span class="tt-value">{{ item.count }}</span><span class="tt-label">Total analisado</span><span class="tt-value">{{ stats.hours|floatformat:1 }} H</span>
+    <span class="tt-label">Horas</span><span class="tt-value">{{ item.hours|floatformat:1 }} H</span><span class="tt-label">Peso no total</span><span class="tt-value">{{ item.percent|floatformat:1 }}%</span><span class="tt-label">Formações</span><span class="tt-value">{{ item.count }}</span><span class="tt-label">Total analisado</span><span class="tt-value">{{ stats.hours|floatformat:0 }} H</span>
   </div>
   <div class="tt-note">
     Esta fatia mostra quanto esta categoria representa da carga horária total do formando.

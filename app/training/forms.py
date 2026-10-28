@@ -1,4 +1,5 @@
 from django import forms
+from .ui_language import display_label
 from .models import Employee, Training
 from .widgets import numeric_text_widgets, date_widgets
 
@@ -9,6 +10,8 @@ class StyledModelForm(forms.ModelForm):
         numeric_text_widgets(self.fields)
         date_widgets(self.fields)
         for field in self.fields.values():
+            field.label = display_label(field.label)
+            field.help_text = display_label(field.help_text)
             if not isinstance(field.widget, forms.HiddenInput):
                 field.widget.attrs['class'] = 'gf-field' if not isinstance(field.widget, forms.CheckboxInput) else 'rounded bg-slate-900 border-slate-700 text-secondary'
 
@@ -43,7 +46,7 @@ class EmployeeForm(StyledModelForm):
             ('Contactos', ['phone', 'phone_secondary', 'email']),
             ('Dados profissionais', ['admission_date', 'company', 'direction',
                                     'function', 'category', 'area', 'cost_center']),
-            ('Cadastro e revisão', ['registration_origin', 'review_status',
+            ('Registo e revisão', ['registration_origin', 'review_status',
                                    'registration_validation', 'source_row']),
         ]]
 
@@ -61,7 +64,7 @@ class EmployeeForm(StyledModelForm):
 
 class TrainingForm(StyledModelForm):
     certified = forms.TypedChoiceField(label='Certificado entregue', required=False,
-        choices=[('unknown', 'Por confirmar'), ('true', 'Sim'), ('false', 'Não')],
+        choices=[('unknown', 'Nao registado'), ('true', 'Sim'), ('false', 'Não')],
         coerce=lambda value: {'unknown': None, 'true': True, 'false': False}[value], empty_value=None)
 
     def __init__(self, *args, **kwargs):
@@ -79,7 +82,7 @@ class TrainingForm(StyledModelForm):
         if 'plan_status' in self.fields:
             self.fields['plan_status'].required = False
         if 'days' in self.fields:
-            self.fields['days'].help_text = 'Dias efectivos, que podem não ser consecutivos. No histórico sem turma, deixe vazio se desconhecido.'
+            self.fields['days'].help_text = 'Dias efectivos, que podem não ser consecutivos. No histórico sem grupo, deixe vazio se desconhecido.'
 
     def clean_plan_status(self):
         return self.cleaned_data.get('plan_status') or self.instance.plan_status or 'Por confirmar'

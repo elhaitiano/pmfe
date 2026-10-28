@@ -122,10 +122,10 @@ class EvaluationCycle(models.Model):
         if self.training_id and self.employee_id and self.training.employee_id != self.employee_id:
             raise ValidationError('A participação deve pertencer ao trabalhador do ciclo.')
         if self.group_id and self.training_id and self.training.group_id != self.group_id:
-            raise ValidationError('A turma deve corresponder à participação.')
+            raise ValidationError('O grupo deve corresponder à participação.')
         if self.group_id and not self.training_id and self.employee_id:
             if not self.group.enrollments.filter(employee_id=self.employee_id, state='Activa').exists():
-                raise ValidationError('Seleccione uma participação ou uma turma com inscrição activa deste trabalhador.')
+                raise ValidationError('Seleccione uma participação ou um grupo com inscrição activa deste trabalhador.')
 
     def save(self, *args, **kwargs):
         if self.pk and type(self).objects.filter(pk=self.pk).exclude(state='draft').exists():

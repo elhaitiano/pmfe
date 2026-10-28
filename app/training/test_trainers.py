@@ -1,3 +1,4 @@
+from .scheduling_guard import reservation_transaction
 from datetime import date, time
 from decimal import Decimal
 
@@ -49,7 +50,8 @@ class TrainerRegistryTests(TestCase):
         ))
         self.assertIsNone(group.trainer_record_id)
         group.trainer_record = trainer
-        group.save()
+        with reservation_transaction():
+            group.save()
         with self.assertRaises(ProtectedError):
             trainer.delete()
         self.assertEqual(group.trainer, 'Nome histórico')

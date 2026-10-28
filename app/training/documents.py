@@ -62,7 +62,7 @@ class DocumentForm(StyledModelForm):
 
 def tri_state(label):
     return forms.TypedChoiceField(label=label, required=False,
-        choices=[('unknown', 'Por confirmar'), ('true', 'Sim'), ('false', 'Não')],
+        choices=[('unknown', 'Nao registado'), ('true', 'Sim'), ('false', 'Não')],
         coerce=lambda value: {'unknown': None, 'true': True, 'false': False}[value], empty_value=None)
 
 

@@ -1,0 +1,13 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel">
+<h2>Centros e salas</h2>
+<p>Recursos identificados. O local hist&oacute;rico n&atilde;o &eacute; convertido automaticamente em sala.</p>
+<a class="gf-btn" href="{% url 'centre_create' %}">Novo centro</a>
+<a class="gf-btn" href="{% url 'room_create' %}">Nova sala</a>
+<h3>Centros</h3>
+<ul>{% for item in centres %}<li>{{ item.code }} &mdash; {{ item.name }} {% if not item.active %}(indispon&iacute;vel){% endif %} <a href="{% url 'centre_edit' item.pk %}">Editar</a></li>{% empty %}<li>Sem centros cadastrados.</li>{% endfor %}</ul>
+<h3>Salas</h3>
+<ul>{% for item in rooms %}<li>{{ item.centre.name }} / {{ item.code }} &mdash; {{ item.name }}; capacidade {{ item.capacity }} {% if not item.active %}(indispon&iacute;vel){% endif %} <a href="{% url 'room_edit' item.pk %}">Editar</a></li>{% empty %}<li>Sem salas cadastradas.</li>{% endfor %}</ul>
+</section>
+{% endblock %}

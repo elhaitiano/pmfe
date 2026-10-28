@@ -65,7 +65,7 @@ def prepare_training(record, employee, report):
     v = dict(record['values'])
     number, pid = v.pop('number', ''), v.pop('participation_id', '')
     if not number or employee is None:
-        raise ValueError('Número mecanográfico sem cadastro reconciliado.')
+        raise ValueError('Número mecanográfico sem registo reconciliado.')
     key = 'pilar3b:' + pid if pid else record['legacy_key']
     v['source_key'] = key
     v['source_course_code'] = v.get('source_course_code', '').upper()
@@ -166,7 +166,7 @@ def build_plan(workbook, source_sha256):
                 target.setdefault(identifier, []).append(record)
     report['ignored_sheets'] = [name for name in workbook.sheetnames if name not in used]
     if not employee_records:
-        issue(report, 'error', '', None, 'Nenhum cadastro de trabalhadores reconhecido.')
+        issue(report, 'error', '', None, 'Nenhum registo de trabalhadores reconhecido.')
     employees, objects = [], {}
     # Fill only missing profile information from participation rows, consistently across all rows.
     supplements = {}
@@ -189,13 +189,13 @@ def build_plan(workbook, source_sha256):
                     merged[field] = value
                 elif old != value:
                     severity = 'error' if field in ('name', 'identity_number', 'social_security_number') else 'warning'
-                    add_issue(report, other, 'Fontes de cadastro discordam; prioridade da fonte principal.', severity,
+                    add_issue(report, other, 'Fontes de registo discordam; prioridade da fonte principal.', severity,
                               identifier=number, field=field, selected=str(old), alternative=str(value))
         for field, values in supplements.get(number, {}).items():
             if not merged.get(field) and len(values) == 1:
                 merged[field] = next(iter(values))
             elif len(values) > 1 or (merged.get(field) and any(v != merged[field] for v in values)):
-                add_issue(report, primary, 'Dados de cadastro nas participações discordam; não substituem o cadastro principal.', 'warning', field=field, values=sorted(values))
+                add_issue(report, primary, 'Dados de registo nas participações discordam; não substituem o registo principal.', 'warning', field=field, values=sorted(values))
         old = Employee.objects.filter(number=number).first()
         obj = Employee.objects.get(pk=old.pk) if old else Employee(number=number)
         proposed = {}

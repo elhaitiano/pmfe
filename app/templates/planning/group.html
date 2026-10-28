@@ -1,5 +1,57 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
+<section class="plan-panel" id="lista-presenca">
+  <div class="plan-heading">
+    <h2>
+      <span class="material-symbols-outlined">print</span>Lista de presença dos formandos
+    </h2>
+    <p>
+      Escolha um dia efectivo. Hora de chegada e rubrica ficam em branco para assinatura presencial.
+    </p>
+  </div>
+  {% if source_trainings and attendance_open %}
+  <div class="plan-actions">
+    <a class="gf-btn" target="_blank" rel="noopener" href="{% url 'attendance_pdf' group.pk %}?source=historical">Abrir lista anterior / histórica em PDF</a>
+    <a class="gf-btn alt" href="{% url 'attendance_excel' group.pk %}?source=historical">Exportar lista histórica em Excel</a>
+  </div>
+  <p class="plan-note">Utiliza os participantes e os períodos do histórico importado. Não exige novas inscrições nem sessões; não comprova presenças.</p>
+  {% endif %}
+  {% if attendance_second_copy %}<p class="plan-note"><strong>Segunda via / consulta.</strong> As assinaturas ficam em branco; imprimir não confirma presenças.</p>{% endif %}
+  {% if attendance_open %}
+  {% if not sessions %}<p role="status">Faltam os dias efectivos de formação. Não existem sessões para seleccionar.</p>{% if user.is_staff and group.state == 'Planeada' and not attendance_second_copy %}<a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Definir dias de formação</a>{% endif %}{% endif %}
+  {% if not active_count %}<p role="status">Não existem inscrições activas neste grupo. Os registos do histórico não são inscritos automaticamente.</p>{% endif %}
+  {% if user.is_staff and group.state == 'Planeada' and not attendance_second_copy %}
+  <div class="plan-actions">
+    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Seleccionar formandos para a lista</a>
+  </div>
+  {% endif %}
+  <form method="get" action="{% url 'attendance_pdf' group.pk %}" class="plan-search" target="_blank" rel="noopener">
+    <label>
+      Dia da formação
+      <select name="date" class="gf-field">
+        {% for session in sessions %}
+        <option value="{{ session.date|date:'Y-m-d' }}">
+          {{ session.date|date:'d/m/Y' }}
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <span class="plan-note">{{ group.start_time|time:'H:i' }} — {{ group.end_time|time:'H:i' }} · Pausas: {{ group.break_hours|floatformat:1 }} h/dia</span>
+    <button class="gf-btn"{% if not active_count or not sessions %} disabled{% endif %}>
+      Abrir PDF para imprimir
+    </button>
+    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not active_count or not sessions %} disabled{% endif %}>
+      Gerar lista dos formandos em Excel
+    </button>
+  </form>
+  {% else %}
+  <p>
+    Grupo cancelado: lista indisponível.
+  </p>
+  {% endif %}
+</section>
+<section class="plan-panel"><strong>Planeamento: {{ group.get_planning_confirmation_display }}</strong><p>Centro: {{ group.centre|default:'Por definir' }} / Sala: {{ group.room|default:'Por definir' }}</p>
+{% if user.is_staff %}{% for warning in planning_warnings %}<p role="status">{{ warning }}</p>{% endfor %}{% endif %}</section>
 {% if source_trainings %}
 <section class="plan-panel">
   <div class="plan-heading">
@@ -63,46 +115,7 @@
     A inscrição prepara a lista. Ao iniciar o grupo, os registos são ligados ao histórico e à grelha existente, com zero presenças por confirmar e sem notas ou certificados presumidos.
   </p>
 </section>
-<section class="plan-panel" id="lista-presenca">
-  <div class="plan-heading">
-    <h2>
-      <span class="material-symbols-outlined">print</span>Lista de presença dos formandos
-    </h2>
-    <p>
-      Escolha um dia efectivo. Hora de chegada e rubrica ficam em branco para assinatura presencial.
-    </p>
-  </div>
-  {% if attendance_open %}
-  {% if user.is_staff and group.state == 'Planeada' %}
-  <div class="plan-actions">
-    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Seleccionar formandos para a lista</a>
-  </div>
-  {% endif %}
-  <form method="get" action="{% url 'attendance_pdf' group.pk %}" class="plan-search">
-    <label>
-      Dia da formação
-      <select name="date" class="gf-field">
-        {% for session in sessions %}
-        <option value="{{ session.date|date:'Y-m-d' }}">
-          {{ session.date|date:'d/m/Y' }}
-        </option>
-        {% endfor %}
-      </select>
-    </label>
-    <span class="plan-note">{{ group.start_time|time:'H:i' }} — {{ group.end_time|time:'H:i' }} · Pausas: {{ group.break_hours|floatformat:1 }} h/dia</span>
-    <button class="gf-btn"{% if not active_count or not sessions %} disabled{% endif %}>
-      Imprimir lista PDF
-    </button>
-    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not active_count or not sessions %} disabled{% endif %}>
-      Gerar lista dos formandos em Excel
-    </button>
-  </form>
-  {% else %}
-  <p>
-    Preparação da lista encerrada: grupo concluído, cancelado ou com data de fim ultrapassada.
-  </p>
-  {% endif %}
-</section>
+
 <section class="plan-panel">
   <div class="plan-heading">
     <h2>
@@ -220,12 +233,12 @@
 </details>{% endif %}{% if user.is_staff %}
 <section class="plan-panel">
   <h2>
-    Correcção de turma criada por engano
+    Correcção de grupo criado por engano
   </h2>
   <p class="plan-note">
-    Pode eliminar uma turma planeada ou cancelada sem registos de formação associados. Nas turmas iniciadas, o histórico fica preservado.
+    Pode eliminar um grupo planeado ou cancelado sem registos de formação associados. Nos grupos iniciados, o histórico fica preservado.
   </p>
-  <a class="gf-btn alt" href="{% url 'group_delete' group.pk %}">Eliminar turma criada por engano</a>
+  <a class="gf-btn alt" href="{% url 'group_delete' group.pk %}">Eliminar grupo criado por engano</a>
 </section>
 {% endif %}
 {% endblock %}
