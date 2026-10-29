@@ -63,7 +63,7 @@ class ImprovementTests(TestCase):
     def test_group_creation_selects_registered_trainer_and_opens_attendance_preparation(self):
         trainer = Trainer.objects.create(name='Formador registado', active=True)
         inactive = Trainer.objects.create(name='Inactivo', active=False)
-        data = dict(self.values, start='2025-01-01', end='2025-01-01', trainer=trainer.pk, action='prepare_attendance')
+        data = dict(self.values, start='2025-01-01', end='2025-01-01', trainer=trainer.pk, session_dates='2025-01-01', action='prepare_attendance')
         response = self.client.post(reverse('group_create', args=[self.course.pk]), data)
         group = self.course.groups.get()
         self.assertRedirects(response, reverse('group_detail', args=[group.pk]))
@@ -92,8 +92,8 @@ class ImprovementTests(TestCase):
         with patch('training.planning.timezone.localdate', return_value=date(2025, 1, 2)):
             response = self.client.get(reverse('group_detail', args=[group.pk]))
             self.assertNotContains(response, 'Seleccionar formandos para a lista')
-            self.assertNotContains(response, 'Gerar lista dos formandos em Excel')
-            self.assertEqual(self.client.get(url, {'date': '2025-01-01'}).status_code, 400)
+            self.assertContains(response, 'Segunda via / consulta.')
+            self.assertEqual(self.client.get(url, {'date': '2025-01-01'}).status_code, 200)
             self.assertRedirects(self.client.get(reverse('group_enrol', args=[group.pk])), reverse('group_detail', args=[group.pk]))
 
     def test_candidate_page_only_shows_eligible_learners(self):
@@ -106,10 +106,10 @@ class ImprovementTests(TestCase):
         self.assertContains(response, eligible.name)
         self.assertNotContains(response, previous.name)
 
-    def test_date_range_calculates_days_and_ignores_posted_duration(self):
+    def test_explicit_days_preserved_and_posted_duration_ignored(self):
         trainer = Trainer.objects.create(name='Calendar trainer', active=True)
         data = dict(self.values, trainer=trainer.pk, start='28/02/2028', end='01/03/2028',
-                    dates='2099-01-01', days='999')
+                    dates='2099-01-01', days='999', session_dates='2028-02-28\n2028-02-29\n2028-03-01')
         form = GroupForm(data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['dates'], [date(2028, 2, 28), date(2028, 2, 29), date(2028, 3, 1)])
@@ -118,7 +118,7 @@ class ImprovementTests(TestCase):
         self.assertEqual(group.start, date(2028, 2, 28))
         self.assertEqual(group.end, date(2028, 3, 1))
         self.assertEqual(list(group.sessions.values_list('date', flat=True)), form.cleaned_data['dates'])
-        same_day = GroupForm(dict(data, end='2028-02-28'))
+        same_day = GroupForm(dict(data, end='2028-02-28', session_dates='2028-02-28'))
         self.assertTrue(same_day.is_valid(), same_day.errors)
         self.assertEqual(len(same_day.cleaned_data['dates']), 1)
         self.assertFalse(GroupForm(dict(data, end='2028-02-27')).is_valid())

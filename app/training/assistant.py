@@ -9,12 +9,12 @@ from django.views.decorators.http import require_GET, require_http_methods
 from .models import AssistantGuide
 from .views import staff_required, record
 
-ROUTES = [('home','Gestão de Formação'),('planning','Planeamento e Turmas'),
+ROUTES = [('home','Gestão de Formação'),('planning','Planeamento e Grupos'),
           ('batch_index','Presenças, notas e certificados'),('dashboard','Dashboard Executivo'),
           ('executive_reports','Relatórios e arquivo'),('employee_data_select','Ficha Individual')]
 
 class GuideForm(forms.ModelForm):
-    keyword_text = forms.CharField(label='Perguntas e palavras de pesquisa', widget=forms.Textarea(attrs={'rows':4}), help_text='Uma expressão por linha. Ex.: imprimir lista; criar turma. Use linhas separadas.')
+    keyword_text = forms.CharField(label='Perguntas e palavras de pesquisa', widget=forms.Textarea(attrs={'rows':4}), help_text='Uma expressão por linha. Ex.: imprimir lista; criar grupo. Use linhas separadas.')
     route = forms.ChoiceField(label='Página de destino',choices=ROUTES)
     revision = forms.IntegerField(widget=forms.HiddenInput,required=False)
     class Meta:

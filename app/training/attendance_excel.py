@@ -64,7 +64,7 @@ def _prune_strings(parts, sheet):
     return sheet
 
 
-def fill_template(template, group, day, enrollments):
+def fill_template(template, group, day, enrollments, second_copy=False, historical_period=None):
     with ZipFile(io.BytesIO(template)) as original:
         parts = {name: original.read(name) for name in original.namelist()}
     sheet = parts['xl/worksheets/sheet1.xml'].decode('utf-8')
@@ -76,12 +76,16 @@ def fill_template(template, group, day, enrollments):
     for number in range(pages):
         current = page
         metadata = {
-            'A3': f'Data: {day:%d/%m/%Y} | Horário: Início: {group.start_time:%H:%M} | Fim: {group.end_time:%H:%M}' if group else '',
-            'E3': f'Título: {group.title} - {group.code}' if group else 'Título: ',
+            'A3': f'Data: {day:%d/%m/%Y} | Horário: Início: {group.start_time:%H:%M} | Fim: {group.end_time:%H:%M}' if group and day else '',
+            'E3': f'{chr(83)+chr(69)+chr(71)+chr(85)+chr(78)+chr(68)+chr(65)} VIA / CONSULTA - {group.title} - {group.code}' if second_copy else f'Título: {group.title} - {group.code}' if group else 'Título: ',
             'A4': f'Duração total: Formação: {float(group.hours_per_day):g} horas | Pausas: {float(group.break_hours):g} horas' if group else '',
             'E4': 'Local: ' + group.location if group else 'Local: ',
             'J23': f'Pág. {number + 1}/{pages}',
         }
+        if historical_period:
+            metadata['A3'] = 'Período histórico: ' + historical_period
+            metadata['A4'] = 'Consulta do histórico; não comprova presenças.'
+            metadata['E3'] = f'LISTA HISTÓRICA / SEGUNDA VIA - {group.title} - {group.code}'
         for address, value in metadata.items():
             current = _fill_cell(current, address, value)
         for position in range(12):
@@ -141,5 +145,5 @@ def fill_template(template, group, day, enrollments):
     return output.getvalue()
 
 
-def build_attendance_excel(group, day, enrollments):
-    return fill_template(TEMPLATE.read_bytes(), group, day, enrollments)
+def build_attendance_excel(group, day, enrollments, second_copy=False, historical_period=None):
+    return fill_template(TEMPLATE.read_bytes(), group, day, enrollments, second_copy=second_copy, historical_period=historical_period)

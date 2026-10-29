@@ -2,7 +2,7 @@
 {% load static %}
 {% block heading %}
 {% if review %}
-REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block extra_styles %}
+REVER ALTERAÇÕES{% else %}ACTUALIZAR GRUPO{% endif %}{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 {% endblock %}
 {% block content %}
@@ -22,7 +22,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
         {{ seed.trainer|default:'Formador por confirmar' }} · {{ seed.provider|default:'Entidade por confirmar' }} · {{ seed.location|default:'Local por confirmar' }}
       </p>
     </div>
-    <a class="gf-btn alt" href="{% url 'batch_index' %}">Escolher outra turma</a>
+    <a class="gf-btn alt" href="{% url 'batch_index' %}">Escolher outro grupo</a>
   </div>
   <div class="batch-note">
     {{ formset.total_form_count }} participações · {{ seed.days|default_if_none:'Por confirmar' }} dias · {{ seed.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia. Notas finais de 0 a 20; resultado validado pelo formador. O certificado só conta depois de confirmar a entrega efetiva e a data.
@@ -116,13 +116,13 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
               {{ form.attendance_confirmed.errors }}
             </td>
             <td>
-              {{ form.grade }}{{ form.grade.errors }}
+              {% include 'original_note_cell.html' with t=form.instance %}<details><summary>Editar registo original</summary>{{ form.grade }}{{ form.grade.errors }}</details>
             </td>
             <td>
-              {{ form.result }}{{ form.result.errors }}
+              {{ form.instance.presentation_result }}<details><summary>Editar registo original</summary>{{ form.result }}{{ form.result.errors }}</details>
             </td>
             <td>
-              {{ form.certified }}{{ form.certified.errors }}
+              {% include 'certificate_delivery_cell.html' with participation=form.instance %}<details><summary>Editar registo original</summary>{{ form.certified }}{{ form.certified.errors }}</details>
             </td>
             <td>
               {{ form.certificate_delivery_date }}{{ form.certificate_delivery_date.errors }}

@@ -7,10 +7,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.exceptions import ValidationError
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, OperationalError
 from django.db.models import F, Q, Count
 from django.core.paginator import Paginator
-from django.http import FileResponse, HttpResponseBadRequest
+from django.http import FileResponse, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
@@ -18,7 +18,9 @@ from .forms import StyledModelForm
 from .models import Course, TrainingGroup, GroupSession, Enrollment, Employee, Training
 from .views import staff_required, record
 from .widgets import numeric_text_widgets, date_widgets
-from .models import AuditEvent, Trainer
+from .models import AuditEvent, Trainer, TrainingCentre, TrainingRoom
+from .scheduling import save_group, detect_conflicts, conflict_message, validate_reservation
+from .scheduling_guard import reservation_transaction
 
 
 def normalise(value):
@@ -53,6 +55,10 @@ class CourseForm(StyledModelForm):
 
 
 class GroupForm(forms.Form):
+    session_dates = forms.CharField(label='Dias efectivos de formação', required=False, widget=forms.Textarea(attrs={'rows':5}), help_text='Seleccione no calendário ou indique datas AAAA-MM-DD, uma por linha. Nenhum dia é seleccionado automaticamente.')
+    centre = forms.ModelChoiceField(label='Centro', queryset=TrainingCentre.objects.all(), required=False)
+    room = forms.ModelChoiceField(label='Sala', queryset=TrainingRoom.objects.select_related('centre').all(), required=False)
+    planning_confirmation = forms.ChoiceField(required=False, label='Confirmação do planeamento', choices=[('Provisorio','Guardar provisório'),('Confirmado','Confirmar reserva'),('Por rever','Por rever')], initial='Provisorio')
     start = forms.DateField(label='Data de início', input_formats=['%d/%m/%Y', '%Y-%m-%d'], widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'dd/mm/aaaa', 'inputmode': 'numeric', 'maxlength': '10', 'pattern': '[0-9]{2}/[0-9]{2}/[0-9]{4}'}))
     end = forms.DateField(label='Data de fim', input_formats=['%d/%m/%Y', '%Y-%m-%d'], widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'dd/mm/aaaa', 'inputmode': 'numeric', 'maxlength': '10', 'pattern': '[0-9]{2}/[0-9]{2}/[0-9]{4}'}))
     trainer = forms.ModelChoiceField(label='Formador(a)', queryset=Trainer.objects.none(), empty_label='Seleccione o formador')
@@ -76,6 +82,7 @@ class GroupForm(forms.Form):
     def design_groups(self):return [('',self.visible_fields())]
     def clean(self):
         data=super().clean()
+        data['planning_confirmation'] = data.get('planning_confirmation') or 'Provisorio'
         first, last = data.get('start'), data.get('end')
         if first and last:
             count = (last - first).days + 1
@@ -84,13 +91,23 @@ class GroupForm(forms.Form):
             elif count > 366:
                 self.add_error('end', 'A duração não pode ultrapassar 366 dias.')
             else:
-                data['dates'] = [first + timedelta(days=i) for i in range(count)]
+                import re
+                raw = data.get('session_dates','')
+                try:
+                    dates = [date.fromisoformat(x) for x in re.split(r'[\s,;]+', raw.strip()) if x]
+                    if len(dates) != len(set(dates)): raise ValueError()
+                    if any(d < first or d > last for d in dates): raise ValueError()
+                    data['dates'] = sorted(dates)
+                except ValueError:
+                    self.add_error('session_dates','Indique dias efectivos distintos dentro do intervalo, em AAAA-MM-DD.')
         start=data.get('start_time');end=data.get('end_time')
         if start and end:
             duration=Decimal((end.hour*60+end.minute)-(start.hour*60+start.minute))/60
             if duration<=0:self.add_error('end_time','A hora de fim deve ser posterior à hora de início, no mesmo dia.')
             elif data.get('hours_per_day') is not None and data.get('break_hours') is not None and data['hours_per_day']+data['break_hours']>duration:
                 self.add_error('hours_per_day','Horas de formação e pausas não podem ultrapassar o horário disponível.')
+        if data.get('room') and data['room'].centre_id != getattr(data.get('centre'),'pk',None):
+            self.add_error('room','A sala não pertence ao centro seleccionado.')
         return data
 
 
@@ -101,18 +118,16 @@ def group_values(data):
     return {**({'trainer_record': data['trainer_record']} if 'trainer_record' in data else {}), **{k:data[k] for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time']},'start':days[0],'end':days[-1],'days':len(days)}
 
 
-@transaction.atomic
 def create_group(course, data):
-    # Write first: serialises the allocator on SQLite as well as row-locking databases.
-    if Course.objects.filter(pk=course.pk,active=True).update(next_group=F('next_group')+1)!=1:
-        raise ValidationError('A acção de formação deixou de estar disponível.')
-    course.refresh_from_db()
-    group=TrainingGroup.objects.create(course=course,number=course.next_group-1,title=course.title,area=course.area,**group_values(data))
-    GroupSession.objects.bulk_create([GroupSession(group=group,date=d) for d in data['dates']])
-    return group
+    values = dict(data)
+    dates = sorted(values.get('dates', []))
+    values.setdefault('start', dates[0] if dates else timezone.localdate())
+    values.setdefault('end', dates[-1] if dates else values['start'])
+    return save_group(course.pk, values)
 
 
 def history_rows(group, people):
+    group.course = Course.objects.get(pk=group.course_id)
     ids=[p.pk for p in people]
     old=list(Training.objects.filter(employee_id__in=ids).select_related('group__course'))
     other=list(Enrollment.objects.filter(employee_id__in=ids,state='Activa',group__course=group.course).exclude(group=group).select_related('group'))
@@ -154,7 +169,7 @@ def selected_people(request):
 @transaction.atomic
 def enrol_reviewed(group, people, decisions, expected_keys, revision):
     if TrainingGroup.objects.filter(pk=group.pk,state='Planeada',end__gte=timezone.localdate(),revision=revision).update(revision=F('revision')+1)!=1:
-        raise ValidationError('A turma foi alterada ou a data de fim já passou. Reveja a selecção.')
+        raise ValidationError('O grupo foi alterado ou a data de fim já passou. Reveja a selecção.')
     group.refresh_from_db()
     entries=history_rows(group,people)
     if {str(x['person'].pk):x['key'] for x in entries}!=expected_keys:
@@ -185,7 +200,11 @@ def index(request):
     if selected_course:
         groups = groups.filter(course=selected_course)
     if q:groups=groups.filter(Q(title__icontains=q)|Q(trainer__icontains=q)|Q(location__icontains=q)|Q(course__code__icontains=q))
-    return render(request,'planning/index.html',{'courses':courses.order_by('title','pk'),'page':Paginator(groups.order_by('-start','-pk'),20).get_page(request.GET.get('page')),'q':q,'selected_course':selected_course})
+    summary = groups.aggregate(total=Count('pk', distinct=True),
+        confirmed=Count('pk', filter=Q(planning_confirmation='Confirmado') & ~Q(state='Cancelada'), distinct=True),
+        provisional=Count('pk', filter=Q(planning_confirmation='Provisorio') & ~Q(state='Cancelada'), distinct=True),
+        missing_room=Count('pk', filter=Q(room__isnull=True) & ~Q(state='Cancelada'), distinct=True))
+    return render(request,'planning/index.html',{'planning_summary':summary,'courses':courses.order_by('title','pk'),'page':Paginator(groups.order_by('-start','-pk'),20).get_page(request.GET.get('page')),'q':q,'selected_course':selected_course})
 
 
 @login_required
@@ -221,34 +240,29 @@ def course_edit(request,pk=None):
 def group_edit(request,course_pk=None,pk=None):
     group=get_object_or_404(TrainingGroup,pk=pk) if pk else None
     course=group.course if group else get_object_or_404(Course,pk=course_pk)
-    if group and group.state!='Planeada':messages.error(request,'O calendário fica fechado após iniciar ou cancelar o grupo.');return redirect('group_detail',pk=group.pk)
-    initial={'hours_per_day':course.default_hours,'start_time':'08:00','end_time':'16:00'}
-    if group:initial.update({k:getattr(group,k) for k in ['trainer','provider','location','capacity','hours_per_day','break_hours','start_time','end_time','revision']});initial['dates']='\n'.join(d.isoformat() for d in group.sessions.values_list('date',flat=True))
+    if group and group.state!='Planeada':
+        messages.error(request,'O calendário fica fechado após iniciar ou cancelar o grupo.')
+        return redirect('group_detail',pk=group.pk)
+    initial={'hours_per_day':course.default_hours,'start_time':'08:00','end_time':'16:00','planning_confirmation':'Provisorio'}
     if group:
-        initial['trainer'] = group.trainer_record_id
-        initial['start'] = group.start
-        initial['end'] = group.end
-    form=GroupForm(request.POST if request.method=='POST' else None, initial=initial,
-                   current_trainer=group.trainer_record_id if group else None)
+        initial.update({k:getattr(group,k) for k in ['provider','location','capacity','hours_per_day','break_hours','start_time','end_time','revision','start','end','planning_confirmation']})
+        initial.update(trainer=group.trainer_record_id,centre=group.centre_id,room=group.room_id,
+            session_dates='\n'.join(d.isoformat() for d in group.sessions.values_list('date',flat=True)))
+    form=GroupForm(request.POST if request.method=='POST' else None,initial=initial,current_trainer=group.trainer_record_id if group else None)
     if request.method=='POST' and form.is_valid():
         try:
-            with transaction.atomic():
-                if group:
-                    if form.cleaned_data['capacity']<group.enrollments.filter(state='Activa').count():raise ValidationError('A capacidade não pode ser inferior ao número de inscritos activos.')
-                    if TrainingGroup.objects.filter(pk=pk,revision=form.cleaned_data['revision'],state='Planeada').update(**group_values(form.cleaned_data),revision=F('revision')+1)!=1:raise ValidationError('O grupo foi alterado. Reabra o calendário.')
-                    group.sessions.all().delete();GroupSession.objects.bulk_create([GroupSession(group=group,date=d) for d in form.cleaned_data['dates']])
-                else:group=create_group(course,form.cleaned_data)
-                record(request,'PLANNING_GROUP',f'Acção {course.pk}, {group.code}: calendário guardado.')
-                return redirect('group_detail',pk=group.pk)
+            group=save_group(course.pk,form.cleaned_data,group_id=pk,revision=form.cleaned_data.get('revision'),actor=request.user.username)
+            for warning in group._planning_warnings: messages.warning(request,warning)
+            messages.success(request,'Planeamento guardado; confirmação e estado operacional separados.')
+            return redirect('group_detail',pk=group.pk)
         except ValidationError as exc:form.add_error(None,' '.join(exc.messages))
-    return render(request,'planning/form.html',{'form':form,'title':f'Calendário — {group.code}' if group else 'Criar grupo (numeração automática)','course':course, 'group':group})
+        except OperationalError as exc:
+            if 'locked' not in str(exc).lower(): raise
+            return HttpResponse('Planeamento ocupado. Reabra a página e tente novamente.',status=409)
+    return render(request,'planning/form.html',{'form':form,'title':f'Calendário — {group.code}' if group else 'Criar grupo','course':course,'group':group})
 
 
-@login_required
-def group_detail(request,pk):
-    group=get_object_or_404(TrainingGroup.objects.select_related('course'),pk=pk)
-    enrollments=group.enrollments.select_related('employee','training')
-    active=enrollments.filter(state='Activa')
+def historical_group_trainings(group):
     source_ids = []
     for event in AuditEvent.objects.filter(action='IMPORT_GROUPS_70_V1').only('detail'):
         try:
@@ -259,7 +273,16 @@ def group_detail(request,pk):
             source_ids.extend('pilar3b:' + value.strip() for value in
                               payload.get('source', {}).get('IDs de participação', '').split('|') if value.strip())
     source_trainings = Training.objects.filter(source_key__in=source_ids).select_related('employee').order_by('employee__name')
-    return render(request,'planning/group.html',{'attendance_open':group.end >= timezone.localdate() and group.state not in ['Cancelada','Concluída'], 'source_trainings':source_trainings,'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'seed':group.trainings.order_by('pk').first()})
+    return source_trainings
+
+
+@login_required
+def group_detail(request,pk):
+    group=get_object_or_404(TrainingGroup.objects.select_related('course'),pk=pk)
+    enrollments=group.enrollments.select_related('employee','training')
+    active=enrollments.filter(state='Activa')
+    source_trainings = historical_group_trainings(group)
+    return render(request,'planning/group.html',{'attendance_open':group.state != 'Cancelada', 'attendance_second_copy':group.end < timezone.localdate() or group.state == 'Concluída', 'source_trainings':source_trainings,'group':group,'enrollments':enrollments,'active_count':active.count(),'sessions':group.sessions.all(),'planning_warnings':([conflict_message(c) for c in detect_conflicts(group,list(group.sessions.values_list('date',flat=True)))] + (['Sala por definir.'] if not group.room_id else []) + (['Grupo provisório; reserva não confirmada.'] if group.planning_confirmation!='Confirmado' else [])) if request.user.is_staff else [],'seed':group.trainings.order_by('pk').first()})
 
 
 @login_required
@@ -299,7 +322,7 @@ def enrol(request,pk):
 @require_POST
 def transition(request,pk):
     try:
-        with transaction.atomic():
+        with reservation_transaction():
             revision=request.POST.get('revision','');action=request.POST.get('action','')
             if not revision.isdecimal() or action not in ['start','finish','cancel']:raise ValidationError('Acção inválida.')
             # Reserve state/version before reading enrolled participants.
@@ -308,12 +331,14 @@ def transition(request,pk):
             if TrainingGroup.objects.filter(pk=pk,state=expected,revision=int(revision)).update(revision=F('revision')+1)!=1:raise ValidationError('O estado ou os participantes mudaram. Reabra o grupo.')
             current.refresh_from_db()
             if action=='start':
+                if current.planning_confirmation != 'Confirmado':raise ValidationError('Confirme o planeamento e os recursos antes de iniciar.')
+                validate_reservation(current,list(current.sessions.values_list('date',flat=True)))
                 if current.start>timezone.localdate():raise ValidationError('O grupo ainda não chegou à data de início.')
                 active=list(current.enrollments.filter(state='Activa').select_related('employee'))
                 if not active:raise ValidationError('Adicione pelo menos um formando antes de iniciar.')
                 for en in active:
                     if en.training_id or Training.objects.filter(group=current, employee=en.employee).exists():
-                        raise ValidationError('Já existe uma participação para este formando e turma. Reveja a ligação antes de iniciar.')
+                        raise ValidationError('Já existe uma participação para este formando e grupo. Reveja a ligação antes de iniciar.')
                     t=Training(employee=en.employee,group=current,course=current.course,plan_status='No Plano',title=current.title,area=current.area,trainer=current.trainer,trainer_record=current.trainer_record,provider=current.provider,location=current.location,start=current.start,end=current.end,days=current.days,hours_per_day=current.hours_per_day,attendance=0,status='Em Curso',result='Pendente')
                     t.full_clean();t.save();en.training=t;en.full_clean();en.save(update_fields=['training'])
                 current.state='Em Curso'
@@ -332,7 +357,7 @@ def transition(request,pk):
             current.save(update_fields=['state']);record(request,'PLANNING_STATE',f'{current.code}, acção {current.course_id}: {current.state}')
         messages.success(request,'Estado do grupo actualizado.')
     except IntegrityError:
-        messages.error(request, 'A operação entrou em conflito com uma participação existente. Reabra a turma.')
+        messages.error(request, 'A operação entrou em conflito com uma participação existente. Reabra o grupo.')
     except ValidationError as exc:messages.error(request,' '.join(exc.messages))
     return redirect('group_detail',pk=pk)
 
@@ -368,8 +393,22 @@ def enrollment_edit(request,pk,en_pk):
 def attendance_pdf(request,pk):
     group=get_object_or_404(TrainingGroup,pk=pk)
     if group.state=='Cancelada':return HttpResponseBadRequest('O grupo está cancelado.')
-    if group.end < timezone.localdate() or group.state == 'Concluída':
-        return HttpResponseBadRequest('A lista de presença só pode ser gerada até à data de fim de um grupo não concluído.')
+    if request.GET.get('source') == 'historical':
+        from types import SimpleNamespace
+        from .attendance_pdf import build_attendance
+        import io
+        historical=list(historical_group_trainings(group))
+        if not historical:return HttpResponseBadRequest('Este grupo não tem participantes históricos associados.')
+        periods=sorted(set((t.start,t.end) for t in historical))
+        if any(not a or not b for a,b in periods):return HttpResponseBadRequest('O histórico não contém um período completo.')
+        rows=[];seen=set()
+        for t in historical:
+            if t.employee_id not in seen:
+                rows.append(SimpleNamespace(employee=t.employee));seen.add(t.employee_id)
+        period_label='; '.join(f'{a:%d/%m/%Y} - {b:%d/%m/%Y}' for a,b in periods)
+        try:content=build_attendance(group,None,rows,second_copy=True,historical_period=period_label)
+        except ValueError as exc:return HttpResponseBadRequest(str(exc))
+        return FileResponse(io.BytesIO(content),as_attachment=False,filename=f'EPAL_Lista_Historica_{group.pk}.pdf',content_type='application/pdf')
     try:day=date.fromisoformat(request.GET.get('date',''))
     except ValueError:return HttpResponseBadRequest('Seleccione um dia do calendário.')
     if not group.sessions.filter(date=day).exists():return HttpResponseBadRequest('Este dia não pertence ao calendário do grupo.')
@@ -378,21 +417,38 @@ def attendance_pdf(request,pk):
     try:
         from .attendance_pdf import build_attendance
         import io
-        content=build_attendance(group,day,rows)
+        content=build_attendance(group,day,rows,second_copy=group.end < timezone.localdate() or group.state == 'Concluída')
     except ValueError as exc:
         return HttpResponseBadRequest(str(exc))
     except ModuleNotFoundError as exc:
         if exc.name!='reportlab':raise
         return HttpResponseBadRequest('Instale a dependência PDF no mesmo terminal: python -m pip install reportlab==4.4.9. Depois reinicie a plataforma.')
-    return FileResponse(io.BytesIO(content),as_attachment=True,filename=f'EPAL_Lista_{group.course_id}_{group.code}_{day:%Y%m%d}.pdf',content_type='application/pdf')
+    return FileResponse(io.BytesIO(content),as_attachment=False,filename=f'EPAL_Lista_{group.course_id}_{group.code}_{day:%Y%m%d}.pdf',content_type='application/pdf')
 
 
 @login_required
 def attendance_excel(request,pk):
     group=get_object_or_404(TrainingGroup,pk=pk)
     if group.state=='Cancelada':return HttpResponseBadRequest('O grupo está cancelado.')
-    if group.end < timezone.localdate() or group.state == 'Concluída':
-        return HttpResponseBadRequest('A lista de presença só pode ser gerada até à data de fim de um grupo não concluído.')
+    if request.GET.get('source') == 'historical':
+        from types import SimpleNamespace
+        from .attendance_excel import build_attendance_excel
+        import io
+        historical=list(historical_group_trainings(group))
+        if not historical:return HttpResponseBadRequest('Este grupo não tem participantes históricos associados.')
+        if any(not t.start or not t.end for t in historical):
+            return HttpResponseBadRequest('O histórico não contém um período completo.')
+        periods=sorted(set((t.start,t.end) for t in historical))
+        rows=[];seen=set()
+        for t in historical:
+            if t.employee_id not in seen:
+                rows.append(SimpleNamespace(employee=t.employee));seen.add(t.employee_id)
+        label='; '.join(f'{a:%d/%m/%Y} - {b:%d/%m/%Y}' for a,b in periods)
+        try:content=build_attendance_excel(group,None,rows,second_copy=True,historical_period=label)
+        except ValueError as exc:return HttpResponseBadRequest(str(exc))
+        return FileResponse(io.BytesIO(content),as_attachment=True,
+            filename=f'EPAL_Lista_Historica_{group.pk}.xlsx',
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     try:day=date.fromisoformat(request.GET.get('date',''))
     except ValueError:return HttpResponseBadRequest('Seleccione um dia do calendário.')
     if not group.sessions.filter(date=day).exists():return HttpResponseBadRequest('Este dia não pertence ao calendário do grupo.')
@@ -400,7 +456,7 @@ def attendance_excel(request,pk):
     if not rows:return HttpResponseBadRequest('O grupo ainda não tem formandos.')
     from .attendance_excel import build_attendance_excel
     import io
-    try:content=build_attendance_excel(group,day,rows)
+    try:content=build_attendance_excel(group,day,rows,second_copy=group.end < timezone.localdate() or group.state == 'Concluída')
     except ValueError as exc:return HttpResponseBadRequest(str(exc))
     return FileResponse(io.BytesIO(content),as_attachment=True,filename=f'EPAL_Lista_{group.course_id}_{group.code}_{day:%Y%m%d}.xlsx',content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
@@ -443,7 +499,7 @@ def course_delete(request, pk):
                     raise ValidationError('A acção foi alterada. Reveja a página de confirmação.')
                 course.refresh_from_db()
                 if not course_deletion_allowed(course):
-                    raise ValidationError('Esta acção tem turmas ou histórico associado, incluindo títulos anteriores. Conserve os registos e arquive a acção em Editar acção.')
+                    raise ValidationError('Esta acção tem grupos ou histórico associado, incluindo títulos anteriores. Conserve os registos e arquive a acção em Editar acção.')
                 label = f'Acção {course.pk}: {course.title}'
                 course.delete()
                 record(request, 'COURSE_DELETE', f'{label}. Motivo: {reason}')
@@ -465,23 +521,23 @@ def group_delete(request, pk):
     group=get_object_or_404(TrainingGroup.objects.select_related('course'),pk=pk)
     if request.method=='POST':
         try:
-            with transaction.atomic():
+            with reservation_transaction(allow_session_deletion=True):
                 revision=request.POST.get('revision','')
                 if not revision.isdecimal() or request.POST.get('confirm')!='ELIMINAR':
                     raise ValidationError('Confirme a eliminação escrevendo ELIMINAR.')
                 if not request.POST.get('reason','').strip():raise ValidationError('Indique o motivo da eliminação.')
                 if TrainingGroup.objects.filter(pk=pk,revision=int(revision)).update(revision=F('revision')+1)!=1:
-                    raise ValidationError('A turma foi alterada. Reveja a página de confirmação.')
+                    raise ValidationError('O grupo foi alterado. Reveja a página de confirmação.')
                 group.refresh_from_db()
                 if not group_deletion_allowed(group):
-                    raise ValidationError('Só é possível eliminar turmas planeadas ou canceladas sem registos de formação associados.')
-                label=f'{group.code}, acção {group.course_id}, turma {group.pk}'
+                    raise ValidationError('Só é possível eliminar grupos planeados ou canceladas sem registos de formação associados.')
+                label=f'{group.code}, acção {group.course_id}, grupo {group.pk}'
                 count=group.enrollments.count()
                 group.enrollments.all().delete()
                 group.sessions.all().delete()
                 group.delete()
                 record(request,'PLANNING_DELETE',f'{label}: eliminada com {count} inscrições preparatórias. Motivo: {request.POST["reason"].strip()[:1000]}')
-            messages.success(request,'Turma eliminada. Os dados pessoais dos técnicos e o catálogo foram conservados. O código do grupo não será reutilizado.')
+            messages.success(request,'Grupo eliminado. Os dados pessoais dos técnicos e o catálogo foram conservados. O código do grupo não será reutilizado.')
             return redirect('planning')
         except ValidationError as exc:messages.error(request,' '.join(exc.messages));return redirect('group_delete',pk=pk)
     return render(request,'planning/delete.html',{'group':group,'can_delete':group_deletion_allowed(group),

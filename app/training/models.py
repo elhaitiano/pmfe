@@ -141,15 +141,15 @@ class Training(models.Model):
         errors = {}
         if self.group_id:
             if self.course_id and self.course_id != self.group.course_id:
-                errors['course'] = 'A acção deve corresponder ao catálogo da turma.'
+                errors['course'] = 'A acção deve corresponder ao catálogo do grupo.'
             if self.days is None or self.hours_per_day is None:
-                errors['days'] = 'Uma participação de turma exige duração conhecida.'
+                errors['days'] = 'Uma participação de grupo exige duração conhecida.'
             if not Enrollment.objects.filter(group_id=self.group_id, employee_id=self.employee_id, state='Activa').exists():
-                errors['group'] = 'A participação exige uma inscrição activa do mesmo formando nesta turma.'
+                errors['group'] = 'A participação exige uma inscrição activa do mesmo formando neste grupo.'
         if self.pk:
             linked = Enrollment.objects.filter(training_id=self.pk).first()
             if linked and (linked.employee_id != self.employee_id or linked.group_id != self.group_id):
-                errors['employee'] = 'Não pode alterar a identidade ou turma de uma participação inscrita.'
+                errors['employee'] = 'Não pode alterar a identidade ou grupo de uma participação inscrita.'
             original = type(self).objects.filter(pk=self.pk).values_list('source_key', flat=True).first()
             if original and original != self.source_key:
                 errors['source_key'] = 'O identificador histórico não pode ser alterado.'
@@ -211,15 +211,64 @@ class Training(models.Model):
 
     def save(self, *args, **kwargs):
         if self.group_id and self.course_id and self.group.course_id != self.course_id:
-            raise ValidationError({'course': 'A acção deve corresponder à turma.'})
+            raise ValidationError({'course': 'A acção deve corresponder ao grupo.'})
         if self.pk:
             linked = Enrollment.objects.filter(training_id=self.pk).first()
             if linked and (linked.employee_id != self.employee_id or linked.group_id != self.group_id):
-                raise ValidationError('A participação não pode mudar de formando ou turma após inscrição.')
+                raise ValidationError('A participação não pode mudar de formando ou grupo após inscrição.')
             original = type(self).objects.filter(pk=self.pk).values_list('source_key', flat=True).first()
             if original and original != self.source_key:
                 raise ValidationError('O identificador histórico não pode ser alterado.')
         return super().save(*args, **kwargs)
+
+    @property
+    def presentation_result(self):
+        if self.simulated_grade is not None and self.status == 'Concluído':
+            return 'Aprovado' if self.simulated_grade >= 10 else 'Reprovado'
+        return self.result
+
+    @property
+    def delivery_reported(self):
+        return self.certified is True or self.declared_delivery_date is not None
+
+    @property
+    def delivery_date_for_reporting(self):
+        return self.certificate_delivery_date if self.certified is True and self.certificate_delivery_date else self.declared_delivery_date
+
+    @property
+    def simulated_grade(self):
+        data=(self.source_data or {}).get('_presentation_grade', {})
+        if not data.get('simulated'): return None
+        try:
+            value=Decimal(str(data['grade']))
+            return value if value.is_finite() and 0 <= value <= 20 else None
+        except (KeyError,ValueError,ArithmeticError): return None
+
+    @property
+    def presentation_grade(self):
+        return self.simulated_grade if self.simulated_grade is not None else self.grade
+
+    @property
+    def declared_delivery_date(self):
+        from datetime import date
+        data=(self.source_data or {}).get('_certificate_delivery_declaration', {})
+        try:
+            value=date.fromisoformat(data['delivery_date'])
+            return value if data.get('declared') and self.status=='Concluído' and value==self.end and value<=timezone.localdate() else None
+        except (KeyError,ValueError,TypeError): return None
+
+    @property
+    def delivery_receipt_associated(self):
+        return self.certified is True and self.documents.filter(active=True,kind='participant_receipt',employee_id=self.employee_id).exists()
+
+    @property
+    def original_assessment(self):
+        return (self.source_data or {}).get('_original_assessment', {})
+
+    @property
+    def original_assessment_label(self):
+        from .original_assessments import label
+        return label(self.original_assessment)
 
     @property
     def participation_id(self):
@@ -245,7 +294,7 @@ class Training(models.Model):
 
     @property
     def certificate_label(self):
-        return 'Sim' if self.certified is True else 'Não' if self.certified is False else 'Por confirmar'
+        return 'Entregue' if self.delivery_reported else 'N\u00e3o entregue' if self.certified is False else '\u2014'
 
     @property
     def attendance_percent(self):
@@ -256,11 +305,11 @@ class Training(models.Model):
 
     @property
     def certificate_issue_label(self):
-        return 'Sim' if self.certificate_issued is True else 'Não' if self.certificate_issued is False else 'Por confirmar'
+        return 'Sim' if self.certificate_issued is True else 'N\u00e3o' if self.certificate_issued is False else '\u2014'
 
     @property
     def certificate_hr_label(self):
-        return 'Sim' if self.certificate_hr_delivered is True else 'Não' if self.certificate_hr_delivered is False else 'Por confirmar'
+        return 'Sim' if self.certificate_hr_delivered is True else 'N\u00e3o' if self.certificate_hr_delivered is False else '\u2014'
 
 
 class PrivateDocument(models.Model):
@@ -353,7 +402,13 @@ class Course(models.Model):
         return self.title
 
 
-class TrainingGroup(models.Model):
+from .scheduling_guard import PlanningModel, PlanningManager, ActiveSessionManager
+
+class TrainingGroup(PlanningModel):
+    centre = models.ForeignKey('TrainingCentre', on_delete=models.PROTECT, null=True, blank=True, related_name='groups', verbose_name='Centro')
+    room = models.ForeignKey('TrainingRoom', on_delete=models.PROTECT, null=True, blank=True, related_name='groups', verbose_name='Sala')
+    planning_confirmation = models.CharField('Planeamento', max_length=20, default='Provisorio', choices=[('Provisorio','Provisório'),('Confirmado','Confirmado'),('Por rever','Por rever')])
+    reservation_fields = ('course_id','trainer_record_id','trainer','centre_id','room_id','capacity','hours_per_day','break_hours','start_time','end_time','start','end','days','state','planning_confirmation')
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='groups')
     number = models.PositiveIntegerField()
     title = models.CharField(max_length=1000)
@@ -385,10 +440,18 @@ class TrainingGroup(models.Model):
     def __str__(self):return f'{self.code} — {self.title}'
 
 
-class GroupSession(models.Model):
+class GroupSession(PlanningModel):
+    def delete(self, *args, **kwargs):
+        raise ValidationError('As sessoes sao conservadas; reveja o calendario.')
+    active = models.BooleanField(default=True)
+    objects = ActiveSessionManager()
+    all_objects = PlanningManager()
+    reservation_fields = ('group_id','date','active')
     group = models.ForeignKey(TrainingGroup, on_delete=models.PROTECT, related_name='sessions')
     date = models.DateField('Dia de formação')
     class Meta:
+        base_manager_name = 'all_objects'
+        default_manager_name = 'objects'
         ordering = ['date']
         constraints = [models.UniqueConstraint(fields=['group','date'], name='unique_group_session')]
 
@@ -411,7 +474,7 @@ class Enrollment(models.Model):
         if self.training_id:
             training = self.training
             if training.employee_id != self.employee_id or training.group_id != self.group_id:
-                raise ValidationError({'training': 'A participação deve pertencer ao mesmo formando e à mesma turma.'})
+                raise ValidationError({'training': 'A participação deve pertencer ao mesmo formando e à mesmo grupo.'})
             if self.state != 'Activa':
                 raise ValidationError({'state': 'Uma inscrição com participação deve conservar o estado activo; registe a desistência na participação.'})
 
@@ -440,3 +503,5 @@ from .evaluation_models import (TrainingEvaluation, ReactionEvaluation, Exam,
 from .competency_models import (Competency, RoleProfile, RoleCompetency, EvaluationCycle,
     CycleCompetency, CycleRater, CompetencyResponse, DevelopmentAction)
 from .competency_models import PrivateResponseRevision
+
+from .scheduling_models import TrainingCentre, TrainingRoom, PlanningLock

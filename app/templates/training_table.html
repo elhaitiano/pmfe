@@ -15,7 +15,7 @@
           Assiduidade
         </th>
         <th>
-          Nota /20
+          Nota
         </th>
         <th>
           Resultado
@@ -40,20 +40,20 @@
           {{ t.start|date:'d/m/Y' }}<br>{{ t.end|date:'d/m/Y' }}
         </td>
         <td>
-          {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+          {{ t.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }}
         </td>
         <td>
           {% if t.attendance_percent is not None %}
           {{ t.attendance_percent|floatformat:1 }}%{% else %}—{% endif %}
         </td>
         <td>
-          {{ t.grade|default_if_none:'—' }}
+          {% include 'original_note_cell.html' %}
         </td>
         <td>
-          {{ t.result }}
+          {{ t.presentation_result }}
         </td>
         <td>
-          {{ t.certificate_label }}{% if t.certificate_delivery_date %}<br>{{ t.certificate_delivery_date|date:'d/m/Y' }}{% endif %}
+          {% include 'certificate_delivery_cell.html' with participation=t %}
         </td>
         {% if user.is_staff and not print_mode %}
         <td class="no-print">

@@ -29,7 +29,7 @@ def sample():
                       'Área alocada', 'Origem do cadastro', 'Estado de revisão', 'Linha fonte EPAL'])
     employees.append(['Técnica Teste', '001', '000123LA', '001234', 'Operadora', '29485', 'F',
                       'Solteira', '900000000', 'teste@example.com', '40857', 'Técnica', 'Direcção',
-                      'Área A', 'Cadastro', 'Apto', '20'])
+                      'Área A', 'Registo', 'Apto', '20'])
     secondary = book.create_sheet('FUNCIONARIOS_EPAL')
     secondary.append(['N.º Mecan', 'Nome', 'Função', 'Validação Cadastro EPAL'])
     secondary.append(['001', 'Técnica Teste', 'Operadora', 'Definitivo'])
@@ -78,7 +78,7 @@ class ImportReviewTests(TestCase):
                     'social_security_number': '001234', 'function': 'Operadora', 'gender': 'F',
                     'marital_status': 'Solteira', 'phone': '900000000', 'email': 'teste@example.com',
                     'category': 'Técnica', 'direction': 'Direcção', 'area': 'Área A',
-                    'registration_origin': 'Cadastro', 'review_status': 'Apto', 'source_row': 20,
+                    'registration_origin': 'Registo', 'review_status': 'Apto', 'source_row': 20,
                     'company': 'EPAL', 'cost_center': 'CC01', 'registration_validation': 'Definitivo'}
         for field, value in expected.items():
             self.assertEqual(getattr(obj, field), value)

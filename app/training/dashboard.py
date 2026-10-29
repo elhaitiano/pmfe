@@ -37,9 +37,9 @@ def executive_data(rows, employees, year=''):
     stats = statistics(rows)
     present = {r.employee_id for r in rows if r.status != 'Planeado' and r.attendance > 0}
     editions = {tuple(getattr(r, f) for f in EDITION_FIELDS) for r in rows}
-    results = Counter(r.result for r in rows if r.status == 'Concluído')
+    results = Counter(r.presentation_result for r in rows if r.status == 'Concluído')
     evaluated = results['Aprovado'] + results['Reprovado']
-    final_grades = [r.grade for r in rows if r.status == 'Concluído' and r.grade is not None]
+    final_grades = [r.presentation_grade for r in rows if r.status == 'Concluído' and r.presentation_grade is not None]
     areas, timeline = defaultdict(Decimal), defaultdict(Decimal)
     if year:
         months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -60,18 +60,18 @@ def executive_data(rows, employees, year=''):
         if row.employee_id in present:
             item['present'].add(row.employee_id)
         item['hours'] += (row.completed_hours or Decimal(0))
-        item['certificates'] += row.certified is True
+        item['certificates'] += row.delivery_reported
     directions = [{'label': label, 'total': x['total'], 'present': len(x['present']),
                    'coverage': len(x['present']) * 100 / x['total'], 'hours': x['hours'], 'certificates': x['certificates']}
                   for label, x in sorted(by_direction.items())]
     cards = [
         ('Técnicos na base', len(employees), 'Na direcção seleccionada; inclui técnicos sem formação', 'groups'),
         ('Técnicos com presença', len(present), 'Pessoas distintas com pelo menos uma presença', 'person_check'),
-        ('Turmas', len(editions), 'Edições distintas nos filtros seleccionados', 'school'),
+        ('Grupos', len(editions), 'Edições distintas nos filtros seleccionados', 'school'),
         ('Participações', len(rows), 'Uma inscrição por técnico e formação', 'how_to_reg'),
         ('Horas realizadas', stats['hours'], 'Soma das horas de presença de todos os participantes', 'schedule'),
         ('Assiduidade', stats['attendance'], 'Presenças ÷ dias previstos; exclui formações planeadas', 'speed'),
-        ('Certificados entregues', stats['certificates'], 'Somente entregas confirmadas', 'workspace_premium'),
+        ('Certificados entregues', stats['certificates_reported'], 'Entregas confirmadas ou declaradas, sem duplicar participacoes', 'workspace_premium'),
         ('Aproveitamento', Decimal(results['Aprovado']) * 100 / evaluated if evaluated else None,
          'Aprovados ÷ (aprovados + reprovados), em participações concluídas', 'verified'),
     ]
@@ -120,4 +120,5 @@ def dashboard(request):
                 label = "'" + label
             writer.writerow([label, item['total'], item['present'], item['coverage'], item['hours'], item['certificates']])
         return response
+    data['original_assessment_stats'] = statistics(rows)
     return render(request, 'dashboard.html', data)

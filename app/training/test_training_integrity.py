@@ -11,6 +11,8 @@ from .analytics import statistics, distribution
 from .forms import TrainingForm
 from .models import Course, Employee, Enrollment, Training
 from .planning import create_group
+from .f6_test_helpers import confirm_fixture
+from .scheduling_guard import reservation_transaction
 
 
 class TrainingIntegrityTests(TestCase):
@@ -24,6 +26,7 @@ class TrainingIntegrityTests(TestCase):
         self.group = create_group(self.course, dict(dates=[date(2025, 1, 1)], trainer='Formador',
             provider='', location='Sala', capacity=10, hours_per_day=Decimal('7'),
             break_hours=Decimal('1'), start_time=time(8), end_time=time(16)))
+        confirm_fixture(self.group)
         self.user = get_user_model().objects.create_user('editor_integrity', is_staff=True)
         self.client.force_login(self.user)
 
@@ -76,7 +79,8 @@ class TrainingIntegrityTests(TestCase):
 
     def test_finish_rejects_unlinked_enrolment(self):
         Enrollment.objects.create(group=self.group, employee=self.person)
-        self.group.state = 'Em Curso'; self.group.save(update_fields=['state'])
+        with reservation_transaction():
+            self.group.state = 'Em Curso'; self.group.save(update_fields=['state'])
         self.client.post(reverse('group_transition', args=[self.group.pk]),
             {'revision': self.group.revision, 'action': 'finish'})
         self.group.refresh_from_db()

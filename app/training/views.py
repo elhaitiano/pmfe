@@ -118,17 +118,19 @@ def employee_data(request, pk=None):
     employee = get_object_or_404(Employee, pk=pk)
     rows = list(employee.trainings.all())
     fields = registration_header_fields(employee)
+    screen_fields = [fields[i] for i in [0,6,2,8,3,5,1]]
+    screen_fields += [('Tel.', ' | '.join(fields[i][1] or '\u2014' for i in [7,9])),fields[10]]
     competencies, seen = [], set()
     for row in rows:
         if row.title not in seen and len(competencies) < 6:
             seen.add(row.title)
             competencies.append({'training': row,
-                'percent': max(0, min(100, float(row.grade) * 5)) if row.grade is not None else None})
+                'percent': max(0, min(100, float(row.presentation_grade) * 5)) if row.presentation_grade is not None else None})
     groups = distribution(rows)
     from .documents import DocumentForm
     document_form = DocumentForm(employee=employee, prefix=None) if request.user.is_staff else None
-    return render(request, 'employee_data.html', {'employee': employee, 'data_fields': fields,
-        'trainings': rows[:5], 'stats': statistics(rows), 'distribution': groups, 'history_total': len(rows),
+    return render(request, 'employee_data.html', {'employee': employee, 'data_fields': screen_fields,
+        'trainings': rows[:5], 'print_fields': fields, 'print_name': ' '.join(employee.name.split()[::max(1,len(employee.name.split())-1)]), 'today': timezone.localdate(), 'stats': statistics(rows), 'distribution': groups, 'history_total': len(rows),
         'competencies': competencies, 'has_hours': bool(groups),
         'unconfirmed_certificates': sum(row.certified is None for row in rows),
         'document_form': document_form,
@@ -146,9 +148,9 @@ def employee_detail(request, pk):
         rows = rows.filter(start__year=int(year))
     if area:
         rows = rows.filter(area=area)
-    graded = [t for t in reversed(list(rows)) if t.grade is not None]
+    graded = [t for t in reversed(list(rows)) if t.presentation_grade is not None]
     dots = [{'x': round(25 + i * 260 / max(len(graded) - 1, 1)),
-             'y': round(130 - float(t.grade) * 6), 'title': t.title, 'grade': t.grade}
+             'y': round(130 - float(t.presentation_grade) * 6), 'title': t.title, 'grade': t.presentation_grade}
             for i, t in enumerate(graded)]
     return render(request, 'employee.html', {'employee': employee,
         'trainings': rows, 'stats': statistics(rows), 'profile_fields': employee_fields(employee),

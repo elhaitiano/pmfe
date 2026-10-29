@@ -1,3 +1,4 @@
+from .scheduling_guard import reservation_transaction
 from unittest.mock import patch
 from datetime import date, time
 from decimal import Decimal
@@ -80,5 +81,7 @@ class AttendanceExcelTests(TestCase):
         self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Gerar lista dos formandos em Excel')
         self.assertEqual(self.client.get(url,{'date':'2026-10-02'}).status_code,400)
         self.assertEqual(self.client.get(url,{'date':'invalid'}).status_code,400)
-        self.group.state='Cancelada';self.group.save();self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,400)
+        with reservation_transaction():
+            self.group.state='Cancelada';self.group.save()
+        self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,400)
         self.client.logout();self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,302)
