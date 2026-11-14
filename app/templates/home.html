@@ -18,6 +18,15 @@
       <a class="gf-btn" href="{% if employee %}{% url 'training_create' employee.pk %}{% endif %}" id="gfNewTrainingTop"><span class="material-symbols-outlined text-base">add_circle</span>Nova Formação</a>{% endif %}<a href="{% url 'planning' %}" class="gf-btn alt"><span class="material-symbols-outlined">event_note</span>Planeamento e Turmas</a>{% if user.is_staff %}<a href="{% url 'batch_index' %}" class="gf-btn alt">Atualizar turma</a><a href="{% url 'employee_create' %}" class="gf-btn alt"><span class="material-symbols-outlined text-base">person_add</span>Novo funcionário</a>{% endif %}
     </div>
   </section>
+  <nav class="flex flex-wrap gap-3" aria-label="Ferramentas de formação">
+    {% if user.is_staff %}
+    <a class="gf-btn alt" href="{% url 'audit' %}">Registo de actividade</a>
+    {% endif %}
+    <a class="gf-btn alt" href="{% if user.is_staff %}{% url 'evaluation_index' %}{% else %}{% url 'my_ratings' %}{% endif %}" id="navAvaliacao">Avaliação</a>
+    {% if user.is_staff %}
+    <a class="gf-btn alt" href="{% url 'batch_index' %}">Certificados</a>
+    {% endif %}
+  </nav>
   <div class="gf-kpis">
     <div class="gf-kpi">
       <b id="gfTotalEmployees">{{ employee_count }}</b><span>Funcionários EPAL</span>

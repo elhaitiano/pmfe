@@ -55,9 +55,6 @@
           <span class="material-symbols-outlined">admin_panel_settings</span>Administração e Definições
         </a>
         {% endif %}
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if '/avaliacao/' in request.path or '/competencias/' in request.path or '/desenvolvimento/' in request.path or '/indicadores/' in request.path or '/minhas-avaliacoes/' in request.path %}bg-primary/10 border-l-4 border-primary text-primary font-semibold{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% if user.is_staff %}{% url 'evaluation_index' %}{% else %}{% url 'my_ratings' %}{% endif %}" id="navAvaliacao">
-          <span class="material-symbols-outlined">analytics</span>Avaliação
-        </a>
       </nav>
       <div class="p-6 border-t border-white/10">
         {% if user.is_superuser %}
