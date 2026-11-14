@@ -1247,3 +1247,32 @@
   #viewDashboard .exec-kpi-top > span { font-size: 10px; }
   #viewDashboard .exec-hero-top > .exec-actions { min-width: 0; }
 }
+
+/* Main indicators and actions share the compact summary panel. */
+#viewDashboard .exec-summary-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 18px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+#viewDashboard .exec-summary-layout .exec-primary-kpis {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 4px 0 0;
+}
+#viewDashboard .exec-summary-layout .exec-actions {
+  flex-direction: column;
+}
+#viewDashboard #dashboard-directions { scroll-margin-top: 100px; }
+@media screen and (max-width: 1100px) {
+  #viewDashboard .exec-summary-layout { grid-template-columns: 1fr; }
+  #viewDashboard .exec-summary-layout .exec-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media screen and (max-width: 500px) {
+  #viewDashboard .exec-summary-layout .exec-primary-kpis,
+  #viewDashboard .exec-summary-layout .exec-actions { grid-template-columns: 1fr; }
+}

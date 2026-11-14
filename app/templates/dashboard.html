@@ -3,7 +3,7 @@
 {% block heading %}
 DASHBOARD EXECUTIVO{% endblock %}
 {% block extra_styles %}
-<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}?v=compact-summary-2">
 {% endblock %}
 {% block content %}
 <div class="executive" id="viewDashboard">
@@ -17,7 +17,30 @@ DASHBOARD EXECUTIVO{% endblock %}
           Painel consolidado da Direcção Geral e Recursos Humanos da <strong>EPAL</strong>. Formação, assiduidade, resultados e certificados num centro de análise e relatórios.
         </p>
       </div>
+
+    </div>
+    <div class="exec-summary-layout">
+  <section class="exec-primary-kpis">
+    {% for item in main_kpis %}
+    <article class="exec-kpi-card">
+      <div class="exec-kpi-top">
+        <span>{{ item.label }}</span>
+        <div class="exec-icon" style="--tone:{{ item.color }}">
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
+        </div>
+      </div>
+      <p class="exec-kpi-val">
+        {% if item.value is None %}
+        —{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
+      </p>
+      <p class="exec-kpi-sub" style="color:{{ item.color }}">
+        <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }}
+      </p>
+    </article>
+    {% endfor %}
+  </section>
       <div class="exec-actions">
+        <a href="#dashboard-directions" class="exec-button">Consulta de formações e participação por Direcção</a>
         {% if user.is_staff %}
         <a href="{% url 'indicator_index' %}" class="exec-button">Indicadores confirmados e 360°</a>
         {% endif %}
@@ -57,25 +80,7 @@ DASHBOARD EXECUTIVO{% endblock %}
     Sem formações iniciadas para esta selecção. Consulte também as actividades datadas no período.
   </div>
   {% endif %}
-  <section class="exec-primary-kpis">
-    {% for item in main_kpis %}
-    <article class="exec-kpi-card">
-      <div class="exec-kpi-top">
-        <span>{{ item.label }}</span>
-        <div class="exec-icon" style="--tone:{{ item.color }}">
-          <span class="material-symbols-outlined">{{ item.icon }}</span>
-        </div>
-      </div>
-      <p class="exec-kpi-val">
-        {% if item.value is None %}
-        —{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
-      </p>
-      <p class="exec-kpi-sub" style="color:{{ item.color }}">
-        <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }}
-      </p>
-    </article>
-    {% endfor %}
-  </section>
+
   <section class="exec-secondary-kpis">
     {% for item in secondary_kpis %}
     <div class="exec-mini">
@@ -126,7 +131,7 @@ DASHBOARD EXECUTIVO{% endblock %}
         </p>
       </div>
     </article>
-    <article class="exec-glass-box">
+    <article class="exec-glass-box" id="dashboard-directions">
       <div class="exec-panel-heading">
         <h3>
           <span class="material-symbols-outlined text-primary">apartment</span>Desempenho por Direcção
