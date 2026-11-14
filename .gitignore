@@ -73,3 +73,6 @@ app/static-collected/
 
 # Private import previews and local exports
 /exports/
+
+# Plateforme de testes de integração
+Plataforma/
