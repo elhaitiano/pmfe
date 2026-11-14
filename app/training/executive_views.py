@@ -71,7 +71,7 @@ def create_report(request):
         try:
             temporary.write_bytes(pdf);os.replace(temporary,path)
             ExecutiveReport.objects.create(id=report_id,actor=request.user.username,title=(data['period_label']+' - '+(filters.get('direction') or 'Geral'))[:250],filters=filters,
-                summary={'participations':len(data['rows']),'hours':str(data['stats']['hours']),'certificates':data['stats']['certificates'],'dated_deliveries':len(data['deliveries']),'period':data['period_label']},sha256=hashlib.sha256(pdf).hexdigest())
+                summary={'participations':len(data['rows']),'hours':str(data['stats']['hours']),'certificates':data['stats']['certificates_reported'],'dated_deliveries':len(data['deliveries']),'period':data['period_label']},sha256=hashlib.sha256(pdf).hexdigest())
             record(request,'EXEC_REPORT',f'{report_id} - {data["period_label"]}')
         except Exception:
             path.unlink(missing_ok=True);temporary.unlink(missing_ok=True);raise

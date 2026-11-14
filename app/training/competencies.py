@@ -67,7 +67,7 @@ class CycleForm(EditForm):
         self.fields['role'].queryset = RoleProfile.objects.filter(active=True)
         self.fields['training'].label_from_instance = lambda t: f'{t.employee.number} — {t.title} (#{t.pk})'
         self.fields['training'].queryset = Training.objects.select_related('employee').all()
-        self.fields['employee'].help_text = 'O texto Função do cadastro permanece intacto; confirme a função de referência.'
+        self.fields['employee'].help_text = 'O texto Função do registo permanece intacto; confirme a função de referência.'
         self.fields['minimum_coverage'].help_text = 'Aplica-se separadamente a cada tipo de avaliador com peso positivo.'
         self.fields['minimum_peers'].help_text = 'Nunca inferior a três. Os resultados só são divulgados após o fecho.'
 

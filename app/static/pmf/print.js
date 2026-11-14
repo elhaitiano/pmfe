@@ -11,7 +11,7 @@
       context.beginPath(); context.moveTo(110,110); context.arc(110,110,78,angle,end); context.closePath(); context.fillStyle=item.color; context.fill(); angle=end;
     }
     context.beginPath(); context.arc(110,110,43,0,2*Math.PI); context.fillStyle='#fff'; context.fill();
-    const label = total.toLocaleString('pt-PT', {minimumFractionDigits:1, maximumFractionDigits:1});
+    const label = total.toLocaleString('pt-PT', {minimumFractionDigits:0, maximumFractionDigits:0});
     context.fillStyle = '#073b7a';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
@@ -25,13 +25,16 @@
     context.font = '12px Arial';
     context.fillText('HORAS', 110, 129);
   }
-  function paginate() {
+  const pristine = document.querySelector("#pages .page").cloneNode(true);
+  function paginate(force = false) {
+    document.getElementById("pages").replaceChildren(pristine.cloneNode(true));
     const host = document.getElementById('pages'), original = host.querySelector('.page');
     const header = original.querySelector('.header'), tableSection = original.querySelector('.table-section');
     const signature = original.querySelector('.final-block'), footer = original.querySelector('.footer');
     const name = original.querySelector('.photo-label').textContent;
     const rows = [...tableSection.querySelectorAll('tbody > tr')];
     const firstBlocks = [...original.children].filter(x => x !== tableSection && x !== signature && x !== footer);
+    if (!force && window.matchMedia("screen and (max-width:760px)").matches) {original.querySelectorAll("canvas").forEach(drawChart);document.body.dataset.printReady="true";return;}
     host.replaceChildren();
     const createPage = first => {
       const page = document.createElement('section'); page.className='page'+(first?' first-page':' continuation-page');
@@ -71,6 +74,8 @@
     pages.forEach((x,i)=>{x.querySelector('.page-counter').textContent='Pág. '+(i+1)+'/'+pages.length; x.querySelectorAll('canvas').forEach(drawChart);});
     document.body.dataset.printReady='true';
   }
+  window.addEventListener("beforeprint", () => paginate(true));
+  window.addEventListener("afterprint", () => paginate());
   window.pmfPrintReady = new Promise(resolve => {
     const ready=async()=>{await document.fonts.ready; paginate(); resolve();};
     if (document.readyState==='complete') ready(); else window.addEventListener('load',ready,{once:true});

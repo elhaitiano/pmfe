@@ -9,9 +9,9 @@
       <p>{{ cycle.get_state_display }} · {{ cycle.start|date:'d/m/Y' }} a {{ cycle.end|date:'d/m/Y' }}</p>
       <p>Responsável: {{ cycle.owner.username }} · Função de referência: {{ cycle.config.role|default:cycle.role.title }}</p>
       {% if cycle.config %}
-      <p>Função do cadastro na abertura: {{ cycle.config.employee_function|default:'Por preencher' }} · Versão da configuração: {{ cycle.config.version }}</p>
+      <p>Função do registo na abertura: {{ cycle.config.employee_function|default:'Por preencher' }} · Versão da configuração: {{ cycle.config.version }}</p>
       {% else %}
-      <p>Função no cadastro: {{ cycle.employee.function|default:'Por preencher' }}</p>
+      <p>Função no registo: {{ cycle.employee.function|default:'Por preencher' }}</p>
       {% endif %}
       <p>Pesos: autoavaliação {{ cycle.weight_self }}%, superior {{ cycle.weight_manager }}%, colegas {{ cycle.weight_peer }}%, formador {{ cycle.weight_trainer }}%.</p>
       <p>Cobertura mínima por tipo: {{ cycle.minimum_coverage }}% · Mínimo de colegas: {{ cycle.minimum_peers }}.</p>

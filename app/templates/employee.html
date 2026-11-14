@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block heading %}
-HISTÓRICO DO(A) FORMANDO(A){% endblock %}{% block content %}
+HISTÓRICO DO(A) FORMANDO(A){% endblock %}{% block content %}<p class="data-notice">{% if stats.simulated_graded_count %}Notas /20 simuladas: {{ stats.simulated_graded_count }}. Confirmadas exclusivamente para apresenta&ccedil;&atilde;o; n&atilde;o representam resultados de provas.{% endif %}</p>
 {% if employee and user.is_staff %}
 <div class="mx-10 mt-4"><a class="gf-btn alt" href="{% url 'employee_documents' employee.pk %}">Documentos privados</a></div>
 {% endif %}
@@ -41,7 +41,7 @@ HISTÓRICO DO(A) FORMANDO(A){% endblock %}{% block content %}
     </div>
   </section>
   <div class="flex flex-wrap justify-end gap-3 no-print">
-    <a class="gf-btn alt" href="{% url 'home' %}?employee={{ employee.pk }}">Cadastro</a>
+    <a class="gf-btn alt" href="{% url 'home' %}?employee={{ employee.pk }}">Registo</a>
     <a class="gf-btn alt" href="{% url 'employee_data' employee.pk %}">Ficha Individual</a>
     {% if user.is_staff %}
     <a class="gf-btn" href="{% url 'training_create' employee.pk %}">

@@ -1,0 +1,7 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel"><h2>Registo de recurso</h2>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="gf-btn" type="submit">Guardar</button>
+<a href="{% url 'planning_resources' %}">Voltar</a></form>
+<p>Nenhum grupo hist&oacute;rico recebe associa&ccedil;&otilde;es automaticamente.</p></section>
+{% endblock %}

@@ -1,0 +1,1 @@
+{% if t.simulated_grade is not None %}<strong class="note-value">{{ t.simulated_grade|floatformat:0 }}</strong>{% elif t.grade is not None %}<strong class="note-value">{{ t.grade|floatformat:0 }}</strong>{% elif t.original_assessment %}<strong class="note-value">{{ t.original_assessment_label }}</strong>{% else %}<span class="no-note">&mdash;</span>{% endif %}

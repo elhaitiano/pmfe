@@ -31,8 +31,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'FICHA INDIVIDUAL DO FORMANDO')
         self.assertContains(response, 'Dados do Formando')
-        self.assertContains(response, 'person</span>Ficha Individual')
-        self.assertContains(response, '1 entrega por confirmar')
+        self.assertContains(response, 'PMFE | Gest\u00e3o de Forma\u00e7\u00e3o')
+        self.assertContains(response, 'Certificados')
         self.assertContains(response, reverse('employee_print', args=[self.employee.pk]))
         self.assertContains(response, 'Segurança')
         printed = self.client.get(reverse('employee_print', args=[self.employee.pk]))
@@ -52,9 +52,10 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print', args=[employee.pk]))
         self.assertEqual(printed.context['print_name'], 'Ana Exemplo')
         fields = dict(printed.context['print_fields'])
-        self.assertEqual(len(fields), 9)
-        self.assertEqual(fields['N.º Mecanográfico'], employee.number)
-        self.assertEqual(fields['Tel.'], '923 255 256 | 924 123 456')
+        self.assertEqual(len(fields), 11)
+        self.assertEqual(fields['Nº Mec.'], employee.number)
+        self.assertEqual(fields['Tel. 1'], '923 255 256')
+        self.assertEqual(fields['Tel. 2'], '924 123 456')
         for label in ['N.º INSS', 'Estado civil', 'Empresa', 'Centro de Custo', 'Área Alocada',
                       'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
             self.assertNotIn(label, fields)
@@ -103,7 +104,7 @@ class WorkflowTests(TestCase):
         self.client.force_login(self.reader)
         training = self.create_training()
         response = self.client.get(reverse('employee_data', args=[self.employee.pk]))
-        self.assertContains(response, 'MAPA DE COMPETÊNCIAS TÉCNICAS')
+        self.assertContains(response, 'MAPA DE COMPET\u00caNCIAS T\u00c9CNICAS')
         self.assertContains(response, 'HISTÓRICO RECENTE DE FORMAÇÃO')
         self.assertContains(response, 'pmf-donut-segment')
         self.assertContains(response, 'Sem nota')
@@ -167,9 +168,9 @@ class WorkflowTests(TestCase):
         self.assertEqual(response.status_code,302)
         training = Training.objects.get()
         self.assertIsNone(training.certified)
-        self.assertEqual(training.certificate_label, 'Por confirmar')
+        self.assertEqual(training.certificate_label, chr(8212))
         history = self.client.get(reverse('employee_detail',args=[self.employee.pk]))
-        self.assertContains(history, 'Certificado entregue: Por confirmar')
+        self.assertNotContains(history, 'Certificado entregue: Por confirmar')
 
     def test_new_form_is_planned_and_counters_are_shared_with_print(self):
         self.client.force_login(self.admin)
@@ -181,9 +182,9 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print',args=[self.employee.pk]))
         self.assertEqual(profile.context['stats'], printed.context['stats'])
         self.assertEqual(profile.context['distribution'], printed.context['distribution'])
-        self.assertContains(printed, 'registration-function')
+        self.assertContains(printed, 'Fun\u00e7\u00e3o')
         self.assertNotContains(printed, 'Centro de Custo')
-        self.assertContains(printed, 'por confirmar')
+        self.assertNotContains(printed, 'por confirmar')
 
     def test_profile_has_recent_five_and_history_keeps_all(self):
         self.client.force_login(self.reader)

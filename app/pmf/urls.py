@@ -3,9 +3,14 @@ from django.urls import path
 from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations, competencies, indicators, evaluation_profile
 
 from training.admin import site as admin_site
-from training import import_views, trainers
+from training import import_views, trainers, planning_resources
 
 urlpatterns = [
+    path('planeamento/recursos/', planning_resources.resources, name='planning_resources'),
+    path('planeamento/centros/novo/', planning_resources.resource_edit, {'kind':'centre'}, name='centre_create'),
+    path('planeamento/centros/<int:pk>/', planning_resources.resource_edit, {'kind':'centre'}, name='centre_edit'),
+    path('planeamento/salas/nova/', planning_resources.resource_edit, {'kind':'room'}, name='room_create'),
+    path('planeamento/salas/<int:pk>/', planning_resources.resource_edit, {'kind':'room'}, name='room_edit'),
     path('formadores/', trainers.index, name='trainer_index'),
     path('formadores/novo/', trainers.edit, name='trainer_create'),
     path('formadores/<int:pk>/editar/', trainers.edit, name='trainer_edit'),

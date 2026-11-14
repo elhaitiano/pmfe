@@ -31,7 +31,7 @@
     </div>
   </form>
   <nav class="epal-help-links" aria-label="Atalhos de ajuda">
-    <a data-help-route="planning" href="{% url 'planning' %}">Planeamento</a>{% if user.is_staff %}<a data-help-route="batch_index" href="{% url 'batch_index' %}">Resultados</a>{% endif %}<a data-help-route="executive_reports" href="{% url 'executive_reports' %}">Relatórios</a><a data-help-route="dashboard" href="{% url 'dashboard' %}">Dashboard</a><a data-help-route="employee_data_select" href="{% url 'employee_data_select' %}">Ficha</a><a data-help-route="home" href="{% url 'home' %}">Gestão</a>{% if user.is_staff %}<a href="{% url 'assistant_admin' %}">Administrar assistente</a>{% endif %}
+    <a data-help-route="planning" href="{% url 'planning' %}">Planeamento</a>{% if user.is_staff %}<a data-help-route="batch_index" href="{% url 'batch_index' %}">Resultados</a>{% endif %}<a data-help-route="executive_reports" href="{% url 'executive_reports' %}">Relatórios</a><a data-help-route="dashboard" href="{% url 'dashboard' %}">Dashboard</a><a data-help-route="employee_data_select" href="{% url 'employee_data_select' %}">Ficha</a><a data-help-route="home" href="{% url 'home' %}">Gestão</a>{% if user.is_staff %}<a href="{% url 'assistant_admin' %}">Gerir assistente</a>{% endif %}
   </nav>
 </section>
 <script src="{% static 'pmf/help-assistant.js' %}" defer></script>

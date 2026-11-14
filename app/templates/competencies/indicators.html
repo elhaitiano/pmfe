@@ -23,7 +23,7 @@
       <p>Percentagem: {% if attendance != None %}{{ attendance|floatformat:2 }}%{% else %}—{% endif %} · {{ presences }} presenças / {{ days }} dias.</p>
       <p>{{ attendance_count }} participações incluídas; {{ attendance_provisional }} excluídas ou provisórias. Inclui apenas formações concluídas com presenças verificadas e duração em dias conhecida. Zero confirmado conta como zero.</p>
       <h2 class="font-bold text-xl">Aprendizagem</h2>
-      <p>Média: {% if learning != None %}{{ learning|floatformat:2 }} /20{% else %}—{% endif %} · {{ learning_count }} notas incluídas; {{ learning_provisional }} sem nota final confirmada.</p>
+      <p>Média: {% if learning != None %}{{ learning|floatformat:2 }} /20{% else %}—{% endif %} · {{ learning_count }} notas incluídas; {{ learning_provisional }} fora do indicador validado.</p>
       <p>Aprovação: {% if approval_rate != None %}{{ approval_rate|floatformat:2 }}%{% else %}—{% endif %} · {{ approved }} aprovados / {{ result_count }} resultados finais confirmados.</p>
       <p>Inclui formações concluídas cuja avaliação está validada e ainda corresponde à nota e ao resultado confirmados. Uma alteração posterior da classificação exige nova validação. Tentativas de prova não se somam à nota final.</p>
       <h2 class="font-bold text-xl">Logística e satisfação</h2>
@@ -42,9 +42,9 @@
       </p>
       {% endfor %}
       <h2 class="font-bold text-xl">Certificados</h2>
-      <p>Emissões registadas: {{ certificates.issued }} · Por confirmar: {{ certificates.issued_unknown }}.</p>
-      <p>Entregas confirmadas ao participante: {{ certificates.participant }} · Por confirmar: {{ certificates.participant_unknown }}.</p>
-      <p>Entregas confirmadas aos RH: {{ certificates.hr }} · Por confirmar: {{ certificates.hr_unknown }}.</p>
+      <p>Emissões registadas: {{ certificates.issued }} .</p>
+      <p>Entregas ao participante: {{ certificates.participant_reported }}.</p>
+      <p>Entregas confirmadas aos RH: {{ certificates.hr }} .</p>
       <p>Declarações: {{ certificates.declarations }}, contadas separadamente. Os totais de estados explícitos não comprovam por si a existência de um PDF; anexar um documento não confirma emissão nem entrega.</p>
       <h2 class="font-bold text-xl">Conciliação por participação</h2>
       <p>“Incluída” identifica a contribuição no indicador correspondente. Consulte a participação para verificar fonte, validação e valores. A reacção indica quantas das quatro dimensões têm resposta validada.</p>
@@ -68,11 +68,11 @@
                 <a class="text-secondary" href="{% url 'evaluation_detail' row.training.pk %}">#{{ row.training.pk }} {{ row.training.employee }} — {{ row.training.title }}</a>
               </td>
               <td class="p-3">{{ row.attendance|yesno:'Incluída,Excluída' }} ({{ row.training.attendance }}/{{ row.training.days|default_if_none:'—' }})</td>
-              <td class="p-3">{{ row.learning|yesno:'Incluída,Excluída' }} ({{ row.training.grade|default_if_none:'—' }})</td>
+              <td class="p-3">{{ row.learning|yesno:'Incluída,Excluída' }} ({{ row.training.presentation_grade|floatformat:0|default_if_none:'—' }})</td>
               <td class="p-3">{{ row.reaction_count }}/4</td>
-              <td class="p-3">{{ row.training.certificate_issued|yesno:'Sim,Não,Por confirmar' }}</td>
-              <td class="p-3">{{ row.training.certified|yesno:'Sim,Não,Por confirmar' }}</td>
-              <td class="p-3">{{ row.training.certificate_hr_delivered|yesno:'Sim,Não,Por confirmar' }}</td>
+              <td class="p-3">{{ row.training.certificate_issued|yesno:'Sim,Não,—' }}</td>
+              <td class="p-3">{% include 'certificate_delivery_cell.html' with participation=row.training %}</td>
+              <td class="p-3">{{ row.training.certificate_hr_delivered|yesno:'Sim,Não,—' }}</td>
             </tr>
             {% empty %}
             <tr><td class="p-3" colspan="7">Sem participações neste âmbito.</td></tr>

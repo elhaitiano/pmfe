@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block heading %}
-ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
+ACTUALIZAR GRUPO{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 {% endblock %}
 {% block content %}
@@ -12,13 +12,13 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
         Notas, resultados e certificados
       </h2>
       <p>
-        Escolha uma edição da formação para atualizar as participações numa única grelha.
+        Escolha uma edição da formação para actualizar as participações numa única grelha.
       </p>
     </div>
     <a class="gf-btn alt" href="{% url 'home' %}">Voltar à gestão</a>
   </div>
   <form method="get" class="batch-search">
-    <input class="gf-field" name="q" value="{{ q }}" placeholder="Pesquisar formação, formador, entidade ou local" aria-label="Pesquisar turma">
+    <input class="gf-field" name="q" value="{{ q }}" placeholder="Pesquisar formação, formador, entidade ou local" aria-label="Pesquisar grupo">
     <button class="gf-btn">
       Pesquisar
     </button>

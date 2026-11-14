@@ -9,6 +9,8 @@ from django.urls import reverse
 from .models import Course, TrainingGroup, Enrollment, Employee, Training, Trainer
 from .planning import create_group, history_rows, enrol_reviewed, GroupForm
 from .batch import edition_queryset
+from .scheduling_guard import reservation_transaction
+from .f6_test_helpers import confirm_fixture
 from .dashboard import executive_data
 
 
@@ -31,6 +33,7 @@ class PlanningTests(TestCase):
         return enrol_reviewed(group,people,{str(p.pk):(choice,reason) for p in people},keys,group.revision)
 
     def start(self,group):
+        confirm_fixture(group)
         group.refresh_from_db()
         return self.client.post(reverse('group_transition',args=[group.pk]),{'revision':group.revision,'action':'start'})
 
@@ -93,7 +96,9 @@ class PlanningTests(TestCase):
         self.assertEqual(Training.objects.count(),1)
 
     def test_capacity_and_stale_review_rollback_entire_selection(self):
-        TrainingGroup.objects.filter(pk=self.group.pk).update(capacity=1);self.group.refresh_from_db()
+        with reservation_transaction():
+            TrainingGroup.objects.filter(pk=self.group.pk).update(capacity=1)
+        self.group.refresh_from_db()
         rev=self.group.revision
         with self.assertRaises(ValidationError):self.add(self.group,self.people[:2])
         self.group.refresh_from_db();self.assertEqual(self.group.revision,rev);self.assertFalse(Enrollment.objects.exists())
@@ -150,6 +155,49 @@ class PlanningTests(TestCase):
         self.assertIn('Formando 0',text);self.assertIn('Hora chegada',' '.join(text.split()));self.assertIn('Rubrica',text);self.assertIn('Pág. 1/1',text);self.assertNotIn('CONTACT_NOTE_PRIVATE',text)
         self.assertEqual(self.client.get(url,{'date':'2026-01-02'}).status_code,400)
 
+    def test_past_group_prints_second_copy_without_writes(self):
+        self.add(self.group,self.people)
+        with patch('training.planning.timezone.localdate',return_value=date(2026,2,1)):
+            response=self.client.get(reverse('attendance_pdf',args=[self.group.pk]),{'date':'2026-01-01'})
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(response['Content-Disposition'].startswith('inline'))
+        self.assertTrue(b''.join(response.streaming_content).startswith(b'%PDF'))
+        self.assertEqual(Training.objects.count(),0)
+        self.assertEqual(Enrollment.objects.filter(state='Activa').count(),3)
+
+    def test_list_shortcut_is_visible(self):
+        self.assertContains(self.client.get(reverse('planning')),'#lista-presenca')
+        self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Abrir PDF para imprimir')
+
+    def test_cancelled_group_cannot_print(self):
+        self.add(self.group,self.people)
+        self.client.post(reverse('group_transition',args=[self.group.pk]),{'revision':self.group.revision,'action':'cancel','reason':'Teste de bloqueio'})
+        self.assertEqual(self.client.get(reverse('attendance_pdf',args=[self.group.pk]),{'date':'2026-01-01'}).status_code,400)
+
+    def test_historical_excel_without_sessions_or_enrollments(self):
+        from types import SimpleNamespace
+        from zipfile import ZipFile
+        historical=[SimpleNamespace(employee=self.people[0],employee_id=self.people[0].pk,start=date(2025,1,1),end=date(2025,1,2))]*2
+        with patch('training.planning.historical_group_trainings',return_value=historical):
+            response=self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'})
+        self.assertEqual(response.status_code,200)
+        binary=b''.join(response.streaming_content)
+        with ZipFile(io.BytesIO(binary)) as archive:
+            text=archive.read('xl/worksheets/sheet1.xml').decode()
+            self.assertIn('01/01/2025 - 02/01/2025',text)
+            self.assertIn('SEGUNDA VIA',text)
+            self.assertEqual(text.count('Formando 0'),1)
+        self.assertEqual(Enrollment.objects.count(),0)
+        self.assertEqual(Training.objects.count(),0)
+
+    def test_historical_excel_rejects_unmapped_group(self):
+        response=self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'})
+        self.assertEqual(response.status_code,400)
+
+    def test_historical_excel_requires_login(self):
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'}).status_code,302)
+
     def test_permissions_csrf_and_read_only_gets(self):
         self.client.force_login(self.reader)
         self.assertEqual(self.client.get(reverse('planning')).status_code,200)
@@ -165,7 +213,7 @@ class GroupDeletionTests(TestCase):
 
     def deletion(self, **kw):
         self.group.refresh_from_db()
-        data={'revision':self.group.revision,'confirm':'ELIMINAR','reason':'Turma de teste'}
+        data={'revision':self.group.revision,'confirm':'ELIMINAR','reason':'Grupo de teste'}
         data.update(kw)
         return self.client.post(reverse('group_delete',args=[self.group.pk]),data)
 

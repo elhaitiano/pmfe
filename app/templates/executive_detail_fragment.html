@@ -46,20 +46,17 @@
             {{ row.start|date:'d/m/Y' }}<br>{{ row.end|date:'d/m/Y' }}
           </td>
           <td>
-            {{ row.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+            {{ row.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }}
           </td>
           <td>
             {% if row.attendance_percent is None %}
             —{% else %}{{ row.attendance_percent|floatformat:1 }}%{% endif %}
           </td>
           <td>
-            {{ row.grade|default_if_none:'—' }}/20<small>{{ row.result }}</small>
+            {{ row.presentation_grade|floatformat:0|default_if_none:"—" }}<small>{{ row.presentation_result }}</small>
           </td>
           <td>
-            Participante: {{ row.certificate_label }}
-            <small>Emissão: {{ row.certificate_issue_label }} · RH: {{ row.certificate_hr_label }}</small>
-            {% if row.certificate_declaration %}<small>Declaração registada (não equivale a entrega confirmada)</small>{% endif %}
-            <small>{{ row.certificate_delivery_date|date:'d/m/Y' }} {{ row.certificate_reference }}</small>
+            {% include 'certificate_delivery_cell.html' with participation=row %}
           </td>
         </tr>
         {% empty %}

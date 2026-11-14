@@ -2,19 +2,20 @@
 <!doctype html>
 <html lang="pt">
   <head>
+    {% include 'favicon_links.html' %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>
       Ficha individual do formando — PROÁGUA
     </title>
-    <link rel="stylesheet" href="{% static 'pmf/print-original.css' %}">
+    <link rel="stylesheet" href="{% static 'pmf/print-original.css' %}"><link rel="stylesheet" href="{% static 'pmf/official-sheet.css' %}?v=reporting-integers-20261023">
   </head>
   <body>
     <div class="toolbar">
       <button id="printButton" onclick="window.print()">
         Imprimir / PDF
       </button>
-      <a class="back-button" href="{% url 'employee_data' employee.pk %}">Voltar à plataforma</a><span class="hint">Escolha «Guardar como PDF» na janela de impressão.</span>
+      <a class="back-button" href="{% url 'employee_data' employee.pk %}">Voltar à plataforma</a><a class="back-button" href="{% url 'employee_print' employee.pk %}">Ficha PDF</a><span class="hint">Escolha «Guardar como PDF» na janela de impressão.</span>
     </div>
     <div id="pages">
       <section class="page first-page">
@@ -36,7 +37,7 @@
             INFORMAÇÕES DO(A) FORMANDO(A)
           </div>
           <div class="profile">
-            <div class="photo-wrap">
+            <div class="photo-wrap" aria-label="{{ employee.name }}">
               <div class="photo">
                 <div class="silhouette">
                 </div>
@@ -46,15 +47,13 @@
               </div>
             </div>
             <div class="registration-details">
-              <h1 class="registration-name">{{ employee.name }}</h1>
-              <p class="registration-function">{{ employee.function|default:"Formando" }}</p>
               <div class="fields">
               {% for label,value in print_fields %}
-              <div class="field">
+              <div class="field{% if forloop.last %} full{% endif %}">
                 <label>
                   {{ label }}:
                 </label>
-                <span class="field-value">{{ value|default:'-' }}</span>
+                <span class="field-value">{{ value|default:'-'  }}</span>
               </div>
               {% endfor %}
               </div>
@@ -65,8 +64,27 @@
           <div class="cards">
             <div class="card">
               <div class="card-half">
+                <div class="card-title"> 1. HORAS</div>
+                <div class="card-value">
+                  {{ stats.hours|floatformat:0 }} H
+                </div>
+              </div>
+              <div class="card-divider">
+              </div>
+              <div class="card-half">
                 <div class="card-title">
-                  1. TOTAL FORMAÇÕES
+                  2. CERTIFICADOS
+                </div>
+                <div class="card-value">
+                  {{ stats.certificates_delivery_declared }}
+                </div>
+
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-half">
+                <div class="card-title">
+                  3. TOTAL FORMAÇÕES
                 </div>
                 <div class="card-value">
                   {{ stats.total }}
@@ -76,42 +94,12 @@
               </div>
               <div class="card-half">
                 <div class="card-title">
-                  3. ASSIDUIDADE
+                  4. ASSIDUIDADE
                 </div>
                 <div class="card-value">
-                  {% if stats.attendance is not None %}
-                  {{ stats.attendance|floatformat:1 }}%{% else %}—{% endif %}
+                  {% if stats.attendance is not None %}{{ stats.attendance|floatformat:1 }}%{% else %}—{% endif %}
                 </div>
-                {% if stats.attendance_provisional %}
-                <div class="card-note">
-                  Provisória
-                </div>
-                {% endif %}
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-half">
-                <div class="card-title">
-                  2. HORAS
-                </div>
-                <div class="card-value">
-                  {{ stats.hours|floatformat:1 }} H
-                </div>
-              </div>
-              <div class="card-divider">
-              </div>
-              <div class="card-half">
-                <div class="card-title">
-                  4. CERTIFICADOS
-                </div>
-                <div class="card-value">
-                  {{ stats.certificates }}
-                </div>
-                {% if stats.certificates_pending %}
-                <div class="card-note">
-                  {{ stats.certificates_pending }} por confirmar
-                </div>
-                {% endif %}
+
               </div>
             </div>
           </div>
@@ -135,44 +123,11 @@
             </div>
           </div>
         </div>
-        <p class="data-notice">
-          Dados provisórios — sujeitos à validação da EPAL. Assiduidade: presenças ÷ dias de formação; as participações planeadas são excluídas.
-        </p>
+
         <div class="table-section">
           <table>
-            <colgroup>
-              <col style="width:5%"><col style="width:28%"><col style="width:21%"><col style="width:10%"><col style="width:18%"><col style="width:6%"><col style="width:12%">
-            </colgroup>
-            <thead>
-              <tr class="history-title-row">
-                <th colspan="7">
-                  HISTÓRICO DE FORMAÇÕES
-                </th>
-              </tr>
-              <tr>
-                <th>
-                  ANO
-                </th>
-                <th>
-                  FORMAÇÃO
-                </th>
-                <th>
-                  FORMADOR(A)
-                </th>
-                <th>
-                  CATEGORIA
-                </th>
-                <th>
-                  PERÍODO
-                </th>
-                <th>
-                  HORAS
-                </th>
-                <th>
-                  ASSIDUIDADE
-                </th>
-              </tr>
-            </thead>
+            <colgroup><col style="width:7%"><col style="width:27%"><col style="width:15%"><col style="width:13%"><col style="width:17%"><col style="width:9%"><col style="width:12%"></colgroup>
+            <thead><tr class="history-title-row"><th colspan="7">HIST&#211;RICO DE FORMA&#199;&#213;ES</th></tr><tr><th>ANO</th><th>FORMA&#199;&#195;O</th><th>FORMADOR(A)</th><th>CATEGORIA</th><th>PER&#205;ODO</th><th>HORAS</th><th>ASSIDUIDADE</th></tr></thead>
             <tbody>
               {% for t in trainings %}
               <tr>
@@ -189,14 +144,13 @@
                   {{ t.area|default:'-' }}
                 </td>
                 <td>
-                  <span class="period-dates">{{ t.start|date:'d/m/Y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/Y' }}</span>
+                  <span class="period-dates">{{ t.start|date:'d/m/Y' }} <br> {{ t.end|date:'d/m/Y' }}</span>
                 </td>
                 <td>
-                  {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+                  {{ t.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }}
                 </td>
                 <td>
-                  {% if t.attendance_percent is not None %}
-                  {{ t.attendance_percent|floatformat:1 }}%{% else %}-{% endif %}
+                  {% if t.attendance_percent is not None %}{{ t.attendance_percent|floatformat:-1 }}%{% else %}&mdash;{% endif %}
                 </td>
               </tr>
               {% empty %}
@@ -209,10 +163,8 @@
             </tbody>
           </table>
         </div>
-        {% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
-<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
-{% endif %}
-<p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p>
+
+
 <div class="final-block">
           <div class="signature">
             <div class="signature-line">
@@ -233,6 +185,7 @@
         </div>
       </section>
     </div>
+    {% if document_form %}<details class="document-panel no-print"><summary>Documentos do formando</summary>{% include 'employee_files.html' %}</details>{% endif %}
     {{ distribution|json_script:'distribution-data' }}
     <script src="{% static 'pmf/print.js' %}" defer></script>
   </body>

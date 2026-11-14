@@ -98,7 +98,7 @@ def batch_edit(request, pk):
     error = ''
     if request.method == 'POST' and formset.is_valid():
         if any(f.cleaned_data['revision'] != versions.get(f.instance.pk) for f in formset):
-            error = 'Há alterações mais recentes nesta turma. Reabra a grelha para evitar substituir dados atualizados.'
+            error = 'Há alterações mais recentes neste grupo. Reabra a grelha para evitar substituir dados actualizados.'
         else:
             modified = [f for f in formset if any(f.cleaned_data[k] != before[f.instance.pk][k] for k in UPDATE_FIELDS)]
             digest = payload_digest(formset)

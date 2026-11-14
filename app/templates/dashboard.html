@@ -7,6 +7,7 @@ DASHBOARD EXECUTIVO{% endblock %}
 {% endblock %}
 {% block content %}
 <div class="executive" id="viewDashboard">
+
   <section class="exec-hero">
     <div class="exec-hero-top">
       <div>
@@ -35,7 +36,7 @@ DASHBOARD EXECUTIVO{% endblock %}
         <span>Taxa de conclusão</span><strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong><small>Participações concluídas</small>
       </div>
       <div>
-        <span>Certificados entregues</span><strong>{{ stats.certificates }}</strong><small>{{ stats.certificates_pending }} por confirmar</small>
+        <span title="Inclui entregas declaradas pelo responsavel">Certificados entregues</span><strong>{{ stats.certificates_reported }}</strong><small>{{ stats.certificates_reported_pending }} por confirmar</small>
       </div>
     </div>
   </section>
@@ -274,7 +275,7 @@ DASHBOARD EXECUTIVO{% endblock %}
       {% for item in results %}
       <a href="{{ item.href }}" data-drill class="exec-summary"><span>{{ item.label }}</span><strong>{{ item.value }}</strong></a>{% endfor %}
       <p class="exec-note">
-        Somente participações concluídas. {{ stats.certificates_pending }} entregas de certificados por confirmar no universo seleccionado.
+        Somente participações concluídas. {{ stats.certificates_reported_pending }} entregas de certificados por confirmar no universo seleccionado.
       </p>
     </article>
   </section>
@@ -308,10 +309,10 @@ DASHBOARD EXECUTIVO{% endblock %}
   </section>
   <details class="exec-method"><summary>Critérios dos indicadores</summary>
   <p>
-    Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = presenças ÷ dias previstos, excluindo planeadas. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
+    Grupos seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = presenças ÷ dias previstos, excluindo planeadas. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
   </p>
   <p>
-    A evolução agrupa pela data de início, sem repartir as horas diariamente. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há participações em curso ou por confirmar.{% endif %}
+    A evolução agrupa pela data de início, sem repartir as horas diariamente. A cobertura divide técnicos com presença pelo registo da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há participações em curso ou por confirmar.{% endif %}
   </p>
   </details>
 </div>

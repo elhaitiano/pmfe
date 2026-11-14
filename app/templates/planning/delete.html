@@ -9,7 +9,7 @@
   </p>
   {% if can_delete %}
   <div class="plan-warning">
-    Esta operação é definitiva: elimina a turma, {{ session_count }} dia(s) do calendário e {{ enrollment_count }} inscrição(ões) preparatórias. Os técnicos, o catálogo e as outras turmas permanecem. O número {{ group.code }} não será reutilizado.
+    Esta operação é definitiva: elimina o grupo, {{ session_count }} dia(s) do calendário e {{ enrollment_count }} inscrição(ões) preparatórias. Os técnicos, o catálogo e os outros grupos permanecem. O número {{ group.code }} não será reutilizado.
   </div>
   <p class="plan-note">
     Faça uma cópia de segurança antes de eliminar. A eliminação fica registada na auditoria.
@@ -18,21 +18,21 @@
     {% csrf_token %}
     <input type="hidden" name="revision" value="{{ group.revision }}">
     <label>
-      Motivo<input class="gf-field" name="reason" maxlength="1000" required placeholder="Ex.: turma de teste ou criação por engano">
+      Motivo<input class="gf-field" name="reason" maxlength="1000" required placeholder="Ex.: grupo de teste ou criação por engano">
     </label>
     <label>
       Escreva ELIMINAR para confirmar<input class="gf-field" name="confirm" required autocomplete="off" pattern="ELIMINAR">
     </label>
     <div class="plan-actions">
       <button class="gf-btn" type="submit">
-        Eliminar definitivamente esta turma
+        Eliminar definitivamente este grupo
       </button>
       <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar sem eliminar</a>
     </div>
   </form>
   {% else %}
   <div class="plan-warning">
-    Esta turma não pode ser eliminada: já foi iniciada ou tem registos de formação associados. Preserve as presenças, notas e certificados. A opção Cancelar grupo permanece disponível nas turmas planeadas.
+    Este grupo não pode ser eliminado: já foi iniciado ou tem registos de formação associados. Preserve as presenças, notas e certificados. A opção Cancelar grupo permanece disponível nos grupos planeados.
   </div>
   <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar ao grupo</a>{% endif %}
 </section>

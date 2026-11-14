@@ -27,7 +27,7 @@
         <a class="text-secondary" href="{% url 'evaluation_detail' row.pk %}">
           {{ row.employee }} — {{ row.title }} ({{ row.start|date:'d/m/Y' }})
         </a>
-        <p>{{ row.status }} · Resultado: {{ row.result }} · Nota /20: {{ row.grade|default_if_none:'—' }}</p>
+        <p>{{ row.status }} · Resultado: {{ row.presentation_result }} · Nota /20: {{ row.presentation_grade|floatformat:0|default_if_none:'—' }}</p>
       </article>
       {% empty %}
       <p class="mt-4">Nenhuma participação encontrada.</p>

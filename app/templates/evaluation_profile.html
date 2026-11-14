@@ -113,11 +113,11 @@
     {% for training in trainings %}
     <article class="border-b border-white/10 py-4">
       <a class="text-secondary" href="{% url 'evaluation_detail' training.pk %}">{{ training.start|date:'d/m/Y' }} — {{ training.title }}</a>
-      <p>{{ training.status }} · Nota registada {{ training.grade|default_if_none:'—' }}/20 · {{ training.result }}</p>
+      <p>{{ training.status }} · Nota registada {{ training.presentation_grade|floatformat:0|default_if_none:"—" }} · {{ training.presentation_result }}</p>
     </article>
     {% empty %}<p>Sem participações registadas.</p>{% endfor %}
     <h4 class="font-bold mt-4">Momentos de avaliação</h4>
-    {% for row in history %}<p><a class="text-secondary" href="?cycle={{ row.cycle.pk }}">{{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · #{{ row.cycle.pk }}</a> — {{ row.result.overall|floatformat:2|default:'Sem resultado divulgável' }}</p>{% empty %}<p>Sem ciclos disponíveis.</p>{% endfor %}
+    {% for row in history %}<p><a class="text-secondary" href="?cycle={{ row.cycle.pk }}">{{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · #{{ row.cycle.pk }}</a> — {{ row.presentation_result.overall|floatformat:2|default:'Sem resultado divulgável' }}</p>{% empty %}<p>Sem ciclos disponíveis.</p>{% endfor %}
   </section>
 </section>
 {% endblock %}

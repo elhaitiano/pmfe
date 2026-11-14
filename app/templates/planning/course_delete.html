@@ -29,7 +29,7 @@
   </form>
   {% else %}
   <div class="plan-warning">
-    Esta formação tem turmas ou histórico associado, incluindo títulos anteriores. Não pode ser eliminada. Existem {{ group_count }} grupo(s) associados. Turmas preparatórias elegíveis devem ser revistas e eliminadas individualmente primeiro. Se existir histórico, arquive a formação.
+    Esta formação tem grupos ou histórico associado, incluindo títulos anteriores. Não pode ser eliminada. Existem {{ group_count }} grupo(s) associados. Grupos preparatórios elegíveis devem ser revistos e eliminados individualmente primeiro. Se existir histórico, arquive a formação.
   </div>
   <div class="plan-actions">
     <a class="gf-btn" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'planning' %}">Voltar ao catálogo</a>

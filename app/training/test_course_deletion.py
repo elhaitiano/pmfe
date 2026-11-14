@@ -1,3 +1,4 @@
+from .scheduling_guard import reservation_transaction
 from datetime import date, time
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -61,7 +62,8 @@ class CourseDeletionTests(TestCase):
             hours_per_day=7, break_hours=1, start_time=time(8), end_time=time(16)))
         for state in ['Planeada', 'Cancelada', 'Em Curso', 'Concluída']:
             group.state = state
-            group.save(update_fields=['state'])
+            with reservation_transaction():
+                group.save(update_fields=['state'])
             self.client.post(self.url, self.payload())
             self.assertTrue(Course.objects.filter(pk=self.course.pk).exists())
             self.assertTrue(group.sessions.exists())
