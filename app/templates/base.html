@@ -1,4 +1,4 @@
-{% load static %}
+{% load static navigation %}
 <!doctype html>
 <html lang="pt" class="dark">
   <head>
@@ -93,6 +93,18 @@
           </button>
         </form>
       </header>
+      <div class="pmf-page-navigation">
+        <a class="pmf-back-link" href="{% url 'home' %}" id="pmfBackLink">
+          <span aria-hidden="true">←</span> Voltar
+        </a>
+        <nav aria-label="Localização na plataforma">
+          <ol class="pmf-breadcrumb">
+            <li><a href="{% url 'home' %}">Início</a></li>
+            <li aria-hidden="true">›</li>
+            <li aria-current="page">{% block breadcrumb_label %}{% current_page_label %}{% endblock %}</li>
+          </ol>
+        </nav>
+      </div>
       {% for message in messages %}
       <div class="mx-10 mt-4 glass-accent rounded-xl p-4 text-secondary" role="status">
         {{ message }}

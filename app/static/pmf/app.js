@@ -10,3 +10,16 @@ document.addEventListener('keydown', event => {
     menuButton?.setAttribute('aria-expanded', 'false');
   }
 });
+
+// Keep direct visits and external referrals inside the platform.
+const backLink = document.getElementById('pmfBackLink');
+backLink?.addEventListener('click', event => {
+  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  if (document.referrer && window.history.length > 1) {
+    const previous = new URL(document.referrer);
+    if (previous.origin === window.location.origin && previous.pathname !== '/entrar/') {
+      event.preventDefault();
+      window.history.back();
+    }
+  }
+});
