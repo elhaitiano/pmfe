@@ -59,7 +59,8 @@ def distribution(rows):
     total = sum((x['hours'] for x in grouped.values()), Decimal(0))
     if not total:
         return []
-    colors = ['#2fb9d6', '#4b82d7', '#41e4c0', '#7aa7ff', '#6b7280']
+    from .brand import SERIES
+    colors = SERIES
     items, accumulated = [], Decimal(0)
     for i, (label, values) in enumerate(sorted(grouped.items())):
         percent = values['hours'] * 100 / total

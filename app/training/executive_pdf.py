@@ -11,7 +11,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, String, Line, Circle, Wedge
@@ -21,17 +20,14 @@ from .executive import COLORS
 from .analytics import statistics
 from .kpi_reporting import export_rows, outcome_rows
 
-FONT_PATH=Path(reportlab.__file__).parent/'fonts'
-for name,file in [('Exec','Vera.ttf'),('ExecBold','VeraBd.ttf')]:
-    if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(FONT_PATH/file)))
-BLUE=colors.HexColor('#103c62');TEAL=colors.HexColor('#148c9e');PALE=colors.HexColor('#eff6fa');GREY=colors.HexColor('#52697c')
+BLUE=colors.HexColor('#164777');TEAL=colors.HexColor('#1ea0ca');PALE=colors.HexColor('#f4f8fb');GREY=colors.HexColor('#5b6b7f')
 WIDTH=A4[0]-36*mm
 styles=getSampleStyleSheet()
-styles.add(ParagraphStyle(name='ExecBody',fontName='Exec',fontSize=9,leading=14,textColor=BLUE,spaceAfter=8))
+styles.add(ParagraphStyle(name='ExecBody',fontName='Helvetica',fontSize=9,leading=14,textColor=BLUE,spaceAfter=8))
 styles.add(ParagraphStyle(name='ExecSmall',parent=styles['ExecBody'],fontSize=7.5,leading=11,spaceAfter=0))
-styles.add(ParagraphStyle(name='ExecTitle',fontName='ExecBold',fontSize=25,leading=30,textColor=BLUE,spaceAfter=12))
-styles.add(ParagraphStyle(name='ExecHeading',fontName='ExecBold',fontSize=14,leading=20,textColor=BLUE,spaceBefore=8,spaceAfter=10,keepWithNext=True))
-styles.add(ParagraphStyle(name='ExecWhite',parent=styles['ExecSmall'],textColor=colors.white,fontName='ExecBold'))
+styles.add(ParagraphStyle(name='ExecTitle',fontName='Helvetica-Bold',fontSize=25,leading=30,textColor=BLUE,spaceAfter=12))
+styles.add(ParagraphStyle(name='ExecHeading',fontName='Helvetica-Bold',fontSize=14,leading=20,textColor=BLUE,spaceBefore=8,spaceAfter=10,keepWithNext=True))
+styles.add(ParagraphStyle(name='ExecWhite',parent=styles['ExecSmall'],textColor=colors.white,fontName='Helvetica-Bold'))
 
 def fmt(value,digits=1):
     if value is None:return 'Sem dados'
@@ -53,12 +49,12 @@ def bar_chart(items,width=WIDTH,height=175):
     for tick in range(5):
         y=bottom+plot_h*tick/4
         drawing.add(Line(left,y,width-5,y,strokeColor=colors.HexColor('#dce7ed'),strokeWidth=.5))
-        drawing.add(String(left-5,y-2,fmt(max_value*tick/4,0),fontName='Exec',fontSize=7,textAnchor='end',fillColor=GREY))
+        drawing.add(String(left-5,y-2,fmt(max_value*tick/4,0),fontName='Helvetica',fontSize=7,textAnchor='end',fillColor=GREY))
     for i,item in enumerate(items):
         slot=plot_w/max(len(items),1);h=(float(item['value']) if item['value'] is not None else 0)/max_value*plot_h;x=left+i*slot+slot*.22
         drawing.add(Rect(x,bottom,slot*.56,h,fillColor=TEAL,strokeColor=None))
-        drawing.add(String(x+slot*.28,bottom+h+5,fmt(item['value'],0),fontName='ExecBold',fontSize=7,textAnchor='middle',fillColor=BLUE))
-        drawing.add(String(x+slot*.28,15,str(item['label'])[:12],fontName='Exec',fontSize=7,textAnchor='middle',fillColor=GREY))
+        drawing.add(String(x+slot*.28,bottom+h+5,fmt(item['value'],0),fontName='Helvetica-Bold',fontSize=7,textAnchor='middle',fillColor=BLUE))
+        drawing.add(String(x+slot*.28,15,str(item['label'])[:12],fontName='Helvetica',fontSize=7,textAnchor='middle',fillColor=GREY))
     return drawing
 
 
@@ -71,11 +67,11 @@ def donut(items,total,width=WIDTH,height=175):
         angle-=extent
     if not positive:d.add(Circle(cx,cy,r,fillColor=PALE,strokeColor=None))
     d.add(Circle(cx,cy,47,fillColor=colors.white,strokeColor=None))
-    d.add(String(cx,cy+2,fmt(total,0),fontName='ExecBold',fontSize=19,textAnchor='middle',fillColor=BLUE))
-    d.add(String(cx,cy-14,'HORAS',fontName='Exec',fontSize=8,textAnchor='middle',fillColor=GREY))
-    d.add(String(205,120,'Horas de participantes',fontName='ExecBold',fontSize=12,fillColor=BLUE))
-    d.add(String(205,98,f'{len(positive)} áreas com carga horária',fontName='Exec',fontSize=9,fillColor=GREY))
-    d.add(String(205,78,'Presenças x horas por dia',fontName='Exec',fontSize=9,fillColor=GREY))
+    d.add(String(cx,cy+2,fmt(total,0),fontName='Helvetica-Bold',fontSize=19,textAnchor='middle',fillColor=BLUE))
+    d.add(String(cx,cy-14,'HORAS',fontName='Helvetica',fontSize=8,textAnchor='middle',fillColor=GREY))
+    d.add(String(205,120,'Horas de participantes',fontName='Helvetica-Bold',fontSize=12,fillColor=BLUE))
+    d.add(String(205,98,f'{len(positive)} áreas com carga horária',fontName='Helvetica',fontSize=9,fillColor=GREY))
+    d.add(String(205,78,'Presenças x horas por dia',fontName='Helvetica',fontSize=9,fillColor=GREY))
     return d
 
 
@@ -87,7 +83,7 @@ class PagedCanvas(canvas.Canvas):
         count=len(self.states)
         for state in self.states:
             self.__dict__.update(state);self.setStrokeColor(colors.HexColor('#cfdee7'));self.line(18*mm,17*mm,A4[0]-18*mm,17*mm)
-            self.setFont('Exec',7);self.setFillColor(GREY);self.drawString(18*mm,12*mm,'EPAL / PROÁGUA - Base provisória')
+            self.setFont('Helvetica',7);self.setFillColor(GREY);self.drawString(18*mm,12*mm,'EPAL / PROÁGUA - Base provisória')
             self.drawRightString(A4[0]-18*mm,12*mm,f'Pág. {self._pageNumber}/{count}')
             canvas.Canvas.showPage(self)
         canvas.Canvas.save(self)
@@ -97,15 +93,13 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     if data.get('privacy_restricted'):
         from .aggregate_privacy import pdf
         return pdf()
-    output=io.BytesIO();doc=SimpleDocTemplate(output,pagesize=A4,leftMargin=18*mm,rightMargin=18*mm,topMargin=38*mm,bottomMargin=24*mm,title='EPAL - Relatório Executivo de Formação',author=actor or 'EPAL / PROÁGUA')
+    output=io.BytesIO();doc=SimpleDocTemplate(output,pagesize=A4,leftMargin=18*mm,rightMargin=18*mm,topMargin=45*mm,bottomMargin=24*mm,title='EPAL - Relatório Executivo de Formação',author=actor or 'EPAL / PROÁGUA')
     def header(c,doc):
-        logo=settings.BASE_DIR/'static/pmf/epal-report-official.png'
-        if logo.exists():c.drawImage(str(logo),18*mm,A4[1]-28*mm,width=50*mm,height=24*mm,mask='auto',preserveAspectRatio=True,anchor='c')
-        c.setFillColor(BLUE);c.setFont('Exec',6)
-        c.drawCentredString(43*mm,A4[1]-31*mm,'Empresa Pública de Água, EPAL - EP')
-        c.setFillColor(BLUE);c.setFont('ExecBold',10);c.drawRightString(A4[0]-18*mm,A4[1]-17*mm,'RELATÓRIO EXECUTIVO DE FORMAÇÃO')
-        c.setFont('Exec',7);c.setFillColor(GREY);c.drawRightString(A4[0]-18*mm,A4[1]-23*mm,f"Gerado em {data['generated_at']:%d/%m/%Y %H:%M} - Luanda")
-        c.setStrokeColor(TEAL);c.line(18*mm,A4[1]-33*mm,A4[0]-18*mm,A4[1]-33*mm)
+        logo=settings.BASE_DIR/'static/pmf/epal-identidade.png'
+        if logo.exists():c.drawImage(str(logo),18*mm,A4[1]-35*mm,width=32*mm,height=29*mm,mask='auto',preserveAspectRatio=True,anchor='c')
+        c.setFillColor(BLUE);c.setFont('Helvetica-Bold',10);c.drawRightString(A4[0]-18*mm,A4[1]-17*mm,'RELATÓRIO EXECUTIVO DE FORMAÇÃO')
+        c.setFont('Helvetica',7);c.setFillColor(GREY);c.drawRightString(A4[0]-18*mm,A4[1]-23*mm,f"Gerado em {data['generated_at']:%d/%m/%Y %H:%M} - Luanda")
+        c.setStrokeColor(TEAL);c.line(18*mm,A4[1]-41*mm,A4[0]-18*mm,A4[1]-41*mm)
     story=[para('Relatório Executivo','ExecTitle'),para(data['period_label'],'ExecHeading'),para(data['selected'].get('direction') or 'Visão geral - todas as direcções')]
     story.append(para('Documento automático para acompanhamento e arquivo. Base provisória: aguarda validação dos Recursos Humanos da EPAL.'))
     if data['selected'].get('area') or data['selected'].get('status'):

@@ -15,7 +15,8 @@ from .models import Employee, Training, Course, WorkforceReference
 from .kpi_service import Scope
 
 MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-COLORS = ['#41e4c0','#5d8eea','#fbbf24','#38bdf8','#a78bfa','#fb7185','#2dd4bf','#c084fc']
+from .brand import SERIES
+COLORS = SERIES
 
 class ExecutiveFilters(DashboardFilters):
     reference=forms.ModelChoiceField(label="Referência DRH aprovada (opcional)",queryset=WorkforceReference.objects.filter(approved=True),required=False)

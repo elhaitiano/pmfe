@@ -155,7 +155,7 @@ def export_report(kind, report, directions, nominal):
             para(f"Universo: {report['universe']} · Com presença: {report['participated']} · Taxa: {report['rate'] if report['rate'] is not None else '—'}%"),
             para(report['denominator']+' '+report['historical_direction']), para(report['operational_summary']), Spacer(1, 12)]
         t = Table([[para(v) for v in row] for row in [headers]+table], repeatRows=1, colWidths=[170, 55, 75, 100, 105, 65, 90])
-        t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#dceef2')), ('VALIGN',(0,0),(-1,-1),'TOP'), ('GRID',(0,0),(-1,-1),.4,colors.lightgrey)]))
+        t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#b0d2e4')), ('VALIGN',(0,0),(-1,-1),'TOP'), ('GRID',(0,0),(-1,-1),.4,colors.lightgrey)]))
         content.append(t)
         content.append(Spacer(1, 12))
         for evidence in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']) + certificate_rows(report['certification']) + catalogue_rows(report['catalogue_stats']):

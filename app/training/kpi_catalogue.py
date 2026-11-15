@@ -29,7 +29,7 @@ def main_cards(stats):
         ('Horas frequentadas',m['hours'].value,'h',True,f"H/D: {value(stats['equivalent_days'])} · Dias efectivos: {summary.effective_days if summary.effective_days is not None else 'Por verificar'}",'schedule','hours'),
         ('Assiduidade',m['attendance'].value,'%',True,'Horas verificadas ÷ horas previstas correspondentes','how_to_reg','attendance'),
         ('Aproveitamento',a['approval_rate'],'%',True,f"{a['approved']} aprovadas / {a['result_count']} resultados determinados · {a['result_pending']} pendentes",'verified',None)]
-    return [dict(label=label,value=v,suffix=unit,decimal=decimal,note=note,icon=icon,color=color,evidence_status=STATUS[m[key].status] if key else 'Parcial' if a['result_pending'] else 'Confirmado' if a['result_count'] else 'Sem dados') for (label,v,unit,decimal,note,icon,key),color in zip(specs,['#5d8eea','#38bdf8','#41e4c0','#fbbf24'])]
+    return [dict(label=label,value=v,suffix=unit,decimal=decimal,note=note,icon=icon,color=color,evidence_status=STATUS[m[key].status] if key else 'Parcial' if a['result_pending'] else 'Confirmado' if a['result_count'] else 'Sem dados') for (label,v,unit,decimal,note,icon,key),color in zip(specs,['#35509a','#1ea0ca','#2e6eae','#164777'])]
 
 def export_rows(stats):
     rows=[['Matriz institucional — 12 KPI'],['N.º','Indicador','Valor','Unidade','Estado','Numerador','Denominador','Âmbito e exclusões']]

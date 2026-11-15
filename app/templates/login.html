@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="pt" class="dark">
+<html lang="pt" class="epal-light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="{% static 'pmf/login-original.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/adapters.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/entry-loader.css' %}">
-  </head>
+  <link rel="stylesheet" href="{% static 'pmf/epal-theme.css' %}?v=epal-1">
+</head>
   <body class="relative min-h-screen flex items-center justify-center p-4 md:p-8 select-none text-slate-100">
     {% include 'entry_loader.html' with entry_page='login' %}
     <!-- Glow effects behind elements -->
@@ -48,7 +49,7 @@
       <div class="lg:col-span-6 flex flex-col justify-center space-y-6">
         <!-- Badges de contexto sem logotipo -->
         <div class="flex items-center gap-3">
-          <img alt="Logotipo EPAL" class="h-14 sm:h-16 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(65,228,192,0.35)] brightness-105" src="/static/pmf/epal-logo.png"/>
+          <img alt="Logotipo EPAL" class="h-14 sm:h-16 w-auto object-contain   " src="/static/pmf/epal-identidade.png"/>
         </div>
         <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-cyan-400/10 border border-cyan-400/25 w-max backdrop-blur-md">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#41e4c0]"></span>
@@ -93,7 +94,7 @@
           <!-- Header do formulário de acesso -->
           <div class="text-center space-y-3 pb-6 border-b border-white/10">
             <div class="flex justify-center mb-1">
-              <img alt="EPAL E.P." class="h-12 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(65,228,192,0.25)] opacity-90" src="/static/pmf/epal-logo.png"/>
+              <img alt="EPAL E.P." class="h-12 w-auto object-contain   " src="/static/pmf/epal-identidade.png"/>
             </div>
             <div class="mx-auto w-14 h-14 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center shadow-[0_0_25px_rgba(65,228,192,0.25)]">
               <span class="material-symbols-outlined text-cyan-300 text-3xl">lock</span>
@@ -172,7 +173,7 @@
       </div>
     </div>
     <!-- Script de automação e ponte com VBA (Microsoft Edge WebView2 ou Internet Explorer Automation) -->
-    <script src="{% static 'pmf/entry-water.js' %}" defer></script>
+
     <script src="{% static 'pmf/entry-loader.js' %}" defer></script>
   </body>
   <script src="{% static 'pmf/login.js' %}" defer></script>
