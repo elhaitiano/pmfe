@@ -8,8 +8,9 @@
       Ficha individual do formando — PROÁGUA
     </title>
     <link rel="stylesheet" href="{% static 'pmf/print-original.css' %}">
-  </head>
+  <style>.kpi-evidence{margin:20px;font:10px sans-serif;break-before:page}.kpi-evidence table{width:100%;border-collapse:collapse}.kpi-evidence th,.kpi-evidence td{border:1px solid #bbb;padding:5px;text-align:left}.kpi-evidence tr{break-inside:avoid}</style></head>
   <body>
+
     <div class="toolbar">
       <button id="printButton" onclick="window.print()">
         Imprimir / PDF
@@ -80,7 +81,7 @@
                 </div>
                 <div class="card-value">
                   {% if stats.attendance is not None %}
-                  {{ stats.attendance|floatformat:1 }}%{% else %}—{% endif %}
+                  {{ stats.attendance|floatformat:2 }}%{% else %}—{% endif %}
                 </div>
                 {% if stats.attendance_provisional %}
                 <div class="card-note">
@@ -95,7 +96,7 @@
                   2. HORAS
                 </div>
                 <div class="card-value">
-                  {{ stats.hours|floatformat:1 }} H
+                  {{ stats.hours|floatformat:2|default:'Sem dados' }} H
                 </div>
               </div>
               <div class="card-divider">
@@ -136,7 +137,7 @@
           </div>
         </div>
         <p class="data-notice">
-          Dados provisórios — sujeitos à validação da EPAL. Assiduidade: presenças ÷ dias de formação; as participações planeadas são excluídas.
+          Dados provisórios — sujeitos à validação da EPAL. Assiduidade: horas verificadas ÷ horas previstas correspondentes; inclui ausências verificadas e exclui dados desconhecidos.
         </p>
         <div class="table-section">
           <table>
@@ -192,11 +193,11 @@
                   <span class="period-dates">{{ t.start|date:'d/m/Y' }} <span class="date-separator">–</span> {{ t.end|date:'d/m/Y' }}</span>
                 </td>
                 <td>
-                  {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+                  {{ t.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}
                 </td>
                 <td>
-                  {% if t.attendance_percent is not None %}
-                  {{ t.attendance_percent|floatformat:1 }}%{% else %}-{% endif %}
+                  {% if t.verified_attendance_percent is not None %}
+                  {{ t.verified_attendance_percent|floatformat:2 }}%{% else %}-{% endif %}
                 </td>
               </tr>
               {% empty %}
@@ -235,5 +236,6 @@
     </div>
     {{ distribution|json_script:'distribution-data' }}
     <script src="{% static 'pmf/print.js' %}" defer></script>
-  </body>
+  {% include 'kpi_details.html' with kpi_summary=stats.kpi_summary kpi_details=stats.kpi_details expanded=True %}
+</body>
 </html>

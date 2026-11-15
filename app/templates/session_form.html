@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}
+<section class="glass rounded-xl p-6"><h1>{{ title }}</h1>
+<p>A duração altera as horas previstas e a assiduidade. As horas frequentadas já registadas permanecem iguais.</p>
+{% if records %}<table><tr><th>Formando</th><th>Horas registadas</th><th>Verificado</th></tr>
+{% for row in records %}<tr><td>{{ row.training.employee }}</td><td>{{ row.hours|default_if_none:'Por verificar' }}</td><td>{{ row.confirmed|yesno:'Sim,Não' }}</td></tr>{% endfor %}</table>{% endif %}
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="gf-btn">Confirmar sessão</button></form></section>
+{% endblock %}

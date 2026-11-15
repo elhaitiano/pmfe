@@ -1,9 +1,10 @@
 <section class="exec-detail">
+{% include 'kpi_details.html' with kpi_details=detail_stats.kpi_details kpi_summary=detail_stats.kpi_summary stats=detail_stats %}
   <h3>
     {{ detail_title }}
   </h3>
   <p class="exec-scope">
-    {{ period_label }} · {{ detail_count }} participações · {{ detail_stats.hours|floatformat:1 }} horas de participantes · Assiduidade: {% if detail_stats.attendance is None %}—{% else %}{{ detail_stats.attendance|floatformat:1 }}%{% endif %}
+    {{ period_label }} · {{ detail_count }} participações · {{ detail_stats.hours|floatformat:2|default:'Sem dados' }} horas de participantes · Assiduidade: {% if detail_stats.attendance is None %}—{% else %}{{ detail_stats.attendance|floatformat:2 }}%{% endif %}
   </p>
   <a href="{% url 'executive_explore' %}?{{ detail_query }}" class="exec-reset no-print">Abrir análise completa</a>
   <div class="exec-table-wrap">
@@ -46,11 +47,11 @@
             {{ row.start|date:'d/m/Y' }}<br>{{ row.end|date:'d/m/Y' }}
           </td>
           <td>
-            {{ row.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+            {{ row.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}
           </td>
           <td>
-            {% if row.attendance_percent is None %}
-            —{% else %}{{ row.attendance_percent|floatformat:1 }}%{% endif %}
+            {% if row.verified_attendance_percent is None %}
+            —{% else %}{{ row.verified_attendance_percent|floatformat:2 }}%{% endif %}
           </td>
           <td>
             {{ row.grade|default_if_none:'—' }}/20<small>{{ row.result }}</small>

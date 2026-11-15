@@ -38,6 +38,7 @@
     </p>
   </div>
   <div class="plan-actions">
+    {% if user.is_staff %}<a class="gf-btn alt" href="{% url 'group_logistics' group.pk %}">Avaliação logística</a>{% endif %}
     {% if user.is_staff and group.state == 'Planeada' %}
 <a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar calendário</a>
     <form method="post" action="{% url 'group_transition' group.pk %}">
@@ -143,7 +144,7 @@
             {{ en.employee.direction|default:'—' }}<small>{{ en.employee.source_data.Função|default:en.employee.category }}</small>
           </td>
           <td>
-            {{ en.state }}<small>{{ en.confirmation }}</small>{% if en.training_id %}<small>Presenças: {{ en.training.attendance }}{% if not en.training.attendance_confirmed %} (por confirmar){% endif %}</small>{% endif %}
+            {{ en.state }}<small>{{ en.confirmation }}</small>{% if en.training_id %}<small>Horas verificadas: {{ en.training.verified_hours|default_if_none:'Por verificar' }}</small>{% endif %}
           </td>
           <td>
             {{ en.employee.phone|default:'—' }}<small>{{ en.employee.email|default:'—' }}</small>{% if en.contact_note %}<small>{{ en.contact_note }}</small>{% endif %}
@@ -228,4 +229,10 @@
   <a class="gf-btn alt" href="{% url 'group_delete' group.pk %}">Eliminar turma criada por engano</a>
 </section>
 {% endif %}
+
+<section class="plan-panel"><h2>Sessões e horas previstas</h2>
+{% if user.is_staff %}<a class="gf-btn" href="{% url 'group_attendance' group.pk %}">Importar / corrigir presenças por sessão</a>{% endif %}
+{% if user.is_staff %}<a class="gf-btn" href="{% url 'session_create' group.pk %}">Adicionar sessão</a>{% endif %}
+<table><tr><th>Data</th><th>Sessão</th><th>Horas</th><th></th></tr>
+{% for session in sessions %}<tr><td>{{ session.date|date:'d/m/Y' }}</td><td>{{ session.code }}</td><td>{{ session.duration|default_if_none:'Por verificar' }}</td><td>{% if user.is_staff %}<a href="{% url 'session_edit' group.pk session.pk %}">Rever sessão</a>{% endif %}</td></tr>{% endfor %}</table></section>
 {% endblock %}

@@ -40,11 +40,11 @@
           {{ t.start|date:'d/m/Y' }}<br>{{ t.end|date:'d/m/Y' }}
         </td>
         <td>
-          {{ t.completed_hours|floatformat:1|default_if_none:'—'|default:'—' }}
+          {{ t.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}
         </td>
         <td>
-          {% if t.attendance_percent is not None %}
-          {{ t.attendance_percent|floatformat:1 }}%{% else %}—{% endif %}
+          {% if t.verified_attendance_percent is not None %}
+          {{ t.verified_attendance_percent|floatformat:2 }}%{% else %}—{% endif %}
         </td>
         <td>
           {{ t.grade|default_if_none:'—' }}

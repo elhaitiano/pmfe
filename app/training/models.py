@@ -230,6 +230,22 @@ class Training(models.Model):
         return 'Verificadas' if self.attendance_confirmed else 'Por confirmar'
 
     @property
+    def verified_hours(self):
+        from .kpi_service import Scope
+        from .daily_kpi import attendance_summary
+        if self.pk is None:
+            return None
+        return attendance_summary([self], [], scope=Scope({}, 'Participação', 'all_records')).metrics['hours'].value
+
+    @property
+    def verified_attendance_percent(self):
+        from .kpi_service import Scope
+        from .daily_kpi import attendance_summary
+        if self.pk is None:
+            return None
+        return attendance_summary([self], [], scope=Scope({}, 'Participação', 'all_records')).metrics['attendance'].value
+
+    @property
     def completed_hours(self):
         if self.hours_per_day is None:
             return None
@@ -388,9 +404,20 @@ class TrainingGroup(models.Model):
 class GroupSession(models.Model):
     group = models.ForeignKey(TrainingGroup, on_delete=models.PROTECT, related_name='sessions')
     date = models.DateField('Dia de formação')
+    code = models.CharField('Identificação / horário', max_length=80, default='principal')
+    duration = models.DecimalField('Horas previstas', max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal('.01')), MaxValueValidator(24)])
+    revision = models.PositiveIntegerField(default=1)
+
+    def clean(self):
+        super().clean()
+        if self.group_id and self.date and not self.group.start <= self.date <= self.group.end:
+            raise ValidationError('A sessão deve estar dentro do calendário do grupo.')
+
     class Meta:
-        ordering = ['date']
-        constraints = [models.UniqueConstraint(fields=['group','date'], name='unique_group_session')]
+        ordering = ['date', 'code', 'pk']
+        constraints = [models.UniqueConstraint(fields=['group','date','code'], name='unique_group_session_code'),
+            models.CheckConstraint(condition=models.Q(duration__isnull=True) | models.Q(duration__gt=0, duration__lte=24), name='session_duration_range')]
 
 
 class Enrollment(models.Model):
@@ -436,7 +463,46 @@ class AssistantGuide(models.Model):
 
 # Register the evaluation models with the existing training application.
 from .evaluation_models import (TrainingEvaluation, ReactionEvaluation, Exam,
-                                ExamQuestion, ExamAttempt, ExamAnswer)
+                                ExamQuestion, ExamAttempt, ExamAnswer, GroupLogisticsEvaluation)
 from .competency_models import (Competency, RoleProfile, RoleCompetency, EvaluationCycle,
     CycleCompetency, CycleRater, CompetencyResponse, DevelopmentAction)
 from .competency_models import PrivateResponseRevision
+
+class SessionAttendance(models.Model):
+    session = models.ForeignKey(GroupSession, on_delete=models.PROTECT, related_name='attendance_records')
+    training = models.ForeignKey(Training, on_delete=models.PROTECT, related_name='session_attendances')
+    hours = models.DecimalField('Horas efectivamente frequentadas', max_digits=5, decimal_places=2, null=True, blank=True)
+    confirmed = models.BooleanField('Verificado', default=False)
+    revision = models.PositiveIntegerField(default=1)
+    actor = models.CharField(max_length=150)
+    updated = models.DateTimeField(auto_now=True)
+    source = models.TextField(blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['session','training'], name='unique_session_attendance'),
+            models.CheckConstraint(condition=models.Q(hours__isnull=True) | models.Q(hours__gte=0, hours__lte=24), name='session_attendance_range'),
+            models.CheckConstraint(condition=models.Q(confirmed=False) | models.Q(hours__isnull=False), name='confirmed_session_has_hours')]
+
+    def clean(self):
+        super().clean()
+        if self.session_id and self.training_id:
+            if self.training.group_id != self.session.group_id:
+                raise ValidationError('A sessão e a participação devem pertencer ao mesmo grupo.')
+            if self.training.course_id != self.session.group.course_id:
+                raise ValidationError('A formação da participação não corresponde ao grupo.')
+            if self.hours is not None and (self.session.duration is None or self.hours > self.session.duration):
+                raise ValidationError('Horas frequentadas excedem a duração conhecida da sessão.')
+            if self.confirmed and (self.hours is None or self.session.date > timezone.localdate()):
+                raise ValidationError('Só pode confirmar horas conhecidas de uma sessão já realizada.')
+
+class AttendanceImport(models.Model):
+    group = models.ForeignKey(TrainingGroup, on_delete=models.PROTECT, related_name='attendance_imports')
+    fingerprint = models.CharField(max_length=64)
+    filename = models.CharField(max_length=255)
+    actor = models.CharField(max_length=150)
+    reason = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    payload = models.JSONField()
+    changes = models.JSONField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['group','fingerprint'], name='unique_logical_attendance_import')]

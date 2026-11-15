@@ -31,7 +31,7 @@ class EvaluationForm(RevisionForm):
 
     class Meta:
         model = TrainingEvaluation
-        fields = ['logistics', 'comments'] + EVIDENCE
+        fields = ['completion', 'logistics', 'comments'] + EVIDENCE
         widgets = DATE_WIDGET
 
 

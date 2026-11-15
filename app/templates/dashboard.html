@@ -31,16 +31,16 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
       <p class="exec-kpi-val">
         {% if item.value is None %}
-        —{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
+        —{% elif item.decimal %}{{ item.value|floatformat:2 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
       </p>
       <p class="exec-kpi-sub" style="color:{{ item.color }}">
-        <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }}
+        <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }} {% if item.evidence_status %}· {{ item.evidence_status }}{% endif %}
       </p>
     </article>
     {% endfor %}
   </section>
       <div class="exec-actions">
-        <a href="{% url 'participation_executive' %}" class="exec-button">Consulta de formações e participação por Direcção</a>
+        <a href="{% url 'participation_executive' %}?{{ query }}" class="exec-button">Consulta de formações e participação por Direcção</a>
         {% if user.is_staff %}
         <a href="{% url 'indicator_index' %}" class="exec-button">Indicadores confirmados e 360°</a>
         {% endif %}
@@ -62,6 +62,7 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
     </div>
   </section>
+  {% include 'kpi_details.html' %}
   <nav class="exec-tabs no-print" aria-label="Camadas do centro executivo">
     <a class="active" href="{% url 'dashboard' %}?{{ query }}"><span class="material-symbols-outlined">dashboard</span>Visão estratégica</a><a href="{% url 'executive_explore' %}?{{ query }}"><span class="material-symbols-outlined">analytics</span>Análise detalhada</a><a href="{% url 'executive_reports' %}?{{ query }}"><span class="material-symbols-outlined">description</span>Relatórios e arquivo</a>
   </nav>
@@ -84,7 +85,7 @@ DASHBOARD EXECUTIVO{% endblock %}
   <section class="exec-secondary-kpis">
     {% for item in secondary_kpis %}
     <div class="exec-mini">
-      <span>{{ item.label }}</span><strong>{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:1 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></strong>
+      <span>{{ item.label }}</span><strong>{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:2 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></strong>
     </div>
     {% endfor %}
   </section>
@@ -99,9 +100,9 @@ DASHBOARD EXECUTIVO{% endblock %}
       <div class="exec-area-composition">
         <div class="exec-area-list">
           {% for bar in area_bars %}
-          <a href="{{ bar.href }}" class="exec-bar-row" data-drill data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} h · {{ bar.percent|floatformat:1 }}% das horas">
+          <a href="{{ bar.href }}" class="exec-bar-row" data-drill data-tip="{{ bar.label }}: {{ bar.value|floatformat:2|default:'Sem dados' }} h · {{ bar.percent|floatformat:1 }}% das horas">
           <div class="exec-bar-caption">
-            <span><i style="background:{{ bar.color }}"></i>{{ bar.label }}</span><strong>{{ bar.value|floatformat:1 }} h ({{ bar.percent|floatformat:1 }}%)</strong>
+            <span><i style="background:{{ bar.color }}"></i>{{ bar.label }}</span><strong>{{ bar.value|floatformat:2|default:'Sem dados' }} h ({{ bar.percent|floatformat:1 }}%)</strong>
           </div>
           <div class="exec-bar-track">
             <div style="width:{{ bar.percent|unlocalize }}%;background:linear-gradient(90deg,{{ bar.color }}88,{{ bar.color }})" class="exec-bar-fill">
@@ -118,7 +119,7 @@ DASHBOARD EXECUTIVO{% endblock %}
           <title>
             {{ segment.label }} — {{ segment.value|floatformat:1 }} horas
           </title>
-          </circle></a>{% endif %}{% endfor %}<text x="60" y="60" text-anchor="middle" class="exec-donut-total">{{ stats.hours|floatformat:0 }}</text><text x="60" y="72" text-anchor="middle" class="exec-donut-unit">HORAS</text></svg><small>Horas de participantes</small>
+          </circle></a>{% endif %}{% endfor %}<text x="60" y="60" text-anchor="middle" class="exec-donut-total">{{ stats.hours|floatformat:2|default:'Sem dados' }}</text><text x="60" y="72" text-anchor="middle" class="exec-donut-unit">HORAS</text></svg><small>Horas de participantes</small>
           <div class="exec-donut-mini">
             <span>Conclusão<strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong></span><span>Formadores<strong>{{ trainers }}</strong></span>
           </div>
@@ -162,7 +163,7 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
       <div class="exec-evolution">
         {% for bar in timeline_bars %}
-        <a href="{{ bar.href }}" data-drill class="exec-column" data-tip="{{ bar.label }}: {{ bar.value|floatformat:1 }} horas"><span class="exec-column-value">{{ bar.value|floatformat:1 }}</span>
+        <a href="{{ bar.href }}" data-drill class="exec-column" data-tip="{{ bar.label }}: {{ bar.value|floatformat:2|default:'Sem dados' }} horas"><span class="exec-column-value">{{ bar.value|floatformat:2|default:'Sem dados' }}</span>
         <div class="exec-column-track">
           <div style="height:{{ bar.width|unlocalize }}%" class="exec-column-fill">
           </div>
@@ -238,7 +239,7 @@ DASHBOARD EXECUTIVO{% endblock %}
                 {% if person.stats.attendance is None %}
                 —
                 {% else %}
-                <span class="exec-attendance-badge {% if person.stats.attendance < 80 %}exec-attendance-low{% endif %}">{{ person.stats.attendance|floatformat:1 }}%</span>
+                <span class="exec-attendance-badge {% if person.stats.attendance < 80 %}exec-attendance-low{% endif %}">{{ person.stats.attendance|floatformat:2 }}%</span>
                 {% endif %}
               </td>
               <td>
@@ -313,10 +314,10 @@ DASHBOARD EXECUTIVO{% endblock %}
   </section>
   <details class="exec-method"><summary>Critérios dos indicadores</summary>
   <p>
-    Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = presenças ÷ dias previstos, excluindo planeadas. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
+    Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = horas verificadas ÷ horas previstas correspondentes, incluindo ausências verificadas e excluindo dados desconhecidos. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
   </p>
   <p>
-    A evolução agrupa pela data de início, sem repartir as horas diariamente. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há participações em curso ou por confirmar.{% endif %}
+    A evolução usa a base temporal seleccionada. Na leitura por sessões, o histórico sem datas não é distribuído pelo gráfico. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há dados insuficientes, por verificar ou inconsistentes.{% endif %}
   </p>
   </details>
 </div>

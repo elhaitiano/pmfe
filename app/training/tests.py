@@ -126,14 +126,14 @@ class WorkflowTests(TestCase):
         first.grade = Decimal('0'); first.certified = True
         first.certificate_delivery_date = date(2025, 1, 4); first.save()
         Training.objects.create(employee=self.employee, title='Outra', area='Gestão',
-            start=date(2025,2,1),end=date(2025,2,9),days=9,hours_per_day=2,attendance=1,grade=16,certified=False)
+            start=date(2025,2,1),end=date(2025,2,9),days=9,hours_per_day=2,attendance=1,attendance_confirmed=True,grade=16,certified=False)
         planned = Training.objects.create(employee=self.employee,title='Planeada',start=date(2027,1,1),
             end=date(2027,1,4),days=4,hours_per_day=6,attendance=0,status='Planeado')
         result = statistics(self.employee.trainings.all())
-        self.assertEqual(result['attendance'], Decimal('25.0'))
+        self.assertEqual(result['attendance'], Decimal('41.98'))
         self.assertEqual(result['hours'], Decimal('17'))
         self.assertEqual(result['planned_hours'], Decimal('64.5'))
-        self.assertEqual(result['average'], Decimal('8'))
+        self.assertIsNone(result['average'])  # Raw grades without validation are not confirmed learning.
         self.assertEqual(result['certificates'], 1)
         self.assertEqual(result['certificates_pending'], 1)
         self.assertEqual(result['certificates_not_delivered'], 1)
@@ -146,7 +146,7 @@ class WorkflowTests(TestCase):
         self.assertIsNone(statistics([])['attendance'])
         self.assertIsNone(statistics([])['average'])
         self.assertEqual(distribution([]), [])
-        rows = [Training(employee=self.employee,title=area,area=area,start=date(2025,1,1),
+        rows = [Training.objects.create(attendance_confirmed=True, employee=self.employee,title=area,area=area,start=date(2025,1,1),
             end=date(2025,1,1),days=1,hours_per_day=Decimal('7'),attendance=1) for area in ['A','B','C']]
         result = distribution(rows)
         self.assertEqual(sum(x['display_percent'] for x in result), 100)
@@ -206,7 +206,7 @@ class WorkflowTests(TestCase):
 
     def create_training(self):
         return Training.objects.create(employee=self.employee, title='Segurança', area='Operações',
-            start=date(2025, 1, 1), end=date(2025, 1, 3), days=3, hours_per_day=Decimal('7.5'), attendance=2)
+            start=date(2025, 1, 1), end=date(2025, 1, 3), days=3, hours_per_day=Decimal('7.5'), attendance=2, attendance_confirmed=True)
 
     def test_authentication_and_logout(self):
         self.assertEqual(self.client.get('/').status_code, 302)
@@ -235,7 +235,7 @@ class WorkflowTests(TestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse('employee_detail', args=[self.employee.pk]), {'year': '2025', 'area': 'Operações'})
         self.assertEqual(response.context['stats']['total'], 1)
-        self.assertEqual(response.context['stats']['hours'], Decimal('15'))
+        self.assertIsNone(response.context['stats']['hours'])
         self.assertEqual(response.context['employee'].number, '0012')
         response = self.client.get('/', {'employee': self.other.pk})
         self.assertEqual(response.context['selected_stats']['total'], 0)

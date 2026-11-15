@@ -26,6 +26,7 @@ class EvidenceRecord(models.Model):
 
 
 class TrainingEvaluation(EvidenceRecord):
+    completion = models.BooleanField("Conclusão explicitamente confirmada", null=True, blank=True)
     validated_grade = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     validated_result = models.CharField(max_length=30, blank=True)
 
@@ -177,3 +178,14 @@ class ExamAnswer(models.Model):
                 raise ValidationError('A ligação entre resposta, questão e tentativa é permanente.')
         self.full_clean()
         return super().save(*args, **kwargs)
+
+class GroupLogisticsEvaluation(EvidenceRecord):
+    group = models.OneToOneField('TrainingGroup', on_delete=models.PROTECT, related_name='logistics_evaluation')
+    mean = models.DecimalField('Média logística /5', max_digits=3, decimal_places=2,
+        validators=[MinValueValidator(1), MaxValueValidator(5)])
+    responses = models.PositiveIntegerField('Número real de respostas', null=True, blank=True,
+        validators=[MinValueValidator(1)])
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(mean__gte=1, mean__lte=5), name='group_logistics_range'),
+            models.CheckConstraint(condition=models.Q(responses__isnull=True) | models.Q(responses__gt=0), name='group_logistics_responses')]

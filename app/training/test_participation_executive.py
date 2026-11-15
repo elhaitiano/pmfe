@@ -25,7 +25,7 @@ class ParticipationTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code,200)
         report=response.context['report']
-        self.assertEqual((report['universe'],report['participated'],report['completed']), (3,1,1))
+        self.assertEqual((report['universe'],report['participated'],report['completed']), (3,1,0))
         self.assertContains(response,'participation.js')
 
     def test_search_pagination_do_not_change_denominator(self):
@@ -35,9 +35,9 @@ class ParticipationTests(TestCase):
         self.assertEqual(response.context['page'].paginator.count,1)
         self.assertTrue(response.context['open_nominal'])
 
-    def test_overlap_and_invalid_filters(self):
+    def test_start_date_and_invalid_filters(self):
         response=self.client.get(self.url,{'date_from':'2026-02-01','date_to':'2026-02-05'})
-        self.assertEqual(response.context['report']['participated'],1)
+        self.assertEqual(response.context['report']['participated'],0)
         self.assertEqual(self.client.get(self.url,{'date_from':'2026-02-05','date_to':'2026-01-01'}).status_code,400)
         self.assertEqual(self.client.get(self.url,{'course':'999999'}).status_code,400)
 

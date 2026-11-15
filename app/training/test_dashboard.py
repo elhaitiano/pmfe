@@ -4,7 +4,7 @@ import csv, io
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from .models import Employee, Training
+from .models import Employee, Training, TrainingEvaluation
 from .dashboard import executive_data
 
 
@@ -14,27 +14,30 @@ class ExecutiveDashboardTests(TestCase):
         self.a = Employee.objects.create(number='9336', name='Técnico A', direction='Operações')
         self.b = Employee.objects.create(number='4333', name='Técnico B', direction='Operações')
         self.c = Employee.objects.create(number='100', name='Técnico C', direction='RH')
-        self.common = dict(title='Formação', area='Técnica', trainer='Formador', start=date(2026, 1, 2), end=date(2026, 1, 3), days=2, hours_per_day=7)
+        self.common = dict(attendance_confirmed=True, title='Formação', area='Técnica', trainer='Formador', start=date(2026, 1, 2), end=date(2026, 1, 3), days=2, hours_per_day=7)
         self.one = Training.objects.create(employee=self.a, attendance=2, grade=16, result='Aprovado', certified=True, certificate_delivery_date=date(2026, 1, 4), **self.common)
         self.two = Training.objects.create(employee=self.b, attendance=1, grade=8, result='Reprovado', certified=False, **self.common)
         self.planned = Training.objects.create(employee=self.a, attendance=0, status='Planeado', title='Futura', area='Técnica', start=date(2026, 12, 1), end=date(2026, 12, 1), days=1, hours_per_day=7)
-        self.old = Training.objects.create(employee=self.a, attendance=1, title='Anterior', area='', start=date(2025, 1, 1), end=date(2025, 1, 1), days=1, hours_per_day=4)
+        self.old = Training.objects.create(attendance_confirmed=True, employee=self.a, attendance=1, title='Anterior', area='', start=date(2025, 1, 1), end=date(2025, 1, 1), days=1, hours_per_day=4)
+        for row in (self.one, self.two):
+            TrainingEvaluation.objects.create(training=row, validation='Validado', date=date(2026,1,4),
+                evaluator='RH', source='Synthetic', validated_grade=row.grade, validated_result=row.result)
         self.client.force_login(self.user)
 
     def data(self, **filters):
-        response = self.client.get(reverse('dashboard'), filters)
+        response = self.client.get(reverse('dashboard'), {'time_basis':'training_start', **filters})
         self.assertEqual(response.status_code, 200)
         return response.context
 
     def test_counts_do_not_confuse_editions_participations_and_people(self):
         c = self.data()
-        self.assertEqual([x['value'] for x in c['kpis'][:5]], [3, 2, 3, 4, Decimal(25)])
-        self.assertEqual(c['stats']['attendance'], Decimal('80.0'))
+        self.assertEqual([x['value'] for x in c['kpis'][:5]], [3, 2, 3, 3, Decimal(25)])
+        self.assertEqual(c['stats']['attendance'], Decimal('78.13'))
         self.assertEqual(c['kpis'][6]['value'], 1)
         self.assertEqual(c['stats']['certificates_pending'], 2)
         self.assertEqual(c['kpis'][7]['value'], 50)
         self.assertEqual(c['average_final'], 12)
-        self.assertAlmostEqual(c['coverage'], 2 / 3 * 100)
+        self.assertEqual(c['coverage'], Decimal('66.67'))
 
     def test_filters_recompute_numerator_and_preserve_staff_denominator(self):
         c = self.data(year='2026', direction='Operações', area='Técnica', status='Concluído')
@@ -53,7 +56,7 @@ class ExecutiveDashboardTests(TestCase):
         c = self.data(status='Planeado')
         self.assertIsNone(c['stats']['attendance'])
         self.assertEqual(c['kpis'][1]['value'], 0)
-        self.assertEqual(c['kpis'][4]['value'], 0)
+        self.assertIsNone(c['kpis'][4]['value'])
         self.assertIsNone(c['average_final'])
 
     def test_bad_filter_does_not_silently_display_all_training(self):

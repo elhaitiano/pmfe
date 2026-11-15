@@ -10,18 +10,19 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 from .models import Course, Employee, Training
+from .executive import ExecutiveFilters, base_query, bounds, period_rows
+from .analytics import statistics
+from .kpi_service import Scope
+from .kpi_reporting import describe_summary, export_rows, STATUS, outcome_rows
 
 STATES = [('', 'Todos'), ('participated', 'Com presença confirmada'),
-          ('absent', 'Sem participação registada'), ('completed', 'Conclusão confirmada'),
+          ('absent', 'Sem participação confirmada'), ('completed', 'Conclusão confirmada'),
           ('no_training', 'Sem formação registada')]
 
-class Filters(forms.Form):
+class Filters(ExecutiveFilters):
     course = forms.ModelChoiceField(label='Formação do catálogo', queryset=Course.objects.all(), required=False)
     catalogue_search = forms.CharField(label='Pesquisar formação (inclui histórico)', required=False, max_length=200)
     directions = forms.MultipleChoiceField(label='Direcções actuais', required=False)
-    year = forms.IntegerField(label='Ano de início', required=False, min_value=1900, max_value=9999)
-    date_from = forms.DateField(label='De', required=False, widget=forms.DateInput(attrs={'type': 'date'}))
-    date_to = forms.DateField(label='Até', required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     state = forms.ChoiceField(label='Situação da lista nominal', choices=STATES, required=False)
     q = forms.CharField(label='Nome ou número mecanográfico', required=False, max_length=200)
 
@@ -37,29 +38,27 @@ class Filters(forms.Form):
 
 
 def analyse(data):
-    employees = Employee.objects.all().order_by('name', 'pk')
+    rows, employees = base_query(data)
     if data.get('directions'):
         employees = employees.filter(direction__in=data['directions'])
-    rows = Training.objects.filter(employee__in=employees).select_related('group')
-    if data.get('course'):
-        rows = rows.filter(course=data['course'])
+        rows = rows.filter(employee__in=employees)
     if data.get('catalogue_search'):
         rows = rows.filter(title__icontains=data['catalogue_search'])
-    if data.get('year'):
-        rows = rows.filter(start__year=data['year'])
-    if data.get('date_from'):
-        rows = rows.filter(end__gte=data['date_from'])
-    if data.get('date_to'):
-        rows = rows.filter(start__lte=data['date_to'])
-    grouped = defaultdict(list)
+    start, end, label = bounds(data)
+    rows = period_rows(rows,start,end,data.get('time_basis'))
+    employees = list(employees.order_by('name', 'pk'))
     rows = list(rows.order_by('start', 'pk'))
+    scope = Scope({k:v for k,v in data.items() if k not in ('q', 'state')}, label, 'training_start' if data.get('time_basis')=='training_start' else 'session_date', 'current_registry', start, end)
+    shared = statistics(rows, employees, scope)
+    kpi = shared['kpi_summary']
+    grouped = defaultdict(list)
     for row in rows:
         grouped[row.employee_id].append(row)
     nominal, directions = [], {}
     for employee in employees:
         history = grouped[employee.pk]
-        present = any(r.status != 'Planeado' and r.attendance_confirmed and r.attendance > 0 for r in history)
-        complete = any(r.status == 'Concluído' and r.attendance_confirmed and r.attendance > 0 for r in history)
+        present = any(r.pk in kpi.effective_participations for r in history)
+        complete = any(r.pk in shared['outcomes']['completed_ids'] for r in history)
         label = employee.direction or 'Direcção por confirmar'
         summary = directions.setdefault(label, dict(direction=label, total=0, participated=0, completed=0))
         summary['total'] += 1
@@ -68,24 +67,27 @@ def analyse(data):
         nominal.append(dict(employee=employee, number=employee.number, name=employee.name,
             direction=label, category=employee.category, registry=employee.registration_validation,
             participated=present, completed=complete, no_training=not history,
-            status='Conclusão confirmada' if complete else 'Com presença confirmada' if present else 'Sem participação registada',
+            status='Conclusão confirmada' if complete else 'Com presença confirmada' if present else 'Presenças por verificar' if any(r.pk not in kpi.confirmed_participations for r in history if r.status != 'Planeado') else 'Sem presença confirmada no filtro',
             editions=[dict(title=r.title, group=str(r.group) if r.group else 'Grupo não associado',
-                start=r.start, end=r.end, hours=r.completed_hours if r.attendance_confirmed else None,
-                attendance=r.attendance_percent if r.attendance_confirmed else None,
+                start=r.start, end=r.end, hours=kpi.hours_by_participation.get(r.pk),
+                attendance=r.verified_attendance_percent,
                 grades=[dict(value=r.grade, scale=20)] if r.grade is not None else []) for r in history]))
     for row in directions.values():
         row['not_participated'] = row['total'] - row['participated']
-        row['rate'] = round(row['participated'] * 100 / row['total'], 1)
+        ds = statistics([r for r in rows if (r.employee.direction or 'Direcção por confirmar') == row['direction']],
+            [e for e in employees if (e.direction or 'Direcção por confirmar') == row['direction']], scope)
+        row['rate'] = ds['kpi_summary'].metrics['coverage'].value
+        row['evidence_status'] = STATUS[ds['kpi_summary'].metrics['coverage'].status]
         row['tone'] = 'high' if row['rate'] >= 75 else 'medium' if row['rate'] >= 40 else 'low'
     universe = len(nominal)
     participated = sum(r['participated'] for r in nominal)
     return dict(universe=universe, participated=participated, not_participated=universe-participated,
-        completed=sum(r['completed'] for r in nominal), rate=round(participated*100/universe, 1) if universe else None,
+        outcomes=shared['outcomes'], completed=sum(r['completed'] for r in nominal), rate=kpi.metrics['coverage'].value, kpi_summary=kpi, kpi_details=shared['kpi_details'],
         course_label=str(data.get('course') or 'Todas as formações'),
         denominator='Universo: funcionários cadastrados nas direcções seleccionadas.',
         historical_direction='A direcção é a actual, não a direcção histórica da formação.',
         participations=len(rows), distinct_courses=len({('course', r.course_id) if r.course_id else ('title', r.title.casefold()) for r in rows}),
-        operational_summary='Conclusão confirmada: estado Concluído e pelo menos uma presença verificada. Não implica aprovação nem certificado.'), list(directions.values()), nominal
+        operational_summary='Conclusão confirmada: decisão explícita validada em coorte terminada. Presença não determina conclusão, aprovação ou certificado.'), list(directions.values()), nominal
 
 
 def selected_people(rows, state='', query='', direction=None):
@@ -101,8 +103,8 @@ def selected_people(rows, state='', query='', direction=None):
 
 
 def export_report(kind, report, directions, nominal):
-    headers = ['Direcção', 'Técnicos', 'Com presença', 'Sem participação', 'Conclusão confirmada', 'Taxa (%)']
-    table = [[r[k] for k in ('direction', 'total', 'participated', 'not_participated', 'completed', 'rate')] for r in directions]
+    headers = ['Direcção', 'Técnicos', 'Com presença', 'Sem presença confirmada', 'Conclusão confirmada', 'Taxa (%)', 'Estado da cobertura']
+    table = [[r[k] for k in ('direction', 'total', 'participated', 'not_participated', 'completed', 'rate', 'evidence_status')] for r in directions]
     stream = BytesIO()
     if kind == 'xlsx':
         from openpyxl import Workbook
@@ -121,6 +123,9 @@ def export_report(kind, report, directions, nominal):
         append(people, ['N.º mec.', 'Nome', 'Direcção actual', 'Categoria', 'Situação'])
         for row in nominal:
             append(people, [row[k] for k in ('number', 'name', 'direction', 'category', 'status')])
+        evidence = book.create_sheet('Critérios e indicadores')
+        for values in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']):
+            append(evidence, values)
         for ws in book:
             ws.freeze_panes = 'A2'
             ws.auto_filter.ref = ws.dimensions
@@ -138,9 +143,12 @@ def export_report(kind, report, directions, nominal):
         content = [Paragraph('Participação por Direcção', styles['Title']), para(report['course_label']),
             para(f"Universo: {report['universe']} · Com presença: {report['participated']} · Taxa: {report['rate'] if report['rate'] is not None else '—'}%"),
             para(report['denominator']+' '+report['historical_direction']), para(report['operational_summary']), Spacer(1, 12)]
-        t = Table([[para(v) for v in row] for row in [headers]+table], repeatRows=1, colWidths=[235, 65, 85, 95, 115, 65])
+        t = Table([[para(v) for v in row] for row in [headers]+table], repeatRows=1, colWidths=[170, 55, 75, 100, 105, 65, 90])
         t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#dceef2')), ('VALIGN',(0,0),(-1,-1),'TOP'), ('GRID',(0,0),(-1,-1),.4,colors.lightgrey)]))
         content.append(t)
+        content.append(Spacer(1, 12))
+        for evidence in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']):
+            content.append(para(' · '.join(str(v) if v is not None else 'Sem dados' for v in evidence)))
         SimpleDocTemplate(stream, pagesize=landscape(A4), rightMargin=30, leftMargin=30).build(content)
         mime = 'application/pdf'
     response = HttpResponse(stream.getvalue(), content_type=mime)
@@ -157,7 +165,7 @@ def index(request):
         return render(request, 'participation_executive.html', {'form': form}, status=400)
     report, directions, nominal = analyse(form.cleaned_data)
     if request.GET.get('export') in ('xlsx', 'pdf'):
-        return export_report(request.GET['export'], report, directions, selected_people(nominal, form.cleaned_data.get('state'), form.cleaned_data.get('q')))
+        return export_report(request.GET['export'], report, directions, nominal)
     def url(**changes):
         params = request.GET.copy()
         params.pop('export', None)

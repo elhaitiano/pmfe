@@ -3,6 +3,7 @@
 {% block content %}
 <section class="content p-10 space-y-6">
   {% include 'evaluation_nav.html' %}
+  {% include 'kpi_details.html' %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <p>Indicadores separados por finalidade. O período filtra a data de início da participação e do ciclo, não a data de entrega de certificados. Os ciclos 360° respeitam as suas permissões de gestão.</p>
@@ -20,8 +21,8 @@
       </form>
       <p>{{ total }} participações no âmbito seleccionado.</p>
       <h2 class="font-bold text-xl">Presença</h2>
-      <p>Percentagem: {% if attendance != None %}{{ attendance|floatformat:2 }}%{% else %}—{% endif %} · {{ presences }} presenças / {{ days }} dias.</p>
-      <p>{{ attendance_count }} participações incluídas; {{ attendance_provisional }} excluídas ou provisórias. Inclui apenas formações concluídas com presenças verificadas e duração em dias conhecida. Zero confirmado conta como zero.</p>
+      <p>Percentagem: {% if attendance != None %}{{ attendance|floatformat:2 }}%{% else %}—{% endif %} · {{ kpi_summary.metrics.attendance.numerator|default_if_none:'—' }} h / {{ kpi_summary.metrics.attendance.denominator|default_if_none:'—' }} h previstas.</p>
+      <p>{{ attendance_count }} participações incluídas; {{ attendance_provisional }} excluídas ou provisórias. Inclui presenças verificadas com duração conhecida, mesmo em formações em curso. Ponderação por horas; formações planeadas são excluídas. Zero confirmado conta como zero.</p>
       <h2 class="font-bold text-xl">Aprendizagem</h2>
       <p>Média: {% if learning != None %}{{ learning|floatformat:2 }} /20{% else %}—{% endif %} · {{ learning_count }} notas incluídas; {{ learning_provisional }} sem nota final confirmada.</p>
       <p>Aprovação: {% if approval_rate != None %}{{ approval_rate|floatformat:2 }}%{% else %}—{% endif %} · {{ approved }} aprovados / {{ result_count }} resultados finais confirmados.</p>

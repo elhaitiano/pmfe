@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from .analytics import statistics
+from .kpi_service import Scope
+from .kpi_reporting import STATUS, export_rows, outcome_rows
 from .batch import EDITION_FIELDS
 from .models import Employee, Training
 
@@ -27,19 +29,22 @@ class DashboardFilters(forms.Form):
 
 
 def bars(mapping):
-    peak = max(mapping.values(), default=0)
-    return [{'label': k, 'value': v, 'width': round(float(v / peak * 100), 2) if peak else 0}
+    peak = max((v for v in mapping.values() if v is not None), default=0)
+    return [{'label': k, 'value': v, 'width': round(float(v / peak * 100), 2) if peak and v is not None else 0}
             for k, v in mapping.items()]
 
 
-def executive_data(rows, employees, year=''):
+def executive_data(rows, employees, year='', scope=None):
     rows, employees = list(rows), list(employees)
-    stats = statistics(rows)
-    present = {r.employee_id for r in rows if r.status != 'Planeado' and r.attendance > 0}
+    scope = scope or Scope({'year': year}, year or 'Todos os períodos', 'training_start', 'current_registry')
+    stats = statistics(rows, employees, scope)
+    summary = stats['kpi_summary']
+    present = {r.employee_id for r in rows if r.pk in summary.effective_participations}
     editions = {tuple(getattr(r, f) for f in EDITION_FIELDS) for r in rows}
-    results = Counter(r.result for r in rows if r.status == 'Concluído')
+    academic = stats['outcomes']
+    results = Counter(academic['results'].values())
     evaluated = results['Aprovado'] + results['Reprovado']
-    final_grades = [r.grade for r in rows if r.status == 'Concluído' and r.grade is not None]
+    final_grades = [r.grade for r in rows if r.pk in academic['results'] and r.grade is not None]
     areas, timeline = defaultdict(Decimal), defaultdict(Decimal)
     if year:
         months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -47,8 +52,18 @@ def executive_data(rows, employees, year=''):
     else:
         timeline.update({str(y): Decimal(0) for y in sorted({r.start.year for r in rows})})
     for row in rows:
-        areas[row.area or 'Área por confirmar'] += (row.completed_hours or Decimal(0))
-        timeline[months[row.start.month - 1] if year else str(row.start.year)] += (row.completed_hours or Decimal(0))
+        if row.pk not in summary.hours_by_participation:
+            continue
+        areas[row.area or 'Área por confirmar'] += summary.hours_by_participation[row.pk]
+        timeline[months[row.start.month - 1] if year else str(row.start.year)] += summary.hours_by_participation[row.pk]
+    measured_periods = {months[r.start.month - 1] if year else str(r.start.year)
+                        for r in rows if r.pk in summary.hours_by_participation}
+    timeline = {key: value if key in measured_periods else None for key, value in timeline.items()}
+    if scope.time_basis == 'session_date':
+        timeline = {x: None for x in months} if year else {}
+        for day, value in summary.dated_hours.items():
+            key = months[int(day[5:7])-1] if year else day[:4]
+            timeline[key] = (timeline.get(key) or Decimal(0)) + value
     by_direction = {}
     for person in employees:
         label = person.direction or 'Direcção por confirmar'
@@ -56,36 +71,43 @@ def executive_data(rows, employees, year=''):
         item['total'] += 1
     for row in rows:
         label = row.employee.direction or 'Direcção por confirmar'
-        item = by_direction[label]
+        item = by_direction.setdefault(label, {'total': 0, 'present': set(), 'hours': Decimal(0), 'certificates': 0})
         if row.employee_id in present:
             item['present'].add(row.employee_id)
-        item['hours'] += (row.completed_hours or Decimal(0))
+        item['hours'] += summary.hours_by_participation.get(row.pk, Decimal(0))
         item['certificates'] += row.certified is True
-    directions = [{'label': label, 'total': x['total'], 'present': len(x['present']),
-                   'coverage': len(x['present']) * 100 / x['total'], 'hours': x['hours'], 'certificates': x['certificates']}
-                  for label, x in sorted(by_direction.items())]
+    directions = []
+    for label, x in sorted(by_direction.items()):
+        subset = [r for r in rows if (r.employee.direction or 'Direcção por confirmar') == label]
+        reference = [e for e in employees if (e.direction or 'Direcção por confirmar') == label]
+        ds = statistics(subset, reference, scope)
+        directions.append(dict(label=label, total=x['total'], present=ds['confirmed_people'],
+            coverage=ds['kpi_summary'].metrics['coverage'].value, hours=ds['hours'], certificates=x['certificates'],
+            evidence=ds['kpi_details'], coverage_status=STATUS[ds['kpi_summary'].metrics['coverage'].status]))
     cards = [
         ('Técnicos na base', len(employees), 'Na direcção seleccionada; inclui técnicos sem formação', 'groups'),
-        ('Técnicos com presença', len(present), 'Pessoas distintas com pelo menos uma presença', 'person_check'),
+        ('Técnicos com presença', len(present), 'Pessoas distintas com pelo menos uma presença verificada', 'person_check'),
         ('Turmas', len(editions), 'Edições distintas nos filtros seleccionados', 'school'),
-        ('Participações', len(rows), 'Uma inscrição por técnico e formação', 'how_to_reg'),
-        ('Horas realizadas', stats['hours'], 'Soma das horas de presença de todos os participantes', 'schedule'),
-        ('Assiduidade', stats['attendance'], 'Presenças ÷ dias previstos; exclui formações planeadas', 'speed'),
+        ('Participações efectivas', stats['effective_participations'], 'Participações distintas com presença positiva verificada', 'how_to_reg'),
+        ('Horas realizadas', stats['hours'], 'Horas-participante verificadas; duração uniforme por participação', 'schedule'),
+        ('Assiduidade', stats['attendance'], 'Horas verificadas ÷ horas previstas correspondentes; inclui ausências verificadas', 'speed'),
         ('Certificados entregues', stats['certificates'], 'Somente entregas confirmadas', 'workspace_premium'),
-        ('Aproveitamento', Decimal(results['Aprovado']) * 100 / evaluated if evaluated else None,
-         'Aprovados ÷ (aprovados + reprovados), em participações concluídas', 'verified'),
+        ('Aproveitamento', academic['approval_rate'],
+         'Aprovados ÷ resultados determinados e validados; coorte terminada', 'verified'),
     ]
     kpis = [{'label': label, 'value': value, 'note': note, 'icon': icon,
              'decimal': i in (4, 5, 7), 'suffix': 'h' if i == 4 else '%' if i in (5, 7) else ''}
             for i, (label, value, note, icon) in enumerate(cards)]
-    return {'stats': stats, 'kpis': kpis, 'directions_table': directions,
-        'coverage': len(present) * 100 / len(employees) if employees else None,
-        'average_final': sum(final_grades) / len(final_grades) if final_grades else None,
-        'final_grades_count': len(final_grades), 'evaluated': evaluated,
+    for index, key in {1:'people', 3:'participations', 4:'hours', 5:'attendance'}.items():
+        kpis[index]['evidence_status'] = STATUS[summary.metrics[key].status]
+    return {'kpi_summary': summary, 'kpi_details': stats['kpi_details'], 'stats': stats, 'kpis': kpis, 'directions_table': directions,
+        'coverage': summary.metrics['coverage'].value,
+        'average_final': academic['learning'],
+        'final_grades_count': academic['learning_count'], 'evaluated': evaluated,
         'results': [{'label': x, 'value': results[x]} for x in ('Aprovado', 'Reprovado', 'Pendente', 'Não avaliado')],
         'status_bars': bars({x: sum(r.status == x for r in rows) for x, _ in Training._meta.get_field('status').choices}),
         'area_bars': bars(dict(sorted(areas.items(), key=lambda x: (-x[1], x[0])))),
-        'timeline_bars': bars(timeline), 'timeline_title': 'Horas por mês de início' if year else 'Horas por ano de início',
+        'timeline_bars': bars(timeline), 'timeline_title': ('Horas por mês de sessão' if year else 'Horas por ano de sessão') if scope.time_basis=='session_date' else ('Horas por mês de início' if year else 'Horas por ano de início'),
         'has_rows': bool(rows)}
 
 
@@ -108,9 +130,9 @@ def dashboard(request):
         writer.writerow(['Gerado em', data['generated_at'].strftime('%d/%m/%Y %H:%M')])
         for key, value in selected.items():
             writer.writerow([form.fields[key].label, value or 'Todos'])
-        writer.writerow(['Indicador', 'Valor', 'Critério'])
+        writer.writerow(['Indicador', 'Valor', 'Critério', 'Estado'])
         for item in data['kpis']:
-            writer.writerow([item['label'], item['value'] if item['value'] is not None else 'Sem dados', item['note']])
+            writer.writerow([item['label'], item['value'] if item['value'] is not None else 'Sem dados', item['note'], item.get('evidence_status', '')])
         writer.writerow([])
         writer.writerow(['Direcção', 'Técnicos na base', 'Técnicos com presença', 'Cobertura (%)', 'Horas de participantes', 'Certificados entregues'])
         for item in data['directions_table']:
@@ -119,5 +141,8 @@ def dashboard(request):
             if label.startswith(('=', '+', '-', '@', '\t', '\r', '\n')):
                 label = "'" + label
             writer.writerow([label, item['total'], item['present'], item['coverage'], item['hours'], item['certificates']])
+        writer.writerow([])
+        for row in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']):
+            writer.writerow(row)
         return response
     return render(request, 'dashboard.html', data)

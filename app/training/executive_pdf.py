@@ -16,6 +16,8 @@ from reportlab.graphics.shapes import Drawing, Rect, String, Line, Circle, Wedge
 from django.conf import settings
 from .batch import EDITION_FIELDS
 from .executive import COLORS
+from .analytics import statistics
+from .kpi_reporting import export_rows, outcome_rows
 
 FONT_PATH=Path(reportlab.__file__).parent/'fonts'
 for name,file in [('Exec','Vera.ttf'),('ExecBold','VeraBd.ttf')]:
@@ -30,7 +32,7 @@ styles.add(ParagraphStyle(name='ExecHeading',fontName='ExecBold',fontSize=14,lea
 styles.add(ParagraphStyle(name='ExecWhite',parent=styles['ExecSmall'],textColor=colors.white,fontName='ExecBold'))
 
 def fmt(value,digits=1):
-    if value is None:return '-'
+    if value is None:return 'Sem dados'
     return f'{float(value):,.{digits}f}'.replace(',',' ').replace('.',',')
 
 def para(text,style='ExecBody'):return Paragraph(escape(str(text)),styles[style])
@@ -45,13 +47,13 @@ def table(headers,rows,widths=None):
 
 def bar_chart(items,width=WIDTH,height=175):
     drawing=Drawing(width,height);left=35;bottom=32;plot_h=height-57;plot_w=width-left-12
-    max_value=max((float(x['value']) for x in items),default=0) or 1
+    max_value=max((float(x['value']) for x in items if x['value'] is not None),default=0) or 1
     for tick in range(5):
         y=bottom+plot_h*tick/4
         drawing.add(Line(left,y,width-5,y,strokeColor=colors.HexColor('#dce7ed'),strokeWidth=.5))
         drawing.add(String(left-5,y-2,fmt(max_value*tick/4,0),fontName='Exec',fontSize=7,textAnchor='end',fillColor=GREY))
     for i,item in enumerate(items):
-        slot=plot_w/max(len(items),1);h=float(item['value'])/max_value*plot_h;x=left+i*slot+slot*.22
+        slot=plot_w/max(len(items),1);h=(float(item['value']) if item['value'] is not None else 0)/max_value*plot_h;x=left+i*slot+slot*.22
         drawing.add(Rect(x,bottom,slot*.56,h,fillColor=TEAL,strokeColor=None))
         drawing.add(String(x+slot*.28,bottom+h+5,fmt(item['value'],0),fontName='ExecBold',fontSize=7,textAnchor='middle',fillColor=BLUE))
         drawing.add(String(x+slot*.28,15,str(item['label'])[:12],fontName='Exec',fontSize=7,textAnchor='middle',fillColor=GREY))
@@ -111,11 +113,11 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     cards=[]
     for item in data['kpis']:
         value=fmt(item['value'],1 if item['decimal'] else 0)+(' '+item['suffix'] if item['suffix'] else '')
-        cards.append([para(item['label'],'ExecSmall'),para(value,'ExecHeading')])
+        cards.append([para(item['label']+' · '+item.get('evidence_status',''),'ExecSmall'),para(value,'ExecHeading')])
     card_rows=[]
     for offset in (0,4):card_rows.append([Table([[a],[b]],colWidths=[WIDTH/4-16]) for a,b in cards[offset:offset+4]])
     grid=Table(card_rows,colWidths=[WIDTH/4]*4);grid.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('BOX',(0,0),(-1,-1),.5,colors.HexColor('#cfdee7')),('INNERGRID',(0,0),(-1,-1),.5,colors.white),('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8)]));story.extend([grid,Spacer(1,12)])
-    story.append(para('Horas e participações acima referem-se a formações iniciadas no período. São horas de participantes, não a duração de sala de cada turma.'))
+    story.append(para('Horas e participações seguem a base temporal e os critérios indicados no detalhe. São horas de participantes, não a duração de sala de cada turma.'))
     story.append(para(f"Média final: {fmt(data['average_final'])}/20, com {data['final_grades_count']} notas finais disponíveis. Cobertura do cadastro: {fmt(data['coverage'])}%."))
     if data['previous']:
         prev=data['previous'];change=fmt(prev['change'])+'%' if prev['change'] is not None else 'sem base percentual'
@@ -130,7 +132,7 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.extend([PageBreak(),para('3. Direcções e resultados','ExecHeading'),para('A cobertura conta pessoas distintas com presença, divididas pelo cadastro da direcção. O cadastro não é reduzido pelo período ou pela área de formação.')])
     story.append(table(['Direcção','Cadastro','Com presença','Cobertura','Horas','Certif.'],[[d['label'],str(d['total']),str(d['present']),fmt(d['coverage'])+'%',fmt(d['hours']),str(d['certificates'])] for d in data['directions_table']],[WIDTH*.35,WIDTH*.12,WIDTH*.14,WIDTH*.13,WIDTH*.13,WIDTH*.13]))
     story.extend([Spacer(1,12),table(['Resultado final','Participações concluídas'],[[x['label'],str(x['value'])] for x in data['results']],[WIDTH*.65,WIDTH*.35])])
-    story.append(para(f"Certificados das participações iniciadas no período: {data['stats']['certificates']} entregues, {data['stats']['certificates_pending']} por confirmar e {data['stats']['certificates_not_delivered']} não entregues."))
+    story.append(para(f"Certificados das participações seleccionadas: {data['stats']['certificates']} entregues, {data['stats']['certificates_pending']} por confirmar e {data['stats']['certificates_not_delivered']} não entregues."))
     priorities = (f"Rever {data['missing_final']} participações concluídas com nota ou resultado por completar." if data['missing_final'] else "As participações concluídas têm notas e resultados preenchidos.")
     priorities += (f" Confirmar {data['stats']['certificates_pending']} situações de entrega pendentes." if data['stats']['certificates_pending'] else " Não existem situações de entrega por confirmar neste universo.")
     story.extend([para('Prioridades de acompanhamento','ExecHeading'),para(priorities+" Os dados em falta permanecem separados dos resultados negativos.")])
@@ -138,13 +140,16 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.extend([PageBreak(),para('4. Actividades e turmas do período','ExecHeading')])
     editions={}
     for row in data['rows']:
-        key=tuple(getattr(row,f) for f in EDITION_FIELDS);item=editions.setdefault(key,{'row':row,'count':0,'hours':0});item['count']+=1;item['hours']+=(row.completed_hours or Decimal(0))
-    story.append(table(['Formação / Formador(a)','Período','Inscrições','Horas de participantes'],[[x['row'].title+' / '+(x['row'].trainer or 'Por confirmar'),f"{x['row'].start:%d/%m/%Y} - {x['row'].end:%d/%m/%Y}",str(x['count']),fmt(x['hours'])] for x in editions.values()],[WIDTH*.48,WIDTH*.24,WIDTH*.12,WIDTH*.16]))
+        key=tuple(getattr(row,f) for f in EDITION_FIELDS);item=editions.setdefault(key,{'row':row,'count':0,'rows':[]});item['count']+=1;item['rows'].append(row)
+    story.append(table(['Formação / Formador(a)','Período','Inscrições','Horas de participantes'],[[x['row'].title+' / '+(x['row'].trainer or 'Por confirmar'),f"{x['row'].start:%d/%m/%Y} - {x['row'].end:%d/%m/%Y}",str(x['count']),fmt(statistics(x['rows'], data['employees'], data['kpi_summary'].scope)['hours'])] for x in editions.values()],[WIDTH*.48,WIDTH*.24,WIDTH*.12,WIDTH*.16]))
     story.extend([Spacer(1,12),para('5. Entregas de certificados datadas no período','ExecHeading'),para('Lista por data efectiva de entrega, independente da data de início da formação. Mantém os filtros de direcção, área e situação.')])
     story.append(table(['Técnico / N.º mecanográfico','Formação','Entrega / Referência'],[[r.employee.name+' / '+r.employee.number,r.title,f"{r.certificate_delivery_date:%d/%m/%Y} / "+(r.certificate_reference or 'Sem referência')] for r in data['deliveries']],[WIDTH*.36,WIDTH*.4,WIDTH*.24]))
     story.append(para(f"Existem {data['delivery_dates_missing']} confirmações de entrega sem data no universo dos filtros organizacionais. Sem data, não é possível atribuí-las a um mês."))
-    story.extend([Spacer(1,14),para('6. Critérios e rastreabilidade','ExecHeading'),para('Presenças x horas por dia determina a carga horária realizada. Assiduidade ponderada usa a soma de presenças e dias previstos e exclui formações planeadas. Registos em curso ou por confirmar tornam a assiduidade provisória. Aproveitamento usa apenas aprovados e reprovados de participações concluídas. Notas em falta ficam fora da média; nota zero permanece na média.')])
-    story.append(para('A distribuição temporal é feita pela data de início; não é uma repartição diária das horas. A plataforma ainda não dispõe de registo diário que permita essa repartição. Cada turma segue a identificação da grelha de actualização em lote.'))
+    story.extend([Spacer(1,14),para('6. Critérios e rastreabilidade','ExecHeading'),para('Presenças x horas por dia determina a carga horária realizada. Assiduidade ponderada usa horas verificadas / horas previstas das mesmas participações, incluindo ausências verificadas. Dados desconhecidos são excluídos e identificados como parciais. Aproveitamento usa apenas aprovados e reprovados de participações concluídas. Notas em falta ficam fora da média; nota zero permanece na média.')])
+    story.append(para('Na leitura por sessões, a distribuição usa datas reais verificadas. O histórico sem datas diárias fica separado, sem repartição presumida. Na leitura histórica por início, o total agregado permanece atribuído à edição. Cada turma segue a identificação da grelha de actualização em lote.'))
+    story.append(para('Detalhe dos indicadores comuns','ExecHeading'))
+    for evidence in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']):
+        story.append(para(' | '.join(str(v) if v is not None else 'Sem dados' for v in evidence),'ExecSmall'))
     archive_note = 'Pré-visualização não arquivada. Utilize Gerar, arquivar e descarregar PDF para conservar o documento.' if report_id == 'Pré-visualização' else 'O arquivo conserva este PDF e os filtros utilizados, mesmo que os registos sejam corrigidos posteriormente.'
     story.append(para(f'Identificador: {report_id}. Responsável pela geração: {actor or "Utilizador autenticado"}. {archive_note}','ExecSmall'))
     doc.build(story,onFirstPage=header,onLaterPages=header,canvasmaker=lambda *a,**kw:PagedCanvas(*a,**kw))

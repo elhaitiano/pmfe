@@ -1,22 +1,33 @@
 """Shared calculations for the profile, history, forms and printable record."""
 from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR
 from django.utils import timezone
+from types import SimpleNamespace
+from .kpi_service import Scope, aggregate_attendance
+from .kpi_reporting import describe_summary
+from .outcomes import outcomes
+from .daily_kpi import attendance_summary
 
 
-def statistics(rows):
+def statistics(rows, employees=None, scope=None):
     rows = list(rows)
-    attended = [row for row in rows if row.status != 'Planeado']
-    measurable = [row for row in attended if row.days is not None and (row.attendance > 0 or row.attendance_confirmed)]
-    days = sum(row.days for row in measurable)
-    presences = sum(row.attendance for row in measurable)
+    reference = employees if employees is not None else [SimpleNamespace(pk=pk) for pk in {r.employee_id for r in rows}]
+    summary = attendance_summary(rows, reference, scope=scope or Scope({}, 'Histórico agregado seleccionado', 'all_records', 'selected_people'))
+    measurable = [r for r in rows if r.pk in summary.attendance_pairs]
+    days = sum(r.days or 0 for r in measurable)
+    presences = sum(r.attendance for r in measurable)
+    academic = outcomes(rows, reference_date=scope.date_to if scope else None, cohort_start=scope.date_from if scope else None)
     grades = [row.grade for row in rows if row.grade is not None]
-    attendance = (Decimal(presences) * 100 / days).quantize(Decimal('.1'), rounding=ROUND_HALF_UP) if days else None
-    return {'total': len(rows), 'hours': sum((row.completed_hours for row in rows if row.completed_hours is not None), Decimal(0)),
+    return {'outcomes': academic, 'total': len(rows), 'hours': summary.metrics['hours'].value,
         'planned_hours': sum((row.planned_hours for row in rows if row.planned_hours is not None), Decimal(0)),
-        'attendance': attendance, 'attendance_days': days, 'presences': presences,
-        'attendance_provisional': any(row.status in ('Em Curso', 'Por confirmar') or not row.attendance_confirmed or row.days is None for row in attended),
+        'attendance': summary.metrics['attendance'].value, 'attendance_days': days, 'presences': presences,
+        'attendance_provisional': summary.metrics['attendance'].status in ('partial', 'to_verify', 'inconsistent'),
         'unknown_duration_count': sum(row.days is None or row.hours_per_day is None for row in rows),
-        'unconfirmed_attendance_count': sum(not row.attendance_confirmed for row in attended),
+        'unconfirmed_attendance_count': sum(not row.attendance_confirmed for row in rows if row.status != 'Planeado'),
+        'kpi_summary': summary, 'kpi_details': describe_summary(summary),
+        'equivalent_days': summary.metrics['equivalent_days'].value, 'effective_days':summary.effective_days,
+        'effective_participations': summary.metrics['participations'].value,
+        'confirmed_people': summary.metrics['people'].value,
+        'hours_per_person': summary.metrics['hours_per_person'].value,
         'certificates': sum(row.certified is True for row in rows),
         'certificates_issued': sum(row.certificate_issued is True for row in rows),
         'certificate_declarations': sum(bool(row.certificate_declaration) for row in rows),
@@ -25,16 +36,20 @@ def statistics(rows):
         'certificates_not_delivered': sum(row.certified is False for row in rows),
         'planned_count': sum(row.status == 'Planeado' for row in rows),
         'completed_count': sum(row.status == 'Concluído' for row in rows),
-        'graded_count': len(grades),
-        'average': sum(grades) / len(grades) if grades else None}
+        'graded_count': academic['learning_count'],
+        'average': academic['learning']}
 
 
 def distribution(rows):
+    rows = list(rows)
+    summary = statistics(rows)['kpi_summary']
     grouped = {}
     for row in rows:
+        if row.pk not in summary.hours_by_participation:
+            continue
         label = row.area or 'Área por confirmar'
         item = grouped.setdefault(label, {'hours': Decimal(0), 'count': 0})
-        item['hours'] += row.completed_hours or Decimal(0)
+        item['hours'] += summary.hours_by_participation[row.pk]
         item['count'] += 1
     total = sum((x['hours'] for x in grouped.values()), Decimal(0))
     if not total:

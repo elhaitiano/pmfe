@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from .models import Employee, Training, ExecutiveReport
+from .models import TrainingEvaluation, Employee, Training, ExecutiveReport
 from .executive import bounds, previous_bounds, selection, analyse
 
 
@@ -17,8 +17,12 @@ class ExecutiveCentreTests(TestCase):
         self.user=get_user_model().objects.create_user('director',password='test',is_staff=True)
         self.client.force_login(self.user)
         self.person=Employee.objects.create(number='9336',name='Técnico <EPAL>',direction='Operações')
-        self.old=Training.objects.create(employee=self.person,title='Formação anterior',area='Técnica',start=date(2025,12,20),end=date(2026,1,5),days=2,hours_per_day=7,attendance=2,grade=0,result='Reprovado',certified=True,certificate_delivery_date=date(2026,2,1))
-        self.new=Training.objects.create(employee=self.person,title='Formação actual',area='Gestão',start=date(2026,1,10),end=date(2026,1,11),days=2,hours_per_day=7,attendance=1,grade=16,result='Aprovado',certified=None)
+        self.old=Training.objects.create(attendance_confirmed=True,employee=self.person,title='Formação anterior',area='Técnica',start=date(2025,12,20),end=date(2026,1,5),days=2,hours_per_day=7,attendance=2,grade=0,result='Reprovado',certified=True,certificate_delivery_date=date(2026,2,1))
+        self.new=Training.objects.create(attendance_confirmed=True,employee=self.person,title='Formação actual',area='Gestão',start=date(2026,1,10),end=date(2026,1,11),days=2,hours_per_day=7,attendance=1,grade=16,result='Aprovado',certified=None)
+
+        for row in (self.old, self.new):
+            TrainingEvaluation.objects.create(training=row, validation='Validado', date=date(2026,1,12),
+                evaluator='RH', source='Synthetic decision', validated_grade=row.grade, validated_result=row.result)
 
     def test_period_boundaries_calendar_and_previous(self):
         self.assertEqual(bounds({'period':'month','year':'2024','month':2})[:2],(date(2024,2,1),date(2024,2,29)))
@@ -30,7 +34,7 @@ class ExecutiveCentreTests(TestCase):
     def test_dated_deliveries_are_not_misassigned_to_start_month(self):
         response=self.client.get(reverse('dashboard'),{'period':'month','year':'2026','month':'2'})
         self.assertFalse(response.context['has_rows'])
-        self.assertEqual(response.context['stats']['hours'],0)
+        self.assertIsNone(response.context['stats']['hours'])
         self.assertEqual(len(response.context['deliveries']),1)
         self.assertEqual(response.context['deliveries'][0].pk,self.old.pk)
         detail=self.client.get(reverse('executive_explore'),{'period':'month','year':'2026','month':'2','slice':'deliveries','fragment':'1'})
@@ -43,9 +47,9 @@ class ExecutiveCentreTests(TestCase):
         self.assertEqual(response.context['kpis'][7]['value'],50)
 
     def test_click_filters_preserve_period_and_direction(self):
-        response=self.client.get(reverse('executive_explore'),{'year':'2026','direction':'Operações','slice':'area','value':'Técnica'})
+        response=self.client.get(reverse('executive_explore'),{'time_basis':'training_start','year':'2026','direction':'Operações','slice':'area','value':'Técnica'})
         self.assertEqual(response.context['detail_count'],0)
-        response=self.client.get(reverse('executive_explore'),{'year':'2026','slice':'time','value':'2026-01-10'})
+        response=self.client.get(reverse('executive_explore'),{'time_basis':'training_start','year':'2026','slice':'time','value':'2026-01-10'})
         self.assertEqual(response.context['detail_count'],1)
         self.assertContains(response,'Técnico &lt;EPAL&gt;')
         self.assertEqual(self.client.get(reverse('executive_explore'),{'slice':'unknown'}).status_code,404)
@@ -58,7 +62,7 @@ class ExecutiveCentreTests(TestCase):
         self.assertEqual(response.status_code,400)
 
     def test_pdf_snapshot_is_immutable_audited_and_integrity_checked(self):
-        response=self.client.post(reverse('executive_create'),{'period':'quarter','year':'2026','quarter':'1','direction':'Operações'})
+        response=self.client.post(reverse('executive_create'),{'time_basis':'training_start','period':'quarter','year':'2026','quarter':'1','direction':'Operações'})
         self.assertEqual(response.status_code,200)
         content=b''.join(response.streaming_content);response.close()
         self.assertTrue(content.startswith(b'%PDF-'))

@@ -14,7 +14,7 @@ class EmployeeFormFieldsTests(TestCase):
             social_security_number='0012345', marital_status='Casado(A)', company='EPAL',
             direction='Direcção técnica', function='Operadora', category='Técnica',
             area='Zona Norte', cost_center='CC-002', registration_origin='Mapa EPAL',
-            review_status='Apto', registration_validation='Confirmado', source_row=20,
+            review_status='Apto', registration_validation='Cadastro validado para teste', source_row=20,
             phone_secondary='923456789')
         response = self.client.post(reverse('employee_edit', args=[employee.pk]), data)
         self.assertEqual(response.status_code, 302)
@@ -32,7 +32,7 @@ class EmployeeFormFieldsTests(TestCase):
             response = self.client.get(reverse(route, args=[employee.pk]))
             self.assertContains(response, '000123LA045')
             self.assertContains(response, 'Operadora')
-            for value in ['0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Confirmado']:
+            for value in ['0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Cadastro validado para teste']:
                 self.assertNotContains(response, value)
         response = self.client.get(reverse('employee_edit', args=[employee.pk]))
         for name in form.fields:

@@ -5,7 +5,7 @@ for the same organisational scope. Search/pagination must not trim either input.
 Dates are selection metadata: this service never invents daily attendance.
 """
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Iterable, Mapping
 
@@ -16,6 +16,8 @@ class Scope:
     period: str
     time_basis: str  # e.g. training_start or training_overlap; never session_date here
     reference: str = 'current_registry'
+    date_from: Any = None
+    date_to: Any = None
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,14 @@ class Summary:
     duplicate_inputs: int
     legacy_without_group: int
     issues: Mapping[Any, tuple[str, ...]]
+    hours_by_participation: Mapping[Any, Decimal]
+    attendance_pairs: Mapping[Any, tuple[Decimal, Decimal]]
+    effective_participations: frozenset
+    confirmed_participations: frozenset
+    effective_days: int | None = None
+    verified_day_pairs: frozenset = frozenset()
+    dated_hours: Mapping[Any, Decimal] = field(default_factory=dict)
+    unallocated_participations: int = 0
 
 
 def _decimal(value):
@@ -151,6 +161,12 @@ def aggregate_attendance(rows: Iterable, employees: Iterable, *, scope: Scope) -
         else:
             pairs[pk] = (attendance * hours, days * hours)
 
+    return _summarize(unique, scope, reference_ids, positive, known_attendance, hour_values, pairs,
+        exclusions, inconsistent, planned, issues, duplicates)
+
+
+def _summarize(unique, scope, reference_ids, positive, known_attendance, hour_values, pairs,
+               exclusions, inconsistent, planned, issues, duplicates=0):
     def metric(value, unit, bucket, included, numerator=None, denominator=None, status=None):
         excluded = exclusions[bucket]
         reasons = Counter(reason for reason_set in excluded.values() for reason in reason_set)
@@ -190,4 +206,5 @@ def aggregate_attendance(rows: Iterable, employees: Iterable, *, scope: Scope) -
         status='inconsistent' if inconsistent else 'to_verify' if missing_positive_hours else None)
     return Summary(metrics, scope, 'Training aggregate attendance; uniform hours per day',
         len(unique), duplicates, sum(row.group_id is None for row in unique.values()),
-        {pk: tuple(sorted(reasons)) for pk, reasons in issues.items() if reasons})
+        {pk: tuple(sorted(reasons)) for pk, reasons in issues.items() if reasons},
+        hour_values, pairs, frozenset(positive), frozenset(known_attendance))

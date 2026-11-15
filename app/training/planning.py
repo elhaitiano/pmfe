@@ -108,7 +108,7 @@ def create_group(course, data):
         raise ValidationError('A acção de formação deixou de estar disponível.')
     course.refresh_from_db()
     group=TrainingGroup.objects.create(course=course,number=course.next_group-1,title=course.title,area=course.area,**group_values(data))
-    GroupSession.objects.bulk_create([GroupSession(group=group,date=d) for d in data['dates']])
+    GroupSession.objects.bulk_create([GroupSession(group=group,date=d,duration=group.hours_per_day) for d in data['dates']])
     return group
 
 
@@ -236,7 +236,7 @@ def group_edit(request,course_pk=None,pk=None):
                 if group:
                     if form.cleaned_data['capacity']<group.enrollments.filter(state='Activa').count():raise ValidationError('A capacidade não pode ser inferior ao número de inscritos activos.')
                     if TrainingGroup.objects.filter(pk=pk,revision=form.cleaned_data['revision'],state='Planeada').update(**group_values(form.cleaned_data),revision=F('revision')+1)!=1:raise ValidationError('O grupo foi alterado. Reabra o calendário.')
-                    group.sessions.all().delete();GroupSession.objects.bulk_create([GroupSession(group=group,date=d) for d in form.cleaned_data['dates']])
+                    group.sessions.all().delete();GroupSession.objects.bulk_create([GroupSession(group=group,date=d,duration=group.hours_per_day) for d in form.cleaned_data['dates']])
                 else:group=create_group(course,form.cleaned_data)
                 record(request,'PLANNING_GROUP',f'Acção {course.pk}, {group.code}: calendário guardado.')
                 return redirect('group_detail',pk=group.pk)
@@ -323,7 +323,15 @@ def transition(request,pk):
                 if not active.exists() or active.filter(training__isnull=True).exists():
                     raise ValidationError('Todas as inscrições activas devem ter uma participação antes de concluir.')
                 if current.trainings.exclude(status__in=['Concluído','Desistência']).exists():raise ValidationError('Finalize os resultados de todos os formandos na grelha antes de concluir o grupo.')
-                if current.trainings.filter(attendance_confirmed=False).exists():raise ValidationError('Verifique as presenças de todos os formandos, incluindo as ausências, antes de concluir.')
+                for training in current.trainings.all():
+                    records = {r.session_id:r for r in training.session_attendances.all()}
+                    if records:
+                        sufficient = all(s.duration is not None and s.pk in records and records[s.pk].confirmed and records[s.pk].hours is not None and records[s.pk].hours <= s.duration
+                            for s in current.sessions.all())
+                    else:
+                        sufficient = training.attendance_confirmed
+                    if not sufficient:
+                        raise ValidationError('Verifique as presenças de todos os formandos, incluindo as ausências, antes de concluir.')
                 current.state='Concluída'
             else:
                 reason=request.POST.get('reason','').strip()

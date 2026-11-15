@@ -1,3 +1,4 @@
+from datetime import date
 import io
 import zipfile
 import uuid
@@ -20,6 +21,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .forms import EmployeeForm, TrainingForm
 from .models import AuditEvent, Employee, Training
+from .kpi_service import Scope
 from .analytics import statistics, distribution, profile_fields, format_phone, years_since, registration_header_fields
 
 
@@ -76,8 +78,8 @@ def home(request):
         'untrained_count': total - trained, 'coverage': trained / total * 100 if total else 0,
         'employee': employee,
         'profile_fields': employee_fields(employee) if employee else [],
-        'selected_stats': statistics(employee.trainings.all()) if employee else {},
-        'stats': statistics(Training.objects.all()),
+        'selected_stats': statistics(employee.trainings.select_related('group').all(), [employee]) if employee else {},
+        'stats': statistics(Training.objects.select_related('group').all(), Employee.objects.all()),
     })
 
 
@@ -116,7 +118,7 @@ def employee_data(request, pk=None):
         return render(request, 'employee_data.html', {
             'page': Paginator(employees, 30).get_page(request.GET.get('page')), 'q': q})
     employee = get_object_or_404(Employee, pk=pk)
-    rows = list(employee.trainings.all())
+    rows = list(employee.trainings.select_related('group').all())
     fields = registration_header_fields(employee)
     competencies, seen = [], set()
     for row in rows:
@@ -128,7 +130,7 @@ def employee_data(request, pk=None):
     from .documents import DocumentForm
     document_form = DocumentForm(employee=employee, prefix=None) if request.user.is_staff else None
     return render(request, 'employee_data.html', {'employee': employee, 'data_fields': fields,
-        'trainings': rows[:5], 'stats': statistics(rows), 'distribution': groups, 'history_total': len(rows),
+        'trainings': rows[:5], 'stats': statistics(rows, [employee]), 'distribution': groups, 'history_total': len(rows),
         'competencies': competencies, 'has_hours': bool(groups),
         'unconfirmed_certificates': sum(row.certified is None for row in rows),
         'document_form': document_form,
@@ -139,11 +141,11 @@ def employee_data(request, pk=None):
 @login_required
 def employee_detail(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
-    all_rows = employee.trainings.all()
+    all_rows = employee.trainings.select_related('group').all()
     rows = all_rows
     year, area = request.GET.get('year', ''), request.GET.get('area', '')
-    if year.isdecimal() and len(year) == 4:
-        rows = rows.filter(start__year=int(year))
+    if year.isdecimal() and len(year) == 4 and int(year)>0:
+        rows = rows.filter(start__year__lte=int(year), end__year__gte=int(year))
     if area:
         rows = rows.filter(area=area)
     graded = [t for t in reversed(list(rows)) if t.grade is not None]
@@ -151,7 +153,7 @@ def employee_detail(request, pk):
              'y': round(130 - float(t.grade) * 6), 'title': t.title, 'grade': t.grade}
             for i, t in enumerate(graded)]
     return render(request, 'employee.html', {'employee': employee,
-        'trainings': rows, 'stats': statistics(rows), 'profile_fields': employee_fields(employee),
+        'trainings': rows, 'stats': statistics(rows, [employee], Scope({'year': year, 'area': area}, year or 'Todos os períodos', 'session_date', 'selected_people', date(int(year),1,1) if year.isdecimal() and len(year)==4 and int(year)>0 else None, date(int(year),12,31) if year.isdecimal() and len(year)==4 and int(year)>0 else None)), 'profile_fields': employee_fields(employee),
         'latest_location': all_rows.first().location if all_rows.exists() else '',
         'years': sorted({t.start.year for t in all_rows}, reverse=True),
         'areas': sorted({t.area for t in all_rows}), 'year': year, 'area': area,
@@ -216,8 +218,8 @@ def training_delete(request, pk):
 @login_required
 def employee_print(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
-    rows = list(employee.trainings.all())
-    stats = statistics(rows)
+    rows = list(employee.trainings.select_related('group').all())
+    stats = statistics(rows, [employee])
     source = employee.source_data or {}
     age, seniority = years_since(employee.birth_date), years_since(employee.admission_date)
     return render(request, 'print.html', {'employee': employee, 'trainings': rows,

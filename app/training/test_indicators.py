@@ -32,12 +32,12 @@ class IndicatorTests(TestCase):
         self.training(attendance_confirmed=True,status='Em Curso')
         self.training(attendance_confirmed=True,days=None,hours_per_day=None)
         result=analyse_indicators(Training.objects.all())
-        self.assertEqual(result['attendance'],50)
-        self.assertEqual(result['days'],4)
-        self.assertEqual(result['presences'],2)
-        self.assertEqual(result['attendance_count'],2)
-        self.assertEqual(result['attendance_provisional'],3)
-        self.assertEqual(sum(r['attendance'] for r in result['reconciliation']),2)
+        self.assertEqual(result['attendance'],Decimal('66.67'))
+        self.assertEqual(result['days'],6)
+        self.assertEqual(result['presences'],4)
+        self.assertEqual(result['attendance_count'],3)
+        self.assertEqual(result['attendance_provisional'],2)
+        self.assertEqual(sum(r['attendance'] for r in result['reconciliation']),3)
 
     def test_validated_learning_excludes_legacy_and_stale_classifications(self):
         first=self.training(grade=16,result='Aprovado'); self.verified(first)
