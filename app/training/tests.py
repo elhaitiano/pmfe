@@ -31,7 +31,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'FICHA INDIVIDUAL DO FORMANDO')
         self.assertContains(response, 'Dados do Formando')
-        self.assertContains(response, 'person</span>Ficha Individual')
+        self.assertContains(response, 'person</span>Fichas Individuais')
         self.assertContains(response, '1 entrega por confirmar')
         self.assertContains(response, reverse('employee_print', args=[self.employee.pk]))
         self.assertContains(response, 'Segurança')
