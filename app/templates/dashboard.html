@@ -40,7 +40,7 @@ DASHBOARD EXECUTIVO{% endblock %}
     {% endfor %}
   </section>
       <div class="exec-actions">
-        <a href="#dashboard-directions" class="exec-button">Consulta de formações e participação por Direcção</a>
+        <a href="{% url 'participation_executive' %}" class="exec-button">Consulta de formações e participação por Direcção</a>
         {% if user.is_staff %}
         <a href="{% url 'indicator_index' %}" class="exec-button">Indicadores confirmados e 360°</a>
         {% endif %}

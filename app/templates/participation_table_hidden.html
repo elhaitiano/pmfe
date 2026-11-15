@@ -1,0 +1,1 @@
+{% for key,values in request.GET.lists %}{% if key != 'direction_q' and key != 'direction_page' and key != 'direction_size' and key != 'view' and key != 'page' and key != 'export' and key != 'detail_direction' and key != 'detail_state' %}{% for value in values %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}{% endif %}{% endfor %}

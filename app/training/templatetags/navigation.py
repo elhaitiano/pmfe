@@ -4,6 +4,7 @@ from django import template
 register = template.Library()
 
 PAGE_LABELS = {
+    'participation_executive': 'Participação por Direcção',
     'home': 'Início',
     'dashboard': 'Dashboard Executivo',
     'audit': 'Registo de actividade',
