@@ -76,8 +76,8 @@ class ExecutiveDashboardTests(TestCase):
         response = self.client.get(reverse('dashboard'), {'direction': '=1+1', 'export': 'csv'})
         self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
         rows = list(csv.reader(io.StringIO(response.content.decode('utf-8-sig')), delimiter=';'))
-        self.assertIn(['Direcção', "'=1+1"], rows)
-        self.assertTrue(any(row and row[0] == "'=1+1" and row[1] == '1' for row in rows))
+        self.assertIn('<5',response.content.decode())
+        self.assertNotIn('=1+1',response.content.decode())
 
     def test_authentication_required_for_html_and_export(self):
         self.client.logout()

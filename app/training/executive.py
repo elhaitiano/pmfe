@@ -1,3 +1,4 @@
+from dataclasses import replace
 """Period selection, provenance and drill-downs for the executive centre."""
 import calendar
 from datetime import date, timedelta
@@ -10,13 +11,14 @@ from django.urls import reverse
 from django.utils import timezone
 from .dashboard import DashboardFilters, executive_data
 from .analytics import statistics
-from .models import Employee, Training, Course
+from .models import Employee, Training, Course, WorkforceReference
 from .kpi_service import Scope
 
 MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 COLORS = ['#41e4c0','#5d8eea','#fbbf24','#38bdf8','#a78bfa','#fb7185','#2dd4bf','#c084fc']
 
 class ExecutiveFilters(DashboardFilters):
+    reference=forms.ModelChoiceField(label="Referência DRH aprovada (opcional)",queryset=WorkforceReference.objects.filter(approved=True),required=False)
     time_basis = forms.ChoiceField(label='Base temporal', required=False,
         choices=[('', 'Datas das sessões (histórico não repartido separado)'), ('training_start', 'Histórico agregado por início')])
     course = forms.ModelChoiceField(label='Formação do catálogo', queryset=Course.objects.all(), required=False)
@@ -51,6 +53,11 @@ class ExecutiveFilters(DashboardFilters):
                 if not data.get(f):self.add_error(f,'Indique a data.')
             if data.get('date_from') and data.get('date_to') and data['date_to']<data['date_from']:
                 self.add_error('date_to','A data final não pode anteceder a inicial.')
+        if data.get('reference') and not self.errors:
+            from .workforce import matches
+            start,end,label=bounds(data)
+            if not matches(data['reference'],Scope(data,label,'session_date','current_registry',start,end)):
+                self.add_error('reference','A referência DRH não corresponde exactamente ao período e às dimensões seleccionadas.')
         return data
 
 
@@ -175,7 +182,7 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         people.setdefault(row.employee_id,{'employee':row.employee,'rows':[]})['rows'].append(row)
     talents=[]
     for person in people.values():
-        stats=statistics(person['rows'],[person['employee']],data['kpi_summary'].scope);grades=[r.grade for r in person['rows'] if r.pk in stats['outcomes']['results'] and r.grade is not None]
+        stats=statistics(person['rows'],[person['employee']],replace(data['kpi_summary'].scope,filters={**selected,'reference':None},reference='current_registry'));grades=[r.grade for r in person['rows'] if r.pk in stats['outcomes']['results'] and r.grade is not None]
         average=stats['outcomes']['learning']
         person.update(stats=stats,average=average,graded=len(grades),href=drill('person',person['employee'].pk,person['employee'].name))
         if average is not None:talents.append(person)
@@ -184,17 +191,13 @@ def analyse(rows,employees,selected,start,end,label,base=None):
     data['scatter']=[{'name':p['employee'].name,'x':55+float(p['stats']['attendance'])*4.8,'y':220-float(p['average'])*9,'radius':min(14,4+len(p['rows'])),'href':p['href'],'average':p['average'],'attendance':p['stats']['attendance']} for p in talents if p['stats']['attendance'] is not None]
     for d in data['directions_table']:
         group=[r for r in rows if (r.employee.direction or 'Direcção por confirmar')==d['label']]
-        ds=statistics(group,employees,data['kpi_summary'].scope);grades=[r.grade for r in group if r.pk in ds['outcomes']['results'] and r.grade is not None]
+        ds=statistics(group,employees,replace(data['kpi_summary'].scope,filters={**selected,'reference':None},reference='current_registry'));grades=[r.grade for r in group if r.pk in ds['outcomes']['results'] and r.grade is not None]
         d.update(attendance=ds['attendance'],average=ds['outcomes']['learning'],href=drill('direction','__unconfirmed__' if d['label']=='Direcção por confirmar' else d['label'],d['label']))
     data['directions_active']=len({r.employee.direction for r in rows if r.employee.direction})
     data['locations']=len({r.location for r in rows if r.location})
     data['trainers']=len({r.trainer for r in rows if r.trainer})
     data['completion_rate']=data['stats']['outcomes']['completion_rate']
-    data['delivery_rate']=data['stats']['certificates']*100/len(rows) if rows else None
     data['kpis'][4]['note'] += f" · H/D: {data['stats']['equivalent_days'] if data['stats']['equivalent_days'] is not None else 'Sem dados'} · Dias efectivos: {data['kpi_summary'].effective_days if data['kpi_summary'].effective_days is not None else 'Por verificar'}"
-    data['main_kpis']=[data['kpis'][1],data['kpis'][5],{'label':'Média de desempenho','value':data['average_final'],'decimal':True,'suffix':'/20','note':f"{data['final_grades_count']} participações concluídas com nota final",'icon':'stars'},data['kpis'][4]]
-    for item,color,icon in zip(data['main_kpis'],[COLORS[1],COLORS[0],COLORS[2],COLORS[3]],['groups','how_to_reg','stars','timelapse']):item.update(color=color,icon=icon)
-    data['secondary_kpis']=[data['kpis'][i] for i in (0,2,3,6,7)]
     number=lambda value: f'{value:.2f}'.replace('.',',') if value is not None else 'Sem dados'
     data['insights']=[]
     if rows:
@@ -213,7 +216,15 @@ def analyse(rows,employees,selected,start,end,label,base=None):
         change=(total-ps['hours'])*100/ps['hours'] if ps['hours'] and total is not None else None
         data['previous']={'start':prev_start,'end':prev_end,'hours':ps['hours'],'participations':len(previous),'change':change}
     operational=list(base) if base is not None else rows
+    from .certificates import summary as certification_summary
+    data['stats']['certification']=certification_summary(operational,end,start)
+    data['delivery_rate']=data['stats']['certification']['delivery_rate']
+    from .kpi_catalogue import catalogue,panels,main_cards
+    data['main_kpis']=main_cards(data['stats'])
+    data['indicator_panels']=panels(catalogue(data['stats']))
     deliveries=[r for r in operational if r.certified is True and r.certificate_delivery_date and (not start or start<=r.certificate_delivery_date<=end)]
     endings=[r for r in operational if r.status=='Concluído' and (not start or start<=r.end<=end)]
     data.update(deliveries=deliveries,ended=endings,delivery_dates_missing=sum(r.certified is True and not r.certificate_delivery_date for r in operational),delivery_href=drill('certificate','yes','Certificados entregues'))
+    from .aggregate_privacy import restricted
+    data['privacy_restricted']=restricted(operational,employees,data['kpi_summary'])
     return data

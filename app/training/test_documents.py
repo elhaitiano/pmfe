@@ -134,7 +134,7 @@ class DocumentTests(TestCase):
         self.assertEqual(list((Path(self.folder.name)/'documents').glob('*.pdf')), [])
 
     def certificate_data(self, **changes):
-        data = dict(revision=self.training.version, certificate_issued='unknown', certified='unknown',
+        data = dict(reason='Confirmação administrativa',certificate_actor='DRH',certificate_evidence='Referência de teste',certificate_obtained='unknown',revision=self.training.version, certificate_issued='unknown', certified='unknown',
             certificate_hr_delivered='unknown', certificate_declaration='Emitido e entregue segundo o responsável',
             certificate_declared_by='Responsável de teste', certificate_declaration_source='Declaração verbal')
         data.update(changes); return data
@@ -157,7 +157,7 @@ class DocumentTests(TestCase):
         self.assertNotEqual(self.training.certificate_declaration, 'Alteração antiga')
 
     def test_distinct_deliveries_and_chronology(self):
-        data = self.certificate_data(certificate_issued='true', certificate_issue_date='2025-01-03',
+        data = self.certificate_data(certificate_obtained='true',certificate_obtained_date='2025-01-02',certificate_issued='true', certificate_issue_date='2025-01-03',
             certified='true', certificate_delivery_date='2025-01-04',
             certificate_hr_delivered='true', certificate_hr_delivery_date='2025-01-05')
         form = CertificateForm(instance=self.training, data=data)

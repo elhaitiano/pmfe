@@ -82,35 +82,25 @@ class SharedKPIIntegrationTests(TestCase):
             self.assertEqual(summary.selected_participations, 0)
 
     def test_exports_share_values_and_visual_search_does_not_trim_excel(self):
-        response = self.get('participation_executive', {'export': 'xlsx', 'q': 'no match', 'detail_state': 'participated'})
-        book = load_workbook(BytesIO(response.content))
-        self.assertEqual(book['Lista nominal'].max_row, 4)
-        evidence = {row[0]: row for row in book['Critérios e indicadores'].iter_rows(values_only=True)}
-        self.assertEqual(evidence['Horas frequentadas'][1], 6)
-        self.assertEqual(evidence['Assiduidade ponderada por horas'][1], 46.15)
-        self.assertEqual(evidence['Horas frequentadas'][3], 'Parcial')
-        response = self.get('dashboard', {'export': 'csv'})
-        rows = list(csv.reader(StringIO(response.content.decode('utf-8-sig')), delimiter=';'))
-        hours = next(row for row in rows if row and row[0] == 'Horas frequentadas')
-        self.assertEqual(Decimal(hours[1]), 6)
-        self.assertEqual(hours[3], 'Parcial')
-        for route, params in (('participation_executive', {'export': 'pdf'}), ('executive_preview', {})):
-            response = self.get(route, params)
-            payload = b''.join(response.streaming_content) if response.streaming else response.content
-            text = ' '.join(page.extract_text() for page in PdfReader(BytesIO(payload)).pages)
-            self.assertIn('46.15', text.replace(',', '.'))
-            self.assertIn('Parcial', text)
+        # This fixture contains three people; all aggregate formats must suppress it.
+        response=self.get('participation_executive',{'export':'xlsx','q':'no match'})
+        book=load_workbook(BytesIO(response.content));self.assertEqual(book.sheetnames,['Protecção'])
+        self.assertIn('<5',book.active['A1'].value)
+        self.assertIn('<5',self.get('dashboard',{'export':'csv'}).content.decode())
+        for route,params in (('participation_executive',{'export':'pdf'}),('executive_preview',{})):
+            response=self.get(route,params)
+            payload=b''.join(response.streaming_content) if response.streaming else response.content
+            text=' '.join(p.extract_text() for p in PdfReader(BytesIO(payload)).pages)
+            self.assertIn('<5',text);self.assertNotIn('46.15',text)
 
     def test_unknown_only_data_stays_unknown_in_exports(self):
         Training.objects.all().update(attendance_confirmed=False)
-        summary = self.get('dashboard').context['kpi_summary']
+        summary=self.get('dashboard').context['kpi_summary']
         self.assertIsNone(summary.metrics['hours'].value)
-        self.assertEqual(summary.metrics['hours'].status, 'to_verify')
-        response = self.get('participation_executive', {'export': 'xlsx'})
-        book = load_workbook(BytesIO(response.content))
-        rows = {r[0]: r for r in book['Critérios e indicadores'].iter_rows(values_only=True)}
-        self.assertEqual(rows['Horas frequentadas'][1], 'Sem dados')
-        self.assertEqual(rows['Horas frequentadas'][3], 'Por verificar')
+        self.assertEqual(summary.metrics['hours'].status,'to_verify')
+        # No unknown values are converted to zero in the protected release.
+        book=load_workbook(BytesIO(self.get('participation_executive',{'export':'xlsx'}).content))
+        self.assertEqual(book.sheetnames,['Protecção'])
 
     def test_archive_keeps_structured_evidence_and_course_identity(self):
         response = self.client.post(reverse('executive_create'), {'course': self.course.pk})

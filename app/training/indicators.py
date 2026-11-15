@@ -116,4 +116,6 @@ def index(request):
     usable = [r['result']['overall'] for r in competency_rows if r['result']['available']]
     summary.update(form=form, competency_rows=competency_rows, competency_average=mean(usable),
         competency_count=len(usable), competency_provisional=len(competency_rows)-len(usable))
+    from .aggregate_privacy import restricted, page
+    if restricted(rows,reference):return page(request,summary,status=200 if form.is_valid() else 400)
     return render(request,'competencies/indicators.html',summary,status=200 if form.is_valid() else 400)

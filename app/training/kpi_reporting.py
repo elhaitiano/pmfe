@@ -21,7 +21,7 @@ REASONS = {'legacy_without_daily_dates':'Histórico sem datas diárias fiáveis'
 
 
 def describe_summary(summary):
-    return [dict(key=key, label=LABELS[key][0], unit=LABELS[key][1], value=m.value,
+    return [dict(key=key, label=('Cobertura do efectivo DRH aprovado' if key=='coverage' and summary.scope.reference.startswith('DRH #') else LABELS[key][0]), unit=LABELS[key][1], value=m.value,
         status=STATUS[m.status], numerator=m.numerator, denominator=m.denominator,
         included=m.included, excluded=m.excluded,
         reasons='; '.join(f'{REASONS.get(reason, reason)}: {count}' for reason,count in m.reasons.items()))
@@ -35,6 +35,7 @@ def export_rows(summary):
             ['Participações sem repartição diária', summary.unallocated_participations],
             ['Dias efectivos completos', summary.effective_days if summary.effective_days is not None else 'Por verificar'],
             ['Dias verificados (subtotal)', len(summary.verified_day_pairs)]]
+    rows.extend([f'Cadastro — {key} por confirmar',value] for key,value in summary.incomplete_registry.items())
     rows.extend([f'Filtro: {key}', str(value)] for key,value in summary.scope.filters.items() if value not in ('', None, []))
     rows.append(['Indicador', 'Valor', 'Unidade', 'Estado', 'Numerador', 'Denominador', 'Incluídos', 'Excluídos', 'Motivos'])
     for item in describe_summary(summary):
@@ -66,3 +67,17 @@ def outcome_rows(academic):
         ['Conclusão (%)', academic['completion_rate'], 'Concluídas', academic['completion_count'], 'Determinadas', academic['completion_determined'], 'Pendentes', academic['completion_pending'], 'Elegíveis', academic['ended_count']],
         ['Aproveitamento (%)', academic['approval_rate'], 'Aprovadas', academic['approved'], 'Determinadas', academic['result_count'], 'Pendentes', academic['result_pending']],
         ['Logística /5', academic['logistics'], 'Equivalente (%)', academic['logistics_percent'], 'Respostas', academic['logistics_count'], 'Agregados excluídos', academic['logistics_excluded_groups']]]
+
+DEFINITIONS = {
+    'people':'Distinct Employee identities with positive verified attendance in the selected period.',
+    'hours':'Sum of verified attended session hours; unallocated legacy totals are separate.',
+    'attendance':'Sum of verified attended hours / matching planned hours × 100; confirmed zero included.',
+    'equivalent_days':'Verified participant hours / 7; round only after aggregation.',
+    'coverage':'Distinct confirmed participants / exact approved DRH reference or labelled current registry × 100.',
+    'completion':'Explicit validated completions / determined eligible ended participations × 100.',
+    'approval':'Validated approved results / determined approved and failed results × 100.',
+    'certificate_issue':'Issued / obtained in the same identified obtained cohort at the reference date × 100.',
+    'certificate_delivery':'Delivered / issued in that same obtained cohort at the reference date × 100.',
+    'classification':'Inactive until an institutional comparable classification scale is defined.',
+    'privacy':'Groups of 1–4: withhold aggregate release and complementary totals; nominal rights remain separate.',
+}

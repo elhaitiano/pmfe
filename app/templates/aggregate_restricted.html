@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block heading %}INDICADORES AGREGADOS{% endblock %}
+{% block content %}{% if request.resolver_match.url_name == 'indicator_index' %}{% include 'evaluation_nav.html' %}{% endif %}{% if request.resolver_match.url_name == 'dashboard' %}{% include 'primary_kpis_restricted.html' %}{% endif %}<section class="panel"><h2>Agregação protegida</h2><p>{{ privacy_message }}</p>
+<p>A consulta nominal continua sujeita às permissões existentes e deve ser feita nas fichas individuais.</p>
+<a href="{% url 'dashboard' %}">Dashboard</a> · <a href="{% url 'executive_reports' %}">Centro de Relatórios</a>
+<form method="get">{% if filter_form %}{{ filter_form.as_p }}{% elif form %}{{ form.non_field_errors }}{% for field in form %}{% if field.name != 'employee' %}<p>{{ field.label_tag }}{{ field }}{{ field.errors }}</p>{% endif %}{% endfor %}{% endif %}<button>Aplicar filtros</button></form>
+</section>{% endblock %}

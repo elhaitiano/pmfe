@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from training.excel_sources import load_source, SOURCE_ERRORS
-from training.integrated_import import apply_reviewed, build_plan
+from training.integrated_import import apply_reviewed, build_plan, REPLACEABLE_EMPLOYEE_FIELDS
 
 
 class Command(BaseCommand):
@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('workbook', type=Path)
+        parser.add_argument('--replace-employee-fields', nargs='*', default=[], choices=sorted(REPLACEABLE_EMPLOYEE_FIELDS))
         parser.add_argument('--apply', action='store_true')
         parser.add_argument('--review-token', default='')
         parser.add_argument('--report', type=Path, required=True)
@@ -36,10 +37,10 @@ class Command(BaseCommand):
             sha = hashlib.sha256(data).hexdigest()
             workbook = load_source(BytesIO(data))
             with transaction.atomic():
-                report = build_plan(workbook, sha).report
+                report = build_plan(workbook, sha, options['replace_employee_fields']).report
             if options['apply']:
                 if report['can_apply']:
-                    report = apply_reviewed(workbook, sha, options['review_token'])
+                    report = apply_reviewed(workbook, sha, options['review_token'], replace_employee_fields=options['replace_employee_fields'])
                 else:
                     report['mode'] = 'blocked'
             target.parent.mkdir(parents=True, exist_ok=True)

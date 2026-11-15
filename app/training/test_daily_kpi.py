@@ -75,13 +75,10 @@ class DailyKpiTests(TestCase):
         self.assertEqual(report['kpi_summary'].metrics,self.data(2)['kpi_summary'].metrics)
         response=self.client.get(reverse('participation_executive'),{**params,'export':'xlsx'})
         book=load_workbook(BytesIO(response.content))
-        rows={r[0]:r for r in book['Critérios e indicadores'].iter_rows(values_only=True)}
-        self.assertEqual(rows['Horas frequentadas'][1],3.5)
-        self.assertEqual(rows['Dias efectivos completos'][1],1)
+        self.assertEqual(book.sheetnames,['Protecção'])
         response=self.client.get(reverse('executive_preview'),params)
         text=' '.join(p.extract_text() for p in PdfReader(BytesIO(b''.join(response.streaming_content))).pages)
-        self.assertIn('session_date',text)
-        self.assertIn('3.5',text.replace(',','.'))
+        self.assertIn('<5',text)
     def test_month_drill_uses_session_date(self):
         response=self.client.get(reverse('executive_explore'),{'year':'2025','slice':'time','value':'2025-02'})
         self.assertEqual(response.context['detail_stats']['hours'],Decimal('3.5'))

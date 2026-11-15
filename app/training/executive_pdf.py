@@ -1,3 +1,5 @@
+from .kpi_catalogue import export_rows as catalogue_rows
+from .certificates import export_rows as certificate_rows
 """Offline vector PDF reports. All prose is derived from the selected data."""
 from decimal import Decimal
 import io, math
@@ -92,6 +94,9 @@ class PagedCanvas(canvas.Canvas):
 
 
 def render_report(data,report_id='Pré-visualização',actor=''):
+    if data.get('privacy_restricted'):
+        from .aggregate_privacy import pdf
+        return pdf()
     output=io.BytesIO();doc=SimpleDocTemplate(output,pagesize=A4,leftMargin=18*mm,rightMargin=18*mm,topMargin=38*mm,bottomMargin=24*mm,title='EPAL - Relatório Executivo de Formação',author=actor or 'EPAL / PROÁGUA')
     def header(c,doc):
         logo=settings.BASE_DIR/'static/pmf/epal-report-official.png'
@@ -111,11 +116,11 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.append(para(f"Certificados: {data['stats']['certificates_issued']} emitidos confirmados; {data['stats']['certificate_declarations']} declarações; {data['stats']['certificates']} entregues ao participante; {data['stats']['certificates_hr']} entregues aos RH. Declarações não contam como entrega confirmada."))
     for text in data['insights']:story.append(para(text))
     cards=[]
-    for item in data['kpis']:
+    for item in data['main_kpis']:
         value=fmt(item['value'],1 if item['decimal'] else 0)+(' '+item['suffix'] if item['suffix'] else '')
         cards.append([para(item['label']+' · '+item.get('evidence_status',''),'ExecSmall'),para(value,'ExecHeading')])
     card_rows=[]
-    for offset in (0,4):card_rows.append([Table([[a],[b]],colWidths=[WIDTH/4-16]) for a,b in cards[offset:offset+4]])
+    for offset in (0,):card_rows.append([Table([[a],[b]],colWidths=[WIDTH/4-16]) for a,b in cards[offset:offset+4]])
     grid=Table(card_rows,colWidths=[WIDTH/4]*4);grid.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('BOX',(0,0),(-1,-1),.5,colors.HexColor('#cfdee7')),('INNERGRID',(0,0),(-1,-1),.5,colors.white),('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8)]));story.extend([grid,Spacer(1,12)])
     story.append(para('Horas e participações seguem a base temporal e os critérios indicados no detalhe. São horas de participantes, não a duração de sala de cada turma.'))
     story.append(para(f"Média final: {fmt(data['average_final'])}/20, com {data['final_grades_count']} notas finais disponíveis. Cobertura do cadastro: {fmt(data['coverage'])}%."))
@@ -148,7 +153,7 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.extend([Spacer(1,14),para('6. Critérios e rastreabilidade','ExecHeading'),para('Presenças x horas por dia determina a carga horária realizada. Assiduidade ponderada usa horas verificadas / horas previstas das mesmas participações, incluindo ausências verificadas. Dados desconhecidos são excluídos e identificados como parciais. Aproveitamento usa apenas aprovados e reprovados de participações concluídas. Notas em falta ficam fora da média; nota zero permanece na média.')])
     story.append(para('Na leitura por sessões, a distribuição usa datas reais verificadas. O histórico sem datas diárias fica separado, sem repartição presumida. Na leitura histórica por início, o total agregado permanece atribuído à edição. Cada turma segue a identificação da grelha de actualização em lote.'))
     story.append(para('Detalhe dos indicadores comuns','ExecHeading'))
-    for evidence in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']):
+    for evidence in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']) + certificate_rows(data['stats']['certification']) + catalogue_rows(data['stats']):
         story.append(para(' | '.join(str(v) if v is not None else 'Sem dados' for v in evidence),'ExecSmall'))
     archive_note = 'Pré-visualização não arquivada. Utilize Gerar, arquivar e descarregar PDF para conservar o documento.' if report_id == 'Pré-visualização' else 'O arquivo conserva este PDF e os filtros utilizados, mesmo que os registos sejam corrigidos posteriormente.'
     story.append(para(f'Identificador: {report_id}. Responsável pela geração: {actor or "Utilizador autenticado"}. {archive_note}','ExecSmall'))

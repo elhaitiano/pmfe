@@ -1,3 +1,6 @@
+from .kpi_catalogue import export_rows as catalogue_rows
+from dataclasses import replace
+from .certificates import export_rows as certificate_rows
 """Read-only participation report using the current registry and verified attendance."""
 from collections import defaultdict
 from io import BytesIO
@@ -45,11 +48,14 @@ def analyse(data):
     if data.get('catalogue_search'):
         rows = rows.filter(title__icontains=data['catalogue_search'])
     start, end, label = bounds(data)
+    certification_rows=list(rows)
     rows = period_rows(rows,start,end,data.get('time_basis'))
     employees = list(employees.order_by('name', 'pk'))
     rows = list(rows.order_by('start', 'pk'))
     scope = Scope({k:v for k,v in data.items() if k not in ('q', 'state')}, label, 'training_start' if data.get('time_basis')=='training_start' else 'session_date', 'current_registry', start, end)
     shared = statistics(rows, employees, scope)
+    from .certificates import summary as certification_summary
+    shared['certification']=certification_summary(certification_rows,end,start)
     kpi = shared['kpi_summary']
     grouped = defaultdict(list)
     for row in rows:
@@ -75,16 +81,18 @@ def analyse(data):
     for row in directions.values():
         row['not_participated'] = row['total'] - row['participated']
         ds = statistics([r for r in rows if (r.employee.direction or 'Direcção por confirmar') == row['direction']],
-            [e for e in employees if (e.direction or 'Direcção por confirmar') == row['direction']], scope)
+            [e for e in employees if (e.direction or 'Direcção por confirmar') == row['direction']], replace(scope,filters={**scope.filters,'reference':None},reference='current_registry'))
         row['rate'] = ds['kpi_summary'].metrics['coverage'].value
         row['evidence_status'] = STATUS[ds['kpi_summary'].metrics['coverage'].status]
-        row['tone'] = 'high' if row['rate'] >= 75 else 'medium' if row['rate'] >= 40 else 'low'
+        row['tone'] = 'high' if row['rate'] is not None and row['rate'] >= 75 else 'medium' if row['rate'] is not None and row['rate'] >= 40 else 'low'
+    from .aggregate_privacy import restricted
+    protected=restricted(certification_rows,employees,kpi)
     universe = len(nominal)
     participated = sum(r['participated'] for r in nominal)
-    return dict(universe=universe, participated=participated, not_participated=universe-participated,
-        outcomes=shared['outcomes'], completed=sum(r['completed'] for r in nominal), rate=kpi.metrics['coverage'].value, kpi_summary=kpi, kpi_details=shared['kpi_details'],
+    return dict(privacy_restricted=protected,universe=universe, participated=participated, not_participated=universe-participated,
+        catalogue_stats=shared,certification=shared['certification'], outcomes=shared['outcomes'], completed=sum(r['completed'] for r in nominal), rate=kpi.metrics['coverage'].value, kpi_summary=kpi, kpi_details=shared['kpi_details'],
         course_label=str(data.get('course') or 'Todas as formações'),
-        denominator='Universo: funcionários cadastrados nas direcções seleccionadas.',
+        denominator='Referência da cobertura: '+kpi.scope.reference+'. O total da lista representa o cadastro actual.',
         historical_direction='A direcção é a actual, não a direcção histórica da formação.',
         participations=len(rows), distinct_courses=len({('course', r.course_id) if r.course_id else ('title', r.title.casefold()) for r in rows}),
         operational_summary='Conclusão confirmada: decisão explícita validada em coorte terminada. Presença não determina conclusão, aprovação ou certificado.'), list(directions.values()), nominal
@@ -103,6 +111,9 @@ def selected_people(rows, state='', query='', direction=None):
 
 
 def export_report(kind, report, directions, nominal):
+    if report.get('privacy_restricted'):
+        from .aggregate_privacy import export
+        return export(kind)
     headers = ['Direcção', 'Técnicos', 'Com presença', 'Sem presença confirmada', 'Conclusão confirmada', 'Taxa (%)', 'Estado da cobertura']
     table = [[r[k] for k in ('direction', 'total', 'participated', 'not_participated', 'completed', 'rate', 'evidence_status')] for r in directions]
     stream = BytesIO()
@@ -124,7 +135,7 @@ def export_report(kind, report, directions, nominal):
         for row in nominal:
             append(people, [row[k] for k in ('number', 'name', 'direction', 'category', 'status')])
         evidence = book.create_sheet('Critérios e indicadores')
-        for values in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']):
+        for values in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']) + certificate_rows(report['certification']) + catalogue_rows(report['catalogue_stats']):
             append(evidence, values)
         for ws in book:
             ws.freeze_panes = 'A2'
@@ -147,7 +158,7 @@ def export_report(kind, report, directions, nominal):
         t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#dceef2')), ('VALIGN',(0,0),(-1,-1),'TOP'), ('GRID',(0,0),(-1,-1),.4,colors.lightgrey)]))
         content.append(t)
         content.append(Spacer(1, 12))
-        for evidence in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']):
+        for evidence in export_rows(report['kpi_summary']) + outcome_rows(report['outcomes']) + certificate_rows(report['certification']) + catalogue_rows(report['catalogue_stats']):
             content.append(para(' · '.join(str(v) if v is not None else 'Sem dados' for v in evidence)))
         SimpleDocTemplate(stream, pagesize=landscape(A4), rightMargin=30, leftMargin=30).build(content)
         mime = 'application/pdf'
@@ -207,4 +218,7 @@ def index(request):
         excel_url=url(export='xlsx'), pdf_url=url(export='pdf'))
     for key,state in [('nominal_url',''),('participants_url','participated'),('absent_url','absent'),('no_training_url','no_training')]:
         context[key] = url(detail_state=state, detail_direction=None, page=None)
+    if report['privacy_restricted']:
+        from .aggregate_privacy import page
+        return page(request,context)
     return render(request, 'participation_executive.html', context)

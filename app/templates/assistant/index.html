@@ -19,7 +19,7 @@ ADMINISTRAR ASSISTENTE{% endblock %}{% block extra_styles %}
     <p class="plan-note">
       Os guias publicados ficam disponíveis na próxima abertura da ajuda. Os dados são guardados na base e incluídos na cópia de segurança; actualizar o código não substitui estes conteúdos.
     </p>
-    <div class="plan-actions">
+    <div class="plan-actions"><a class="gf-btn alt" href="{% url 'user_manual' %}">Manual de Utilização</a>
       <a class="gf-btn" href="{% url 'assistant_create' %}">Novo assunto</a><a class="gf-btn alt" href="{% url 'home' %}">Voltar à plataforma</a>
     </div>
   </section>

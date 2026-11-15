@@ -161,7 +161,7 @@ class WorkflowTests(TestCase):
                         {'certificate_delivery_date':future}, {'certified':'false'},
                         {'status':'Em Curso'}, {'status':'Planeado', 'attendance':0}]:
             with self.subTest(changes=changes):
-                self.assertEqual(self.client.post(url,self.payload(**changes)).status_code,200)
+                self.assertEqual(self.client.post(url,self.payload(**{'certified':'true','certificate_delivery_date':'2025-01-05',**changes})).status_code,200)
                 self.assertFalse(Training.objects.exists())
         response = self.client.post(url,self.payload(certified='unknown',certificate_delivery_date='',grade=''))
         self.assertEqual(response.status_code,302)
@@ -201,7 +201,7 @@ class WorkflowTests(TestCase):
     def payload(self, **changes):
         values = {'title': 'Segurança', 'area': 'Operações', 'start': '2025-01-01',
                   'end': '2025-01-03', 'days': 3, 'hours_per_day': '7.5',
-                  'attendance': 2, 'grade': '0', 'status': 'Concluído', 'certified': 'true', 'certificate_delivery_date':'2025-01-05', 'result':'Pendente'}
+                  'attendance': 2, 'grade': '0', 'status': 'Concluído', 'certified': 'unknown', 'certificate_delivery_date':'', 'result':'Pendente'}
         return values | changes
 
     def create_training(self):

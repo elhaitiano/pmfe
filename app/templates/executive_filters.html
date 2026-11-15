@@ -17,5 +17,5 @@
   <a class="exec-reset" href="{{ request.path }}">Limpar</a>
 </form>
 <p class="exec-scope">
-  <strong>{{ period_label }}</strong> · {{ selected.direction|default:'Todas as direcções' }} · {{ selected.area|default:'Todas as áreas' }} · {{ selected.status|default:'Todas as situações' }}<br>Actualizado em {{ generated_at|date:'d/m/Y H:i' }} · Horas agregadas de participantes, por data de início da formação.
+  <strong>{{ period_label }}</strong> · {{ selected.direction|default:'Todas as direcções' }} · {{ selected.area|default:'Todas as áreas' }} · {{ selected.status|default:'Todas as situações' }}<br>Actualizado em {{ generated_at|date:'d/m/Y H:i' }} · Horas-participante · {% if selected.time_basis == 'training_start' %}histórico agregado por início{% else %}datas reais das sessões; histórico não repartido separado{% endif %}.
 </p>

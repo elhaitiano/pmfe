@@ -1,7 +1,7 @@
 {% if kpi_details %}
 <details class="kpi-evidence"{% if expanded %} open{% endif %}>
   <summary>Critérios dos cálculos · horas verificadas e dados excluídos</summary>
-  <p>Referência: {% if kpi_summary.scope.reference == 'current_registry' %}cadastro actual{% else %}pessoas seleccionadas{% endif %}. {{ kpi_summary.scope.period }}.
+  <p>Referência: {% if kpi_summary.scope.reference == 'current_registry' %}cadastro actual{% elif kpi_summary.scope.reference == 'selected_people' %}pessoas seleccionadas{% else %}{{ kpi_summary.scope.reference }}{% endif %}. {{ kpi_summary.scope.period }}.
     {% if kpi_summary.scope.time_basis == 'training_start' %}Selecção pela data de início da formação.{% endif %}
     {% if kpi_summary.scope.time_basis == 'session_date' %}Selecção pelas datas reais das sessões. Histórico sem datas não é repartido pelos meses.{% else %}Leitura agregada: datas diárias apenas quando registadas.{% endif %}
     Os totais parciais não incluem valores desconhecidos.</p>
@@ -27,3 +27,13 @@
 <p>Aproveitamento: {{ stats.outcomes.approval_rate|default_if_none:'Sem dados' }}% · {{ stats.outcomes.approved }} / {{ stats.outcomes.result_count }} resultados determinados; {{ stats.outcomes.result_pending }} pendentes.</p>
 <p>Logística: {{ stats.outcomes.logistics|default_if_none:'Sem dados' }} /5 · {{ stats.outcomes.logistics_percent|default_if_none:'Sem dados' }}% · {{ stats.outcomes.logistics_count }} respostas. {{ stats.outcomes.logistics_excluded_groups }} agregados excluídos (sobreposição, filtro parcial ou peso desconhecido).</p></details>
 {% endif %}
+
+{% if stats.certification %}<details class="kpi-evidence"><summary>Certificação · obtenção, emissão e entrega</summary>
+<p>Coorte: obtenções no período seleccionado; estados à data {{ stats.certification.reference_date|date:'d/m/Y' }}. Eventos mensais são apresentados separadamente.</p>
+<p>Estado: {{ stats.certification.status }}.</p><p>{{ stats.certification.obtained }} obtidos · {{ stats.certification.issued }} emitidos · {{ stats.certification.delivered }} entregues · {{ stats.certification.delivery_people }} pessoas.</p>
+<p>Emissão: {{ stats.certification.issue_rate|default_if_none:'Sem dados' }}% ({{ stats.certification.issued }}/{{ stats.certification.obtained }}). Entrega: {{ stats.certification.delivery_rate|default_if_none:'Sem dados' }}% ({{ stats.certification.delivered }}/{{ stats.certification.issued }}).</p>
+<p>Por emitir: {{ stats.certification.not_issued }}; emissão desconhecida: {{ stats.certification.issued_unknown }}. Por entregar: {{ stats.certification.not_delivered }}; entrega desconhecida: {{ stats.certification.delivered_unknown }}.</p>
+<p>{{ stats.certification.excluded }} excluídos; {{ stats.certification.inconsistent }} históricos inconsistentes. Eventos no período: {{ stats.certification.issue_events }} emissões e {{ stats.certification.delivery_events }} entregas.</p>
+<p>{{ stats.certification.classification }}</p></details>{% endif %}
+
+{% if kpi_summary.incomplete_registry %}<p>Cadastro actual — por confirmar: direcção {{ kpi_summary.incomplete_registry.direction }}, categoria {{ kpi_summary.incomplete_registry.category }}, género {{ kpi_summary.incomplete_registry.gender }}. Não representa a situação histórica.</p>{% endif %}
