@@ -1,6 +1,6 @@
 {% load static navigation %}
 <!doctype html>
-<html lang="pt" class="epal-light">
+<html lang="pt" class="dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -16,13 +16,12 @@
     {% endblock %}
     <link rel="stylesheet" href="{% static 'pmf/entry-loader.css' %}">
     <script>try{var epalStarted=Number(sessionStorage.getItem('pmf.entry.started'));if(epalStarted && Date.now()-epalStarted<30000){document.documentElement.classList.add('epal-entering');setTimeout(function(){document.documentElement.classList.remove('epal-entering');},8000);}else{sessionStorage.removeItem('pmf.entry.started');}}catch(e){}</script>
-  <link rel="stylesheet" href="{% static 'pmf/epal-theme.css' %}?v=epal-1">
-</head>
+  </head>
   <body class="water-bg">
     {% include 'entry_loader.html' with entry_page='platform' %}
     <aside class="fixed left-0 top-0 h-screen w-[280px] border-r border-white/15 bg-black/20 backdrop-blur-3xl z-40 flex flex-col" id="mainSidebar">
       <div class="p-6 border-b border-white/10 text-center" id="sidebarProfilePanel">
-        <img alt="EPAL" class="mx-auto w-[150px] max-w-[82%] h-auto object-contain " src="/static/pmf/epal-identidade.png"/>
+        <img alt="EPAL" class="mx-auto w-[150px] max-w-[82%] h-auto object-contain drop-shadow-[0_0_18px_rgba(0,174,255,.20)]" src="/static/pmf/epal-sidebar.png"/>
         <div class="mt-4 text-[11px] uppercase tracking-[.24em] text-secondary font-black">
           PMF
         </div>
@@ -117,7 +116,7 @@
       {% endblock %}
     </main>
     <script src="{% static 'pmf/app.js' %}" defer></script>
-
+    <script src="{% static 'pmf/entry-water.js' %}" defer></script>
     <script src="{% static 'pmf/entry-loader.js' %}" defer></script>
     {% if user.is_authenticated %}
     {% include 'help_assistant.html' %}

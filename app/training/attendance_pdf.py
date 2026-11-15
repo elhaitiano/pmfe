@@ -9,15 +9,19 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Paragraph
 from .analytics import format_phone
 
+FONT_PATH=Path(reportlab.__file__).parent/'fonts'
+for name,file in [('Attendance','Vera.ttf'),('AttendanceBold','VeraBd.ttf')]:
+    if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(FONT_PATH/file)))
 W,H=landscape(A4);LEFT=7*mm;WIDTH=W-14*mm
-BLUE=colors.HexColor('#164777');LINE=colors.HexColor('#5b6b7f')
-BODY=ParagraphStyle('AttendanceCell',fontName='Helvetica',fontSize=7.2,leading=9,textColor=colors.black,splitLongWords=True)
-HEAD=ParagraphStyle('AttendanceHead',parent=BODY,fontName='Helvetica-Bold',textColor=colors.white,fontSize=7.8,leading=10)
-TITLE=ParagraphStyle('AttendanceTitle',parent=BODY,fontName='Helvetica-Bold',fontSize=9,leading=12)
+BLUE=colors.HexColor('#173b63');LINE=colors.HexColor('#63748b')
+BODY=ParagraphStyle('AttendanceCell',fontName='Attendance',fontSize=7.2,leading=9,textColor=colors.black,splitLongWords=True)
+HEAD=ParagraphStyle('AttendanceHead',parent=BODY,fontName='AttendanceBold',textColor=colors.white,fontSize=7.8,leading=10)
+TITLE=ParagraphStyle('AttendanceTitle',parent=BODY,fontName='AttendanceBold',fontSize=9,leading=12)
 META=ParagraphStyle('AttendanceMeta',parent=BODY,fontSize=8.5,leading=11)
 COLS=[8,18,53,29,32,25,40,17,23,38]
 COLS=[x/sum(COLS)*WIDTH for x in COLS]
@@ -57,7 +61,7 @@ def build_attendance(group,day,enrollments):
         for file,x,width in [('attendance-suez.png',LEFT,30*mm),('attendance-proagua.png',LEFT+34*mm,23*mm)]:
             logo=settings.BASE_DIR/'static/pmf'/file
             if logo.exists():c.drawImage(str(logo),x,H-18*mm,width=width,height=10*mm,preserveAspectRatio=True,anchor='c',mask='auto')
-        c.setFillColor(BLUE);c.setFont('Helvetica-Bold',13);c.drawRightString(W-LEFT,H-13*mm,'PROÁGUA - LISTA DE PRESENÇAS - FORMAÇÃO')
+        c.setFillColor(BLUE);c.setFont('AttendanceBold',13);c.drawRightString(W-LEFT,H-13*mm,'PROÁGUA - LISTA DE PRESENÇAS - FORMAÇÃO')
         c.setStrokeColor(BLUE);c.line(LEFT,H-23*mm,W-LEFT,H-23*mm)
         y=H-28*mm
         draw_para(c,p(f'Data: {day:%d/%m/%Y} | Horário: Início: {group.start_time:%H:%M} | Fim: {group.end_time:%H:%M}',META),LEFT,y,WIDTH*.38-4*mm)
@@ -78,12 +82,12 @@ def build_attendance(group,day,enrollments):
                 c.rect(x,y-height,width,height,fill=0,stroke=1)
                 draw_para(c,cell,x+1.5*mm,y-2*mm,width-3*mm);x+=width
             y-=height
-        c.setFillColor(BLUE);c.setFont('Helvetica',7)
+        c.setFillColor(BLUE);c.setFont('Attendance',7)
         c.drawString(LEFT,y-5*mm,'N.º Mec. = número mecanográfico — código de identificação do colaborador da EPAL.')
-        c.setFont('Helvetica-Bold',8)
+        c.setFont('AttendanceBold',8)
         c.drawString(LEFT+15*mm,22*mm,'Formador(es)');c.drawString(W*.59,22*mm,'Responsável, se aplicável')
-        c.setFont('Helvetica',7);c.drawString(LEFT+15*mm,17*mm,group.trainer[:70])
+        c.setFont('Attendance',7);c.drawString(LEFT+15*mm,17*mm,group.trainer[:70])
         c.setStrokeColor(LINE);c.line(LEFT+15*mm,11*mm,W*.44,11*mm);c.line(W*.59,11*mm,W-18*mm,11*mm)
-        c.setFont('Helvetica',7);c.drawRightString(W-LEFT,5*mm,f'Pág. {page_num}/{len(pages)}')
+        c.setFont('Attendance',7);c.drawRightString(W-LEFT,5*mm,f'Pág. {page_num}/{len(pages)}')
         c.showPage()
     c.save();return buffer.getvalue()

@@ -37,7 +37,7 @@ class WorkflowTests(TestCase):
         self.assertContains(response, 'Segurança')
         printed = self.client.get(reverse('employee_print', args=[self.employee.pk]))
         self.assertContains(printed, reverse('employee_data', args=[self.employee.pk]))
-        self.assertContains(printed, 'epal-identidade.png')
+        self.assertContains(printed, 'epal-oficial.png')
 
     def test_print_layout_preserves_platform_details(self):
         self.client.force_login(self.admin)
