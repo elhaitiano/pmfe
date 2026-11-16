@@ -3,6 +3,7 @@ import hashlib, json, unicodedata
 from datetime import date, timedelta
 from decimal import Decimal
 from django import forms
+from .domains import domain_choices
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import signing
@@ -32,6 +33,8 @@ class CourseForm(StyledModelForm):
         fields = ['code','title','area','contents','default_days','default_hours','validation_status','active']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['area'] = forms.ChoiceField(label='Domínio de competências', required=False,
+            choices=domain_choices(self.instance.area))
         self.fields['validation_status'].required = False
         if self.instance.pk and self.instance.code:
             self.fields['code'].disabled = True

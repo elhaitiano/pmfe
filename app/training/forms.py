@@ -1,4 +1,5 @@
 from django import forms
+from .domains import domain_choices
 from .models import Employee, Training
 from .widgets import numeric_text_widgets, date_widgets
 
@@ -67,6 +68,9 @@ class TrainingForm(StyledModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial['certified'] = 'true' if self.instance.certified is True else 'false' if self.instance.certified is False else 'unknown'
+        if 'area' in self.fields:
+            self.fields['area'] = forms.ChoiceField(label='Domínio de competências', required=False,
+                choices=domain_choices(self.instance.area))
         if not self.instance.pk:
             self.initial['status'] = 'Planeado'
         if self.instance.group_id:

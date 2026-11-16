@@ -1,6 +1,7 @@
 """Reviewable, all-or-nothing historical import. Preview never writes model rows."""
 import json
 import sqlite3
+from .domains import normalize_area
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -113,6 +114,8 @@ def prepare_training(record, employee, report):
     if v.get('area') and normalized(v['area']) == normalized(v.get('trainer')):
         add_issue(report, record, 'Categoria igual ao nome do formador; conservada apenas na origem.', 'warning')
         v['area'] = ''
+    # Source categories are grouped into the four institutional domains.
+    v['area'] = normalize_area(v.get('area', ''))
     if v.get('provider', '').isdigit():
         add_issue(report, record, 'Entidade formadora numérica; conservada apenas na origem.', 'warning')
         v['provider'] = ''

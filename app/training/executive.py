@@ -1,5 +1,6 @@
 """Period selection, provenance and drill-downs for the executive centre."""
 import calendar
+from .domains import normalize_area
 from datetime import date, timedelta
 from decimal import Decimal
 from urllib.parse import urlencode
@@ -97,7 +98,7 @@ def base_query(data):
             employees=employees.filter(**{key:data[key]})
             rows=rows.filter(**{'employee__'+key:data[key]})
     for key in ('area','status'):
-        if data.get(key):rows=rows.filter(**{key:data[key]})
+        if data.get(key):rows=rows.filter(**{key:normalize_area(data[key]) if key=='area' else data[key]})
     return rows,employees
 
 

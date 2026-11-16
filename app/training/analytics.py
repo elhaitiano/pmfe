@@ -36,6 +36,10 @@ def statistics(rows, employees=None, scope=None):
         'certificates_hr': sum(row.certificate_hr_delivered is True for row in rows),
         'certificates_pending': sum(row.certified is None for row in rows),
         'certificates_not_delivered': sum(row.certified is False for row in rows),
+        # Printed record contract: participations with verified hours and confirmed deliveries.
+        'verified_hours_records': len(summary.hours_by_participation),
+        'certificates_reported': sum(row.certified is True for row in rows),
+        'certified_hours_records': 0, 'certified_hours': None,
         'certification': certificate_indicators(rows, scope.date_from if scope else None, scope.date_to if scope else None),
         'coverage_reference': reference_coverage(summary.metrics['people'].value or 0, len(reference), scope) if employees is not None else None,
         'planned_count': sum(row.status == 'Planeado' for row in rows),
@@ -121,5 +125,26 @@ def registration_header_fields(employee):
         ('Idade', fields['Idade']),
         ('Género', employee.gender),
         ('Tel.', ' | '.join(phone or '—' for phone in phones)),
+        ('E-mail', employee.email),
+    ]
+
+
+def print_header_fields(employee):
+    """Registration header of the printed record, in the order of the official sheet.
+
+    The last pair (E-mail) is shown at full width by print.html.
+    """
+    fields = dict(profile_fields(employee))
+    return [
+        ('Nº Mec.', employee.number),
+        ('Género', employee.gender),
+        ('Categoria', employee.category),
+        ('Nº BI', employee.identity_number),
+        ('Função', employee.function),
+        ('Idade', fields['Idade']),
+        ('Direcção', employee.direction),
+        ('Tel. 1', format_phone(employee.phone)),
+        ('Antiguidade', fields['Antiguidade']),
+        ('Tel. 2', format_phone((employee.source_data or {}).get('Telefone 2', ''))),
         ('E-mail', employee.email),
     ]

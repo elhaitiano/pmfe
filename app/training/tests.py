@@ -52,9 +52,11 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print', args=[employee.pk]))
         self.assertEqual(printed.context['print_name'], 'Ana Exemplo')
         fields = dict(printed.context['print_fields'])
-        self.assertEqual(len(fields), 9)
-        self.assertEqual(fields['N.º Mecanográfico'], employee.number)
-        self.assertEqual(fields['Tel.'], '923 255 256 | 924 123 456')
+        # Official sheet: 11 fields in the order of the reference model, e-mail last.
+        self.assertEqual(list(fields), ['Nº Mec.', 'Género', 'Categoria', 'Nº BI', 'Função', 'Idade',
+                                        'Direcção', 'Tel. 1', 'Antiguidade', 'Tel. 2', 'E-mail'])
+        self.assertEqual(fields['Nº Mec.'], employee.number)
+        self.assertEqual((fields['Tel. 1'], fields['Tel. 2']), ('923 255 256', '924 123 456'))
         for label in ['N.º INSS', 'Estado civil', 'Empresa', 'Centro de Custo', 'Área Alocada',
                       'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
             self.assertNotIn(label, fields)
@@ -181,9 +183,9 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print',args=[self.employee.pk]))
         self.assertEqual(profile.context['stats'], printed.context['stats'])
         self.assertEqual(profile.context['distribution'], printed.context['distribution'])
-        self.assertContains(printed, 'registration-function')
+        self.assertContains(printed, '1. HORAS FREQUENTADAS')
         self.assertNotContains(printed, 'Centro de Custo')
-        self.assertContains(printed, 'por confirmar')
+        self.assertNotContains(printed, 'Emissão não documentada')
 
     def test_profile_has_recent_five_and_history_keeps_all(self):
         self.client.force_login(self.reader)
@@ -199,13 +201,13 @@ class WorkflowTests(TestCase):
         self.assertNotContains(history, 'Conquistas')
 
     def payload(self, **changes):
-        values = {'title': 'Segurança', 'area': 'Operações', 'start': '2025-01-01',
+        values = {'title': 'Segurança', 'area': 'Segurança', 'start': '2025-01-01',
                   'end': '2025-01-03', 'days': 3, 'hours_per_day': '7.5',
                   'attendance': 2, 'grade': '0', 'status': 'Concluído', 'certified': 'true', 'certificate_delivery_date':'2025-01-05', 'result':'Pendente'}
         return values | changes
 
     def create_training(self):
-        return Training.objects.create(employee=self.employee, title='Segurança', area='Operações',
+        return Training.objects.create(employee=self.employee, title='Segurança', area='Segurança',
             start=date(2025, 1, 1), end=date(2025, 1, 3), days=3, hours_per_day=Decimal('7.5'), attendance=2, attendance_confirmed=True)
 
     def test_authentication_and_logout(self):
@@ -233,7 +235,7 @@ class WorkflowTests(TestCase):
         Training.objects.create(employee=self.employee, title='Outra área', area='Gestão',
             start=date(2024, 1, 1), end=date(2024, 1, 1), days=1, hours_per_day=8, attendance=1)
         self.client.force_login(self.admin)
-        response = self.client.get(reverse('employee_detail', args=[self.employee.pk]), {'year': '2025', 'area': 'Operações'})
+        response = self.client.get(reverse('employee_detail', args=[self.employee.pk]), {'year': '2025', 'area': 'Segurança'})
         self.assertEqual(response.context['stats']['total'], 1)
         self.assertIsNone(response.context['stats']['hours'])
         self.assertEqual(response.context['employee'].number, '0012')

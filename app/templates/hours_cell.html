@@ -1,0 +1,1 @@
+{% with hours=t.verified_hours %}{% if hours is not None %}{{ hours|floatformat:'-2' }} h{% else %}&mdash;{% endif %}{% endwith %}

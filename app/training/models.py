@@ -213,6 +213,8 @@ class Training(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
+        from .domains import normalize_area
+        self.area = normalize_area(self.area)
         if self.group_id and self.course_id and self.group.course_id != self.course_id:
             raise ValidationError({'course': 'A acção deve corresponder à turma.'})
         if self.pk:
@@ -365,6 +367,8 @@ class Course(models.Model):
 
     def save(self,*args,**kwargs):
         import unicodedata
+        from .domains import normalize_area
+        self.area = normalize_area(self.area)
         self.code = self.code.strip().upper()
         self.key=' '.join(unicodedata.normalize('NFKC',self.title).casefold().split())
         super().save(*args,**kwargs)
@@ -396,6 +400,11 @@ class TrainingGroup(models.Model):
     state = models.CharField(max_length=20, default='Planeada', choices=[(s,s) for s in ['Planeada','Em Curso','Concluída','Cancelada']])
     revision = models.PositiveIntegerField(default=1)
     created = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        from .domains import normalize_area
+        self.area = normalize_area(self.area)
+        return super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['-start','-pk']
         constraints = [models.UniqueConstraint(fields=['course','number'], name='unique_course_group'), models.CheckConstraint(condition=models.Q(number__gte=1), name='positive_group_number')]

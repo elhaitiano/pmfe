@@ -4,6 +4,7 @@ import zipfile
 import uuid
 import sqlite3
 import tempfile
+from .domains import normalize_area
 from functools import wraps
 from pathlib import Path
 from django.conf import settings
@@ -22,7 +23,7 @@ from django.views.decorators.http import require_POST
 from .forms import EmployeeForm, TrainingForm
 from .models import AuditEvent, Employee, Training
 from .kpi_service import Scope
-from .analytics import statistics, distribution, profile_fields, format_phone, years_since, registration_header_fields
+from .analytics import statistics, distribution, profile_fields, format_phone, years_since, registration_header_fields, print_header_fields
 
 
 class LocalLoginView(LoginView):
@@ -147,7 +148,7 @@ def employee_detail(request, pk):
     if year.isdecimal() and len(year) == 4 and int(year)>0:
         rows = rows.filter(start__year__lte=int(year), end__year__gte=int(year))
     if area:
-        rows = rows.filter(area=area)
+        rows = rows.filter(area=normalize_area(area))
     graded = [t for t in reversed(list(rows)) if t.grade is not None]
     dots = [{'x': round(25 + i * 260 / max(len(graded) - 1, 1)),
              'y': round(130 - float(t.grade) * 6), 'title': t.title, 'grade': t.grade}
@@ -225,7 +226,7 @@ def employee_print(request, pk):
     return render(request, 'print.html', {'employee': employee, 'trainings': rows,
         'stats': stats, 'today': timezone.localdate(), 'distribution': distribution(rows),
         'print_name': ' '.join(employee.name.split()[::max(1, len(employee.name.split()) - 1)]),
-        'print_fields': registration_header_fields(employee)})
+        'print_fields': print_header_fields(employee)})
 
 
 @login_required

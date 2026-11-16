@@ -6,7 +6,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
 {% endblock %}
 {% block content %}
 <div class="executive">
-{% include 'kpi_details.html' %}
+
   <section class="exec-hero">
     <div class="exec-badge-live">
       <span class="pulse-ring"></span>Relatórios institucionais e arquivo
@@ -92,7 +92,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
           {% for item in archive_page %}
           <tr>
             <td>
-              {{ item.title }}<small>{{ item.filters.area|default:'Todas as áreas' }}</small>
+              {{ item.title }}<small>{{ item.filters.area|default:'Todos os domínios' }}</small>
             </td>
             <td>
               {{ item.created|date:'d/m/Y H:i' }}

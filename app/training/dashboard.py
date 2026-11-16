@@ -1,4 +1,5 @@
 """Executive indicators derived from the same participation records as the dossiers."""
+from .domains import normalize_area
 from collections import Counter, defaultdict
 from decimal import Decimal
 import csv
@@ -17,14 +18,19 @@ from .models import Employee, Training
 class DashboardFilters(forms.Form):
     year = forms.ChoiceField(label='Ano de início', required=False)
     direction = forms.ChoiceField(label='Direcção', required=False)
-    area = forms.ChoiceField(label='Área de formação', required=False)
+    area = forms.ChoiceField(label='Domínio de competências', required=False)
     status = forms.ChoiceField(label='Situação', required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['year'].choices = [('', 'Todos os anos')] + [(str(y), str(y)) for date in Training.objects.dates('start', 'year', order='DESC') for y in [date.year]]
         self.fields['direction'].choices = [('', 'Todas as direcções')] + [(x, x) for x in Employee.objects.exclude(direction='').values_list('direction', flat=True).distinct().order_by('direction')]
-        self.fields['area'].choices = [('', 'Todas as áreas')] + [(x, x) for x in Training.objects.exclude(area='').values_list('area', flat=True).distinct().order_by('area')]
+        self.fields['area'].choices = [('', 'Todos os domínios')] + [(x, x) for x in Training.objects.exclude(area='').values_list('area', flat=True).distinct().order_by('area')]
+        # Links and bookmarks that still use an old area name keep working.
+        if self.is_bound and self.data.get('area'):
+            data = self.data.copy()
+            data['area'] = normalize_area(data['area'])
+            self.data = data
         self.fields['status'].choices = [('', 'Todas as situações')] + list(Training._meta.get_field('status').choices)
 
 

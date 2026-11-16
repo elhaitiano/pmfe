@@ -6,7 +6,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
 <link rel="stylesheet" href="{% static 'pmf/ficha-original.css' %}">
 {% endblock %}
 {% block content %}
-{% include 'kpi_details.html' with kpi_details=stats.kpi_details kpi_summary=stats.kpi_summary %}
+
 <!-- <p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p> -->
 
 {% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
