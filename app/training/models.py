@@ -72,6 +72,8 @@ class Employee(models.Model):
 
 
 class Training(models.Model):
+    certificate_obtained = models.BooleanField('Certificado obtido', null=True, blank=True, default=None)
+    certificate_obtained_date = models.DateField('Data de obtenção', null=True, blank=True)
     certificate_issued = models.BooleanField('Certificado emitido', null=True, blank=True, default=None)
     certificate_issue_date = models.DateField('Data de emissão', null=True, blank=True)
     certificate_declaration = models.TextField('Declaração sobre o certificado', blank=True)
@@ -154,7 +156,8 @@ class Training(models.Model):
             if original and original != self.source_key:
                 errors['source_key'] = 'O identificador histórico não pode ser alterado.'
 
-        for date_field, flag in [('certificate_issue_date', 'certificate_issued'),
+        for date_field, flag in [('certificate_obtained_date', 'certificate_obtained'),
+                                 ('certificate_issue_date', 'certificate_issued'),
                                  ('certificate_hr_delivery_date', 'certificate_hr_delivered')]:
             value = getattr(self, date_field)
             if value and getattr(self, flag) is not True:
@@ -506,3 +509,41 @@ class AttendanceImport(models.Model):
     changes = models.JSONField()
     class Meta:
         constraints = [models.UniqueConstraint(fields=['group','fingerprint'], name='unique_logical_attendance_import')]
+
+
+class WorkforceReference(models.Model):
+    """Reference headcount supplied by DRH for one period and one exact scope.
+
+    Empty direction/category/gender mean "all". A reference only serves as the
+    coverage denominator for the same period and the same scope.
+    """
+    period_start = models.DateField('Início do período')
+    period_end = models.DateField('Fim do período')
+    direction = models.CharField('Direcção', max_length=150, blank=True)
+    category = models.CharField('Categoria', max_length=150, blank=True)
+    gender = models.CharField('Género', max_length=30, blank=True)
+    headcount = models.PositiveIntegerField('Efectivo de referência')
+    responsible = models.CharField('Responsável', max_length=150)
+    source = models.CharField('Origem / observação', max_length=255, blank=True)
+    recorded_at = models.DateTimeField('Registado em', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Efectivo de referência DRH'
+        verbose_name_plural = 'Efectivos de referência DRH'
+        ordering = ['-period_start', 'direction', 'category', 'gender']
+        constraints = [models.UniqueConstraint(
+            fields=['period_start', 'period_end', 'direction', 'category', 'gender'],
+            name='unique_workforce_reference_scope')]
+
+    def clean(self):
+        errors = {}
+        if self.period_start and self.period_end and self.period_end < self.period_start:
+            errors['period_end'] = 'O fim do período não pode anteceder o início.'
+        if self.headcount is not None and self.headcount <= 0:
+            errors['headcount'] = 'Indique um efectivo positivo.'
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self):
+        scope = ' · '.join(x for x in (self.direction, self.category, self.gender) if x) or 'Toda a EPAL'
+        return f'{self.period_start:%d/%m/%Y}–{self.period_end:%d/%m/%Y} · {scope}: {self.headcount}'

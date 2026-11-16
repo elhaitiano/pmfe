@@ -190,7 +190,8 @@ def analyse(rows,employees,selected,start,end,label,base=None):
     data['locations']=len({r.location for r in rows if r.location})
     data['trainers']=len({r.trainer for r in rows if r.trainer})
     data['completion_rate']=data['stats']['outcomes']['completion_rate']
-    data['delivery_rate']=data['stats']['certificates']*100/len(rows) if rows else None
+    # KPI 11: delivered ÷ issued on the same set of issued certificates.
+    data['delivery_rate']=data['stats']['certification']['delivery_rate']['value']
     data['kpis'][4]['note'] += f" · H/D: {data['stats']['equivalent_days'] if data['stats']['equivalent_days'] is not None else 'Sem dados'} · Dias efectivos: {data['kpi_summary'].effective_days if data['kpi_summary'].effective_days is not None else 'Por verificar'}"
     data['main_kpis']=[data['kpis'][1],data['kpis'][5],{'label':'Média de desempenho','value':data['average_final'],'decimal':True,'suffix':'/20','note':f"{data['final_grades_count']} participações concluídas com nota final",'icon':'stars'},data['kpis'][4]]
     for item,color,icon in zip(data['main_kpis'],[COLORS[1],COLORS[0],COLORS[2],COLORS[3]],['groups','how_to_reg','stars','timelapse']):item.update(color=color,icon=icon)

@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from .models import Employee, Course, Competency, RoleProfile, AuditEvent, Trainer
+from .models import Employee, Course, Competency, RoleProfile, AuditEvent, Trainer, WorkforceReference
 
 
 class PMFAdminSite(AdminSite):
@@ -21,7 +21,8 @@ class PMFAdminSite(AdminSite):
     def get_app_list(self, request, app_label=None):
         apps = super().get_app_list(request, app_label)
         labels = {'Employee':'Trabalhadores', 'Course':'Catálogo de formação',
-                  'Competency':'Competências', 'RoleProfile':'Funções e regras RH', 'User':'Contas de utilizador'}
+                  'Competency':'Competências', 'RoleProfile':'Funções e regras RH', 'User':'Contas de utilizador',
+                  'WorkforceReference':'Efectivos de referência DRH'}
         for app in apps:
             app['name'] = 'Cadastros iniciais' if app['app_label'] == 'training' else 'Contas e acessos'
             for model in app['models']:
@@ -138,3 +139,13 @@ site.register(Employee,EmployeeAdmin)
 site.register(Course,CourseAdmin)
 site.register(Competency,CompetencyAdmin)
 site.register(RoleProfile,RoleAdmin)
+
+
+class WorkforceReferenceAdmin(ModelAdmin):
+    list_display = ('period_start', 'period_end', 'direction', 'category', 'gender', 'headcount', 'responsible', 'recorded_at')
+    list_filter = ('direction',)
+    readonly_fields = ('recorded_at',)
+    fields = ('period_start', 'period_end', 'direction', 'category', 'gender', 'headcount', 'responsible', 'source', 'recorded_at')
+
+
+site.register(WorkforceReference, WorkforceReferenceAdmin)

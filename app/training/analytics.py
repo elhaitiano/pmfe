@@ -6,6 +6,8 @@ from .kpi_service import Scope, aggregate_attendance
 from .kpi_reporting import describe_summary
 from .outcomes import outcomes
 from .daily_kpi import attendance_summary
+from .certification import certificate_indicators
+from .workforce import coverage as reference_coverage
 
 
 def statistics(rows, employees=None, scope=None):
@@ -34,6 +36,8 @@ def statistics(rows, employees=None, scope=None):
         'certificates_hr': sum(row.certificate_hr_delivered is True for row in rows),
         'certificates_pending': sum(row.certified is None for row in rows),
         'certificates_not_delivered': sum(row.certified is False for row in rows),
+        'certification': certificate_indicators(rows, scope.date_from if scope else None, scope.date_to if scope else None),
+        'coverage_reference': reference_coverage(summary.metrics['people'].value or 0, len(reference), scope) if employees is not None else None,
         'planned_count': sum(row.status == 'Planeado' for row in rows),
         'completed_count': sum(row.status == 'Concluído' for row in rows),
         'graded_count': academic['learning_count'],

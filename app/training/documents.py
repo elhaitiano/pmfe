@@ -67,6 +67,7 @@ def tri_state(label):
 
 
 class CertificateForm(StyledModelForm):
+    certificate_obtained = tri_state('Certificado obtido')
     certificate_issued = tri_state('Certificado emitido')
     certified = tri_state('Entrega confirmada ao participante')
     certificate_hr_delivered = tri_state('Entrega confirmada aos RH')
@@ -74,27 +75,30 @@ class CertificateForm(StyledModelForm):
 
     class Meta:
         model = Training
-        fields = ['certificate_issued', 'certificate_issue_date', 'certificate_reference',
+        fields = ['certificate_obtained', 'certificate_obtained_date',
+            'certificate_issued', 'certificate_issue_date', 'certificate_reference',
             'certificate_declaration', 'certificate_declared_by', 'certificate_declaration_source',
             'certificate_declaration_date', 'certified', 'certificate_delivery_date',
             'certificate_hr_delivered', 'certificate_hr_delivery_date']
         widgets = {name: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}) for name in
-            ['certificate_issue_date', 'certificate_declaration_date', 'certificate_delivery_date', 'certificate_hr_delivery_date']}
+            ['certificate_obtained_date', 'certificate_issue_date', 'certificate_declaration_date', 'certificate_delivery_date', 'certificate_hr_delivery_date']}
         widgets.update({name: forms.Textarea(attrs={'rows': 3}) for name in
             ['certificate_declaration', 'certificate_declaration_source']})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial['revision'] = self.instance.version
-        for name in ['certificate_issued', 'certified', 'certificate_hr_delivered']:
+        for name in ['certificate_obtained', 'certificate_issued', 'certified', 'certificate_hr_delivered']:
             value = getattr(self.instance, name)
             self.initial[name] = 'true' if value is True else 'false' if value is False else 'unknown'
         self.fields['certificate_declaration_date'].help_text = 'Data da declaração; não substitui a data efectiva de entrega.'
         self.fields['certificate_issue_date'].help_text = 'Deixe vazia quando não existir data comprovada.'
+        self.fields['certificate_obtained'].help_text = 'Confirmação explícita; não decorre da presença nem do resultado.'
 
     @property
     def design_groups(self):
         return [(title, [self[name] for name in names]) for title, names in [
+            ('Obtenção', ['certificate_obtained', 'certificate_obtained_date']),
             ('Emissão', ['certificate_issued', 'certificate_issue_date', 'certificate_reference']),
             ('Declaração e origem', ['certificate_declaration', 'certificate_declared_by',
                                    'certificate_declaration_source', 'certificate_declaration_date']),

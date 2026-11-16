@@ -102,6 +102,7 @@ def executive_data(rows, employees, year='', scope=None):
         kpis[index]['evidence_status'] = STATUS[summary.metrics[key].status]
     return {'kpi_summary': summary, 'kpi_details': stats['kpi_details'], 'stats': stats, 'kpis': kpis, 'directions_table': directions,
         'coverage': summary.metrics['coverage'].value,
+        'coverage_reference': stats.get('coverage_reference'),
         'average_final': academic['learning'],
         'final_grades_count': academic['learning_count'], 'evaluated': evaluated,
         'results': [{'label': x, 'value': results[x]} for x in ('Aprovado', 'Reprovado', 'Pendente', 'Não avaliado')],
