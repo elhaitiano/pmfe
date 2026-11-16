@@ -176,3 +176,7 @@ a:focus-visible,button:focus-visible{
 .kpi-evidence-scroll { overflow-x: auto; }
 .kpi-evidence table { width: 100%; border-collapse: collapse; text-align: left; }
 .kpi-evidence th, .kpi-evidence td { padding: 8px; border-bottom: 1px solid #94a3b833; vertical-align: top; }
+
+/* Administração e Definições: tool buttons wrap on small screens. */
+.ux-tool-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px}
+@media(max-width:700px){.ux-tool-grid{flex-direction:column}}

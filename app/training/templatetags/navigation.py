@@ -34,6 +34,7 @@ PAGE_LABELS = {
     'executive_explore': 'Análise detalhada', 'executive_reports': 'Relatórios executivos',
     'trainer_index': 'Formadores', 'trainer_create': 'Novo formador', 'trainer_edit': 'Editar formador',
     'import_preview': 'Importação de dados',
+    'ux_administration': 'Administração e Definições',
     'competency_index': 'Competências', 'competency_catalog': 'Catálogo de competências',
     'competency_create': 'Nova competência', 'competency_edit': 'Editar competência',
     'role_create': 'Nova função', 'role_edit': 'Editar função',

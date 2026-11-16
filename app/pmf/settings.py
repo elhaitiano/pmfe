@@ -33,7 +33,8 @@ TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates',
               'OPTIONS': {'context_processors': [
                   'django.template.context_processors.request',
                   'django.contrib.auth.context_processors.auth',
-                  'django.contrib.messages.context_processors.messages']}}]
+                  'django.contrib.messages.context_processors.messages',
+                  'training.admin_tools.navigation']}}]
 DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3',
                          'NAME': DATA_DIR / 'pmf.sqlite3', 'OPTIONS': {'timeout': 20}}}
 AUTH_PASSWORD_VALIDATORS = [

@@ -48,8 +48,8 @@
           <span class="material-symbols-outlined">support_agent</span>Gerir Assistente
         </a>
         {% endif %}
-        {% if user.is_superuser %}
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'admin:index' %}">
+        {% if ux_admin_visible %}
+        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'ux_administration' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% url 'ux_administration' %}" id="navAdministracao">
           <span class="material-symbols-outlined">admin_panel_settings</span>Administração e Definições
         </a>
         {% endif %}
