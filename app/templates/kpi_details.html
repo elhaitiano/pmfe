@@ -21,7 +21,7 @@
 {% endif %}
 
 {% if stats.outcomes %}
-<details class="kpi-evidence"><summary>Conclusão, aproveitamento e logística</summary>
+<details class="kpi-evidence"{% if outcomes_open %} open{% endif %}><summary>Conclusão, aproveitamento e logística</summary>
 <p>Referência: {{ stats.outcomes.reference_date|date:'d/m/Y' }}. Coorte: grupos terminados; histórico sem grupo apenas com estado final e data de fim atingida. Sem inferência a partir da presença.</p>
 <p>Conclusão: {{ stats.outcomes.completion_rate|default_if_none:'Sem dados' }}% · {{ stats.outcomes.completion_count }} / {{ stats.outcomes.completion_determined }} determinadas; {{ stats.outcomes.completion_pending }} pendentes em {{ stats.outcomes.ended_count }} elegíveis. Cobertura: {{ stats.outcomes.completion_coverage|default_if_none:'Sem dados' }}%.</p>
 <p>Aproveitamento: {{ stats.outcomes.approval_rate|default_if_none:'Sem dados' }}% · {{ stats.outcomes.approved }} / {{ stats.outcomes.result_count }} resultados determinados; {{ stats.outcomes.result_pending }} pendentes.</p>

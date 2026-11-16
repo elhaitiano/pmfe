@@ -67,3 +67,24 @@ class AdministrationToolsTests(TestCase):
     def test_post_is_not_allowed(self):
         self.client.force_login(self.user('root4', is_staff=True, is_superuser=True))
         self.assertEqual(self.client.post(URL).status_code, 405)
+
+
+class CalculationCriteriaTests(TestCase):
+    def test_criteria_left_the_dashboard(self):
+        user = get_user_model().objects.create_user('viewer', password='x-Synthetic-2026')
+        self.client.force_login(user)
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Critérios dos cálculos')
+        self.assertNotContains(response, 'Conclusão, aproveitamento e logística')
+
+    def test_criteria_are_in_a_dialog_on_the_tools_page(self):
+        user = get_user_model().objects.create_user('root', password='x-Synthetic-2026', is_staff=True, is_superuser=True)
+        self.client.force_login(user)
+        response = self.client.get(URL)
+        self.assertContains(response, 'data-dialog-open="calculationCriteria"')
+        self.assertContains(response, '<dialog id="calculationCriteria"')
+        self.assertContains(response, 'H/D = horas verificadas ÷ 7')
+        self.assertContains(response, 'Conclusão, aproveitamento e logística')
+        self.assertContains(response, 'pmf/admin-tools.js')
+        self.assertEqual(response.context['kpi_summary'].scope.period, 'Visão global - todos os períodos')

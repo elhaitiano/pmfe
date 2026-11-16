@@ -62,7 +62,6 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
     </div>
   </section>
-  {% include 'kpi_details.html' %}
   <nav class="exec-tabs no-print" aria-label="Camadas do centro executivo">
     <a class="active" href="{% url 'dashboard' %}?{{ query }}"><span class="material-symbols-outlined">dashboard</span>Visão estratégica</a><a href="{% url 'executive_explore' %}?{{ query }}"><span class="material-symbols-outlined">analytics</span>Análise detalhada</a><a href="{% url 'executive_reports' %}?{{ query }}"><span class="material-symbols-outlined">description</span>Relatórios e arquivo</a>
   </nav>

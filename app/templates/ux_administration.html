@@ -1,1 +1,8 @@
-{% extends 'base.html' %}{% block heading %}ADMINISTRAÇÃO E DEFINIÇÕES{% endblock %}{% block content %}<section class="content p-10 space-y-6"><div class="glass-panel rounded-2xl p-7"><h2>Ferramentas administrativas</h2><div class="ux-tool-grid">{% for tool in tools %}<a class="gf-btn{% if not tool.primary %} alt{% endif %}" href="{{ tool.url }}" data-tool="{{ tool.route }}">{{ tool.label }}</a>{% endfor %}</div></div></section>{% endblock %}
+{% extends 'base.html' %}{% load static %}{% block heading %}ADMINISTRAÇÃO E DEFINIÇÕES{% endblock %}{% block content %}<section class="content p-10 space-y-6"><div class="glass-panel rounded-2xl p-7"><h2>Ferramentas administrativas</h2><div class="ux-tool-grid">{% for tool in tools %}<a class="gf-btn{% if not tool.primary %} alt{% endif %}" href="{{ tool.url }}" data-tool="{{ tool.route }}">{{ tool.label }}</a>{% endfor %}<button type="button" class="gf-btn alt" data-dialog-open="calculationCriteria" aria-haspopup="dialog">Critérios dos cálculos</button></div></div></section>
+<dialog id="calculationCriteria" class="ux-dialog" aria-labelledby="calculationCriteriaTitle">
+  <header><h2 id="calculationCriteriaTitle">Critérios dos cálculos</h2><button type="button" data-dialog-close aria-label="Fechar">×</button></header>
+  <div class="ux-dialog-content">
+    <p class="ux-dialog-note">Leitura do Dashboard Executivo sem filtros ({{ kpi_summary.scope.period }}).</p>
+    {% include 'kpi_details.html' with expanded=True outcomes_open=True %}
+  </div>
+</dialog>{% endblock %}{% block extra_scripts %}<script src="{% static 'pmf/admin-tools.js' %}" defer></script>{% endblock %}

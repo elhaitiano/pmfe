@@ -49,10 +49,25 @@ def navigation(request):
     return {'ux_admin_visible': bool(tools_for(getattr(request, 'user', None)))}
 
 
+def calculation_criteria(request):
+    """Calculation criteria of the dashboard's default view (global, all periods).
+
+    Same selection and scope as the Dashboard Executivo opened without filters,
+    so the explanation matches the figures shown there.
+    """
+    from .analytics import statistics
+    from .executive import selection
+    from .kpi_service import Scope
+    form, selected, start, end, label, rows, employees, base, valid = selection(request)
+    basis = 'training_start' if selected.get('time_basis') == 'training_start' else 'session_date'
+    stats = statistics(rows, employees, Scope(selected, label, basis, 'current_registry', start, end))
+    return {'stats': stats, 'kpi_summary': stats['kpi_summary'], 'kpi_details': stats['kpi_details']}
+
+
 @login_required
 @require_GET
 def tools(request):
     buttons = tools_for(request.user)
     if not buttons:
         raise PermissionDenied
-    return render(request, 'ux_administration.html', {'tools': buttons})
+    return render(request, 'ux_administration.html', {'tools': buttons, **calculation_criteria(request)})

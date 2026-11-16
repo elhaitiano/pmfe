@@ -180,3 +180,12 @@ a:focus-visible,button:focus-visible{
 /* Administração e Definições: tool buttons wrap on small screens. */
 .ux-tool-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px}
 @media(max-width:700px){.ux-tool-grid{flex-direction:column}}
+.ux-dialog{background:#0c2547;color:#e2e8f0;border:1px solid #ffffff26;border-radius:18px;width:min(1100px,94vw);max-height:88vh;padding:0;box-shadow:0 20px 80px #0008}
+.ux-dialog::backdrop{background:#071a32cc}
+.ux-dialog>header{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid #ffffff20;background:#0c2547}
+.ux-dialog h2{font-size:20px;font-weight:700}
+.ux-dialog header button{font-size:26px;min-width:44px;min-height:44px;color:#e2e8f0}
+.ux-dialog header button:focus-visible{outline:2px solid #41e4c0;outline-offset:2px}
+.ux-dialog-content{padding:18px 22px}
+.ux-dialog-note{color:#9db3cc;font-size:13px;margin-bottom:12px}
+@media(max-width:700px){.ux-dialog-content{padding:12px}}
