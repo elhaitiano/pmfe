@@ -72,10 +72,6 @@ class Employee(models.Model):
 
 
 class Training(models.Model):
-    certificate_obtained = models.BooleanField('Certificado obtido', null=True, blank=True, default=None)
-    certificate_obtained_date = models.DateField('Data de obtenção confirmada', null=True, blank=True)
-    certificate_actor = models.CharField('Responsável pela confirmação', max_length=150, blank=True)
-    certificate_evidence = models.TextField('Referência / observação administrativa', blank=True)
     certificate_issued = models.BooleanField('Certificado emitido', null=True, blank=True, default=None)
     certificate_issue_date = models.DateField('Data de emissão', null=True, blank=True)
     certificate_declaration = models.TextField('Declaração sobre o certificado', blank=True)
@@ -158,48 +154,39 @@ class Training(models.Model):
             if original and original != self.source_key:
                 errors['source_key'] = 'O identificador histórico não pode ser alterado.'
 
-        from .certificates import snapshot, validate_transition
-        previous = type(self).objects.filter(pk=self.pk).first() if self.pk else None
-        certificate_changed = snapshot(previous) != snapshot(self) if previous else any(
-            getattr(self, f) is True for f in ('certificate_obtained','certificate_issued','certified','certificate_hr_delivered'))
-        if certificate_changed:
-            try:
-                validate_transition(self)
-            except ValidationError as exc:
-                errors['__all__'] = exc.messages
-            for date_field, flag in [('certificate_issue_date', 'certificate_issued'),
-                                     ('certificate_hr_delivery_date', 'certificate_hr_delivered')]:
-                value = getattr(self, date_field)
-                if value and getattr(self, flag) is not True:
-                    errors[flag] = 'Uma data exige confirmação do estado correspondente.'
-                if value and value > timezone.localdate():
-                    errors[date_field] = 'A data não pode estar no futuro.'
-            if self.certificate_hr_delivered is True:
-                if not self.certificate_hr_delivery_date:
-                    errors['certificate_hr_delivery_date'] = 'Indique a data efectiva de entrega aos RH.'
-                if self.status != 'Concluído':
-                    errors['certificate_hr_delivered'] = 'Finalize a formação antes de confirmar a entrega aos RH.'
-            if self.certificate_issued is False and (self.certified is True or self.certificate_hr_delivered is True):
-                errors['certificate_issued'] = 'Uma entrega confirmada não é compatível com certificado não emitido.'
-            for field in ['certificate_delivery_date', 'certificate_hr_delivery_date']:
-                value = getattr(self, field)
-                if value and self.certificate_issue_date and value < self.certificate_issue_date:
-                    errors[field] = 'A entrega não pode anteceder a emissão.'
-            if self.certificate_hr_delivery_date and self.end and self.certificate_hr_delivery_date < self.end:
-                errors['certificate_hr_delivery_date'] = 'A entrega não pode anteceder o fim da formação.'
-            if self.certificate_declaration_date and self.certificate_declaration_date > timezone.localdate():
-                errors['certificate_declaration_date'] = 'A declaração não pode ter uma data futura.'
-            if self.certified is True and not self.certificate_delivery_date:
-                errors['certificate_delivery_date'] = 'Indique a data efectiva da entrega.'
-            if self.certificate_delivery_date and self.certified is not True:
-                errors['certified'] = 'Uma data de entrega exige confirmação da entrega.'
-            if self.certificate_delivery_date:
-                if self.certificate_delivery_date > timezone.localdate():
-                    errors['certificate_delivery_date'] = 'A entrega confirmada não pode ter uma data futura.'
-                elif self.end and self.certificate_delivery_date < self.end:
-                    errors['certificate_delivery_date'] = 'A entrega não pode anteceder o fim da formação.'
-            if self.certified is True and self.status != 'Concluído':
-                errors['certified'] = 'Finalize a formação antes de confirmar a entrega.'
+        for date_field, flag in [('certificate_issue_date', 'certificate_issued'),
+                                 ('certificate_hr_delivery_date', 'certificate_hr_delivered')]:
+            value = getattr(self, date_field)
+            if value and getattr(self, flag) is not True:
+                errors[flag] = 'Uma data exige confirmação do estado correspondente.'
+            if value and value > timezone.localdate():
+                errors[date_field] = 'A data não pode estar no futuro.'
+        if self.certificate_hr_delivered is True:
+            if not self.certificate_hr_delivery_date:
+                errors['certificate_hr_delivery_date'] = 'Indique a data efectiva de entrega aos RH.'
+            if self.status != 'Concluído':
+                errors['certificate_hr_delivered'] = 'Finalize a formação antes de confirmar a entrega aos RH.'
+        if self.certificate_issued is False and (self.certified is True or self.certificate_hr_delivered is True):
+            errors['certificate_issued'] = 'Uma entrega confirmada não é compatível com certificado não emitido.'
+        for field in ['certificate_delivery_date', 'certificate_hr_delivery_date']:
+            value = getattr(self, field)
+            if value and self.certificate_issue_date and value < self.certificate_issue_date:
+                errors[field] = 'A entrega não pode anteceder a emissão.'
+        if self.certificate_hr_delivery_date and self.end and self.certificate_hr_delivery_date < self.end:
+            errors['certificate_hr_delivery_date'] = 'A entrega não pode anteceder o fim da formação.'
+        if self.certificate_declaration_date and self.certificate_declaration_date > timezone.localdate():
+            errors['certificate_declaration_date'] = 'A declaração não pode ter uma data futura.'
+        if self.certified is True and not self.certificate_delivery_date:
+            errors['certificate_delivery_date'] = 'Indique a data efectiva da entrega.'
+        if self.certificate_delivery_date and self.certified is not True:
+            errors['certified'] = 'Uma data de entrega exige confirmação da entrega.'
+        if self.certificate_delivery_date:
+            if self.certificate_delivery_date > timezone.localdate():
+                errors['certificate_delivery_date'] = 'A entrega confirmada não pode ter uma data futura.'
+            elif self.end and self.certificate_delivery_date < self.end:
+                errors['certificate_delivery_date'] = 'A entrega não pode anteceder o fim da formação.'
+        if self.certified is True and self.status != 'Concluído':
+            errors['certified'] = 'Finalize a formação antes de confirmar a entrega.'
         if self.grade is not None and self.status != 'Concluído':
             errors['grade'] = 'A nota final só pode ser registada numa formação concluída.'
         if self.result in ('Aprovado', 'Reprovado') and self.status != 'Concluído':
@@ -340,14 +327,6 @@ class ExecutiveReport(models.Model):
     filters = models.JSONField(default=dict)
     summary = models.JSONField(default=dict)
     sha256 = models.CharField(max_length=64)
-    def save(self,*args,**kwargs):
-        if not self._state.adding:raise ValidationError('O arquivo é imutável; crie uma rectificação.')
-        return super().save(*args,**kwargs)
-
-    predecessor = models.OneToOneField('self',null=True,blank=True,on_delete=models.PROTECT,related_name='correction')
-    revision = models.PositiveIntegerField(default=1)
-    correction_reason = models.TextField(blank=True)
-    definitions_version = models.CharField(max_length=40,default='legacy')
     class Meta:
         ordering = ['-created', '-pk']
 
@@ -527,45 +506,3 @@ class AttendanceImport(models.Model):
     changes = models.JSONField()
     class Meta:
         constraints = [models.UniqueConstraint(fields=['group','fingerprint'], name='unique_logical_attendance_import')]
-
-class CertificateEvent(models.Model):
-    training = models.ForeignKey(Training, on_delete=models.PROTECT, related_name='certificate_events')
-    recorded_at = models.DateTimeField(auto_now_add=True)
-    actor = models.CharField(max_length=150)
-    reason = models.TextField()
-    before = models.JSONField()
-    after = models.JSONField()
-    class Meta:
-        ordering = ['recorded_at','pk']
-
-
-class WorkforceReference(models.Model):
-    """Approved DRH denominator for one exact period and organisational scope."""
-    start = models.DateField('Início do período')
-    end = models.DateField('Fim do período')
-    direction = models.CharField('Direcção (vazio = todas)',max_length=200,blank=True)
-    category = models.CharField('Categoria (vazio = todas)',max_length=200,blank=True)
-    gender = models.CharField('Género (vazio = todos)',max_length=40,blank=True)
-    headcount = models.PositiveIntegerField('Efectivo aprovado')
-    responsible = models.CharField('Responsável DRH',max_length=150)
-    source = models.TextField('Referência / justificação')
-    actor = models.CharField(max_length=150)
-    created = models.DateTimeField(auto_now_add=True)
-    approved = models.BooleanField('Confirmo a aprovação DRH deste efectivo e âmbito',default=False)
-
-    def clean(self):
-        if self.start and self.end and self.end<self.start:
-            raise ValidationError({'end':'O fim não pode anteceder o início.'})
-        for field in ('responsible','source'):
-            if not getattr(self,field).strip():raise ValidationError({field:'Campo obrigatório.'})
-
-    def save(self,*args,**kwargs):
-        if self.pk:raise ValidationError('Referências aprovadas são imutáveis. Registe uma nova referência.')
-        self.full_clean()
-        return super().save(*args,**kwargs)
-
-    def __str__(self):
-        return f'DRH #{self.pk} · {self.start} a {self.end} · {self.direction or "Todas as direcções"} · {self.category or "Todas as categorias"} · {self.gender or "Todos os géneros"}'
-
-    class Meta:
-        ordering=['-created','-pk']

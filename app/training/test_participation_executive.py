@@ -26,7 +26,7 @@ class ParticipationTests(TestCase):
         self.assertEqual(response.status_code,200)
         report=response.context['report']
         self.assertEqual((report['universe'],report['participated'],report['completed']), (3,1,0))
-        self.assertContains(response,'&lt;5')
+        self.assertContains(response,'participation.js')
 
     def test_search_pagination_do_not_change_denominator(self):
         response=self.client.get(self.url,{'direction_q':'RH','direction_page':'999','q':'Person A','detail_state':'participated'})
@@ -51,8 +51,10 @@ class ParticipationTests(TestCase):
         response=self.client.get(self.url,{'export':'xlsx','direction_q':'RH','direction_page':'999'})
         self.assertEqual(response.status_code,200)
         book=load_workbook(BytesIO(response.content))
-        self.assertEqual(book.sheetnames,['Protecção'])
-        self.assertNotIn('=Person A',book.active['A1'].value)
+        self.assertEqual(book['Direcções'].max_row,3)
+        cell=book['Lista nominal']['B2']
+        self.assertEqual(cell.value,'=Person A')
+        self.assertEqual(cell.data_type,'s')
         response=self.client.get(self.url,{'export':'pdf'})
         self.assertEqual(response.status_code,200)
         self.assertTrue(response.content.startswith(b'%PDF'))

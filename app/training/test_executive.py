@@ -83,10 +83,7 @@ class ExecutiveCentreTests(TestCase):
         except ImportError:
             self.skipTest('Leitura estrutural do PDF requer pypdf no ambiente de testes.')
         request=SimpleNamespace(GET={'year':'2026'})
-        data,valid=context(request)
-        # Renderer layout unit test; small-cohort suppression is exercised separately.
-        data['privacy_restricted']=False
-        pdf=render_report(data,actor='Teste')
+        data,valid=context(request);pdf=render_report(data,actor='Teste')
         reader=pypdf.PdfReader(io.BytesIO(pdf));text='\n'.join(p.extract_text() for p in reader.pages)
         self.assertIn('Síntese executiva',text)
         self.assertIn('Formação actual',text)

@@ -38,7 +38,6 @@
     </p>
   </div>
   <div class="plan-actions">
-{% if user.is_staff %}<a class="gf-btn alt" href="{% url 'group_certificates' group.pk %}">Confirmar certificados do grupo</a>{% endif %}
     {% if user.is_staff %}<a class="gf-btn alt" href="{% url 'group_logistics' group.pk %}">Avaliação logística</a>{% endif %}
     {% if user.is_staff and group.state == 'Planeada' %}
 <a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar calendário</a>

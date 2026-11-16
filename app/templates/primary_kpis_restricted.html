@@ -1,4 +1,0 @@
-{% load static %}<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}?v=kpi-stage10">
-<div class="executive" id="viewDashboard"><section class="exec-primary-kpis" aria-label="Indicadores principais protegidos">
-{% for item in main_kpis %}<article class="exec-kpi-card" data-primary-kpi><div class="exec-kpi-top"><span>{{ item.label }}</span></div><p class="exec-kpi-val">Protegido</p><p class="exec-kpi-sub">Totais e taxas omitidos · grupo &lt;5</p></article>{% endfor %}
-</section></div>

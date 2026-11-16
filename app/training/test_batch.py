@@ -75,13 +75,18 @@ class BatchTests(TestCase):
         self.assertFalse(AuditEvent.objects.exists())
         self.rows[0].refresh_from_db();self.assertIsNone(self.rows[0].grade)
 
-    def test_certificates_use_dedicated_confirmation_workflow(self):
-        data=self.payload();data['participants-0-certified']='true'
+    def test_certificate_requires_real_delivery_date_and_concluded_status(self):
+        data = self.payload();data['participants-0-certified']='true'
+        response = self.client.post(self.url,data)
+        self.assertIn('certificate_delivery_date',response.context['formset'].forms[0].errors)
         data['participants-0-certificate_delivery_date']='2026-01-04'
-        response=self.client.post(self.url,data)
-        self.assertFalse(response.context['review'])
-        self.assertIn('Certificado e entregas',str(response.context['formset'].errors))
-        self.rows[0].refresh_from_db();self.assertIsNone(self.rows[0].certified)
+        response = self.confirm(data);self.assertEqual(response.status_code,302)
+        self.rows[0].refresh_from_db();self.assertTrue(self.rows[0].certified)
+        self.assertEqual(self.rows[0].certificate_delivery_date,date(2026,1,4))
+        profile = self.client.get(reverse('employee_data', args=[self.rows[0].employee_id]))
+        printed = self.client.get(reverse('employee_print', args=[self.rows[0].employee_id]))
+        self.assertEqual(profile.context['stats']['certificates'], 1)
+        self.assertEqual(profile.context['stats'], printed.context['stats'])
 
     def test_outside_id_duplicate_and_missing_rows_are_rejected(self):
         for case in ['outside','duplicate','missing']:

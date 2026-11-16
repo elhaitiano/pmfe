@@ -1,6 +1,3 @@
-from .kpi_catalogue import export_rows as catalogue_rows
-from dataclasses import replace
-from .certificates import export_rows as certificate_rows
 """Executive indicators derived from the same participation records as the dossiers."""
 from collections import Counter, defaultdict
 from decimal import Decimal
@@ -83,7 +80,7 @@ def executive_data(rows, employees, year='', scope=None):
     for label, x in sorted(by_direction.items()):
         subset = [r for r in rows if (r.employee.direction or 'Direcção por confirmar') == label]
         reference = [e for e in employees if (e.direction or 'Direcção por confirmar') == label]
-        ds = statistics(subset, reference, replace(scope,filters={**scope.filters,'reference':None},reference='current_registry'))
+        ds = statistics(subset, reference, scope)
         directions.append(dict(label=label, total=x['total'], present=ds['confirmed_people'],
             coverage=ds['kpi_summary'].metrics['coverage'].value, hours=ds['hours'], certificates=x['certificates'],
             evidence=ds['kpi_details'], coverage_status=STATUS[ds['kpi_summary'].metrics['coverage'].status]))
@@ -120,11 +117,6 @@ def dashboard(request):
     form, selected, start, end, label, rows, employees, base, valid = selection(request)
     data = analyse(rows, employees, selected, start, end, label, base)
     data.update(filter_form=form, export_query=data['query'])
-    if not (request.user.is_staff or request.user.has_perms(['training.view_employee','training.view_training'])):
-        data['talents']=[];data['scatter']=[]
-    if data.get('privacy_restricted'):
-        from .aggregate_privacy import export, page
-        return export('csv') if request.GET.get('export')=='csv' else page(request,data)
     if request.GET.get('export') == 'csv' and valid:
         response = HttpResponse(content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = 'attachment; filename="EPAL_Dashboard_Executivo.csv"'
@@ -150,7 +142,7 @@ def dashboard(request):
                 label = "'" + label
             writer.writerow([label, item['total'], item['present'], item['coverage'], item['hours'], item['certificates']])
         writer.writerow([])
-        for row in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']) + certificate_rows(data['stats']['certification']) + catalogue_rows(data['stats']):
+        for row in export_rows(data['kpi_summary']) + outcome_rows(data['stats']['outcomes']):
             writer.writerow(row)
         return response
     return render(request, 'dashboard.html', data)

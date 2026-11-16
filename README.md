@@ -6,8 +6,6 @@ A PMFE reúne o cadastro de técnicos, o planeamento de formações, as inscriç
 
 A aplicação funciona localmente num único computador, através do navegador, com interface em português. Após a instalação das dependências, as funcionalidades principais estão disponíveis sem ligação à Internet.
 
-O [Manual de Utilização](app/templates/manual/user.html) está disponível na aplicação em **Gerir Assistente → Manual de Utilização**, ou na ajuda de qualquer página. O Dashboard organiza os 12 KPI em cinco painéis e apresenta quatro cartões principais.
-
 ## Funcionalidades
 
 | Módulo | O que permite fazer |
@@ -18,7 +16,7 @@ O [Manual de Utilização](app/templates/manual/user.html) está disponível na 
 | Catálogo de formações | Criar acções com categoria, objectivos e duração prevista; editar ou arquivar acções existentes. |
 | Planeamento e turmas | Organizar grupos G1, G2… por acção, com capacidade, local, formador, horários e calendário de dias efectivos, incluindo dias não consecutivos. |
 | Inscrições | Seleccionar participantes, rever avisos de histórico, justificar repetições e transferir inscrições entre grupos ainda não iniciados. |
-| Actualização colectiva | Registar presenças, notas e resultados por edição; confirmar certificados no formulário dedicado individual ou de grupo, com revisão e rastreabilidade. |
+| Actualização colectiva | Registar presenças verificadas, notas, resultados e certificados de uma mesma edição, com revisão antes da confirmação. |
 | Listas de presença | Gerar listas diárias em PDF ou Excel segundo o modelo institucional, com espaços para assinatura. |
 | Dashboard executivo | Consultar indicadores e gráficos, filtrar por período, direcção, área e situação, e explorar os registos correspondentes. |
 | Relatórios e arquivo | Pré-visualizar, gerar, arquivar e descarregar relatórios PDF por período ou direcção. |

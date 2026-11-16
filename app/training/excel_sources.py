@@ -29,12 +29,6 @@ def normalized(value):
     return re.sub(r'[^a-z0-9]', '', value)
 
 
-def descriptive_key(value):
-    """Formatting comparison only: never an identity or fuzzy matching key."""
-    decomposed = unicodedata.normalize('NFKD', text(value))
-    return ' '.join(''.join(c for c in decomposed if not unicodedata.combining(c)).casefold().split())
-
-
 def decimal(value):
     try:
         result = Decimal(text(value).replace(',', '.'))
@@ -59,7 +53,7 @@ def parse_date(value, epoch=WINDOWS_EPOCH):
         return value.date()
     if isinstance(value, date):
         return value
-    for pattern in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%d.%m.%Y', '%Y-%m-%d %H:%M:%S'):
+    for pattern in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S'):
         try:
             return datetime.strptime(text(value), pattern).date()
         except ValueError:

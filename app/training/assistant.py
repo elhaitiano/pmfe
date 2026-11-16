@@ -97,9 +97,3 @@ def edit(request,pk=None):
                         messages.success(request,'Orientação guardada. Os utilizadores recebem a versão actualizada ao abrir a ajuda ou actualizar a página.')
                         return redirect('assistant_admin')
     return render(request,'assistant/edit.html',{'form':form,'steps':steps,'guide':guide,'error':error})
-
-
-@login_required
-@require_GET
-def user_manual(request):
-    return render(request,"manual/user.html")

@@ -10,7 +10,6 @@
       <form method="post" id="trainingForm">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        {% if form.certified %}<p>Confirme obtenção, emissão e entrega no formulário dedicado, com datas e referência administrativa.{% if form.instance.pk %} <a href="{% url 'certificate_edit' form.instance.pk %}">Abrir Certificado e entregas</a>{% else %} Registe primeiro a participação.{% endif %}</p>{% endif %}
         {% if form.instance.participation_id %}
         <p class="text-xs text-slate-400">ID de origem: {{ form.instance.participation_id }}</p>
         {% endif %}

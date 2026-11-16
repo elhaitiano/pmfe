@@ -67,8 +67,6 @@ def tri_state(label):
 
 
 class CertificateForm(StyledModelForm):
-    certificate_obtained = tri_state('Certificado obtido')
-    reason = forms.CharField(label='Motivo da confirmação / regularização',max_length=1000)
     certificate_issued = tri_state('Certificado emitido')
     certified = tri_state('Entrega confirmada ao participante')
     certificate_hr_delivered = tri_state('Entrega confirmada aos RH')
@@ -76,19 +74,19 @@ class CertificateForm(StyledModelForm):
 
     class Meta:
         model = Training
-        fields = ['certificate_obtained','certificate_obtained_date','certificate_actor','certificate_evidence','certificate_issued', 'certificate_issue_date', 'certificate_reference',
+        fields = ['certificate_issued', 'certificate_issue_date', 'certificate_reference',
             'certificate_declaration', 'certificate_declared_by', 'certificate_declaration_source',
             'certificate_declaration_date', 'certified', 'certificate_delivery_date',
             'certificate_hr_delivered', 'certificate_hr_delivery_date']
         widgets = {name: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}) for name in
-            ['certificate_obtained_date','certificate_issue_date', 'certificate_declaration_date', 'certificate_delivery_date', 'certificate_hr_delivery_date']}
+            ['certificate_issue_date', 'certificate_declaration_date', 'certificate_delivery_date', 'certificate_hr_delivery_date']}
         widgets.update({name: forms.Textarea(attrs={'rows': 3}) for name in
             ['certificate_declaration', 'certificate_declaration_source']})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial['revision'] = self.instance.version
-        for name in ['certificate_obtained','certificate_issued', 'certified', 'certificate_hr_delivered']:
+        for name in ['certificate_issued', 'certified', 'certificate_hr_delivered']:
             value = getattr(self.instance, name)
             self.initial[name] = 'true' if value is True else 'false' if value is False else 'unknown'
         self.fields['certificate_declaration_date'].help_text = 'Data da declaração; não substitui a data efectiva de entrega.'
@@ -97,7 +95,6 @@ class CertificateForm(StyledModelForm):
     @property
     def design_groups(self):
         return [(title, [self[name] for name in names]) for title, names in [
-            ('Obtenção e confirmação', ['certificate_obtained','certificate_obtained_date','certificate_actor','certificate_evidence','reason']),
             ('Emissão', ['certificate_issued', 'certificate_issue_date', 'certificate_reference']),
             ('Declaração e origem', ['certificate_declaration', 'certificate_declared_by',
                                    'certificate_declaration_source', 'certificate_declaration_date']),
@@ -184,9 +181,7 @@ def archive(request, pk):
 @staff_required
 def certificate_edit(request, pk):
     training = get_object_or_404(Training, pk=pk)
-    from .certificates import snapshot
-    from .models import CertificateEvent
-    before = snapshot(training)
+    before = {field: str(getattr(training, field)) for field in CertificateForm.Meta.fields}
     form = CertificateForm(request.POST if request.method == 'POST' else None, instance=training)
     if request.method == 'POST' and form.is_valid():
         with transaction.atomic():
@@ -194,8 +189,6 @@ def certificate_edit(request, pk):
             changed = Training.objects.filter(pk=pk, version=form.cleaned_data['revision']).update(
                 **values, version=form.cleaned_data['revision'] + 1)
             if changed:
-                CertificateEvent.objects.create(training=training,actor=request.user.username,
-                    reason=form.cleaned_data['reason'],before=before,after=snapshot(form.instance))
                 record(request, 'UPDATE_CERTIFICATE', f'Participação {pk}; BEFORE {before}; AFTER {values}')
                 messages.success(request, 'Estados do certificado actualizados; declaração e entregas mantidas separadas.')
                 return redirect('employee_detail', pk=training.employee_id)

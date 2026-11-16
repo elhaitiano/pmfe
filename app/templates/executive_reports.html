@@ -6,7 +6,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
 {% endblock %}
 {% block content %}
 <div class="executive">
-{% if not privacy_restricted %}{% include 'kpi_panels.html' %}{% endif %}
+{% include 'kpi_details.html' %}
   <section class="exec-hero">
     <div class="exec-badge-live">
       <span class="pulse-ring"></span>Relatórios institucionais e arquivo
@@ -16,7 +16,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
     </p>
     <a href="{% url 'dashboard' %}?{{ query }}" class="exec-button">Voltar ao Dashboard</a>
   </section>
-  {% if user.is_staff %}<a class="exec-button" href="{% url 'workforce_references' %}">Referências DRH</a>
+  {% if user.is_staff %}
   <p class="exec-note">Os relatórios deste centro conservam os totais históricos, incluindo dados provisórios. Consulte os <a class="text-secondary" href="{% url 'indicator_index' %}">Indicadores confirmados</a> para os denominadores de validação e os resultados 360° autorizados.</p>
   {% endif %}
   {% include 'executive_filters.html' %}
@@ -92,7 +92,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
           {% for item in archive_page %}
           <tr>
             <td>
-              {{ item.title }} · v{{ item.revision }}{% if item.needs_review %}<small>As fontes mudaram ou a versão é anterior ao controlo actual. Reveja o âmbito antes de rectificar; o arquivo original foi conservado.</small>{% endif %}<small>{{ item.filters.area|default:'Todas as áreas' }}</small>
+              {{ item.title }}<small>{{ item.filters.area|default:'Todas as áreas' }}</small>
             </td>
             <td>
               {{ item.created|date:'d/m/Y H:i' }}
@@ -101,18 +101,13 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
               {{ item.actor }}
             </td>
             <td>
-              {% if item.protected %}&lt;5 — protegido{% else %}{{ item.summary.participations }}{% endif %}
+              {{ item.summary.participations }}
             </td>
             <td>
-              {% if item.protected %}Omitido{% else %}{{ item.summary.hours }}{% endif %}
+              {{ item.summary.hours }}
             </td>
             <td>
               <a class="exec-reset" href="{% url 'executive_download' item.pk %}">Descarregar PDF</a>
-              {% if item.predecessor_id %}<p>Rectifica <a href="{% url 'executive_download' item.predecessor_id %}">a versão anterior</a>: {{ item.correction_reason }}</p>{% endif %}
-              {% if user.is_staff and not item.correction %}<form method="post" action="{% url 'executive_create' %}">{% csrf_token %}
-              {% for key,value in item.filters.items %}{% if key != 'reference' %}<input type="hidden" name="{{ key }}" value="{{ value|default_if_none:'' }}">{% endif %}{% endfor %}
-              <label>Referência DRH da nova versão<select name="reference"><option value="">Cadastro actual</option>{% for ref in drh_references %}<option value="{{ ref.pk }}" {% if ref.pk == item.filters.reference %}selected{% endif %}>{{ ref }}</option>{% endfor %}</select></label>
-              <input type="hidden" name="predecessor" value="{{ item.pk }}"><label>Motivo da rectificação<input name="correction_reason" required maxlength="1000"></label><button>Gerar nova versão com os dados actuais</button></form>{% endif %}
             </td>
           </tr>
           {% empty %}

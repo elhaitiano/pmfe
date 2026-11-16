@@ -1,7 +1,0 @@
-{% extends 'base.html' %}
-{% block heading %}REFERÊNCIAS DRH{% endblock %}
-{% block content %}<section class="panel"><h2>Efectivo aprovado por período</h2>
-<p>Indique o âmbito exacto. Campos de direcção, categoria e género vazios abrangem todo o cadastro. Uma referência mensal não será somada nem reutilizada como referência anual. As referências guardadas são imutáveis; uma correcção exige um novo registo.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Registar referência aprovada</button></form>
-<h3>Referências disponíveis</h3>{% for item in references %}<p>{{ item }} · {{ item.headcount }} pessoas · {{ item.responsible }} · {{ item.source }}</p>{% empty %}<p>Sem referência DRH: os indicadores usam o cadastro actual, explicitamente identificado.</p>{% endfor %}
-<a href="{% url 'executive_reports' %}">Centro de Relatórios</a></section>{% endblock %}

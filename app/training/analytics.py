@@ -5,24 +5,19 @@ from types import SimpleNamespace
 from .kpi_service import Scope, aggregate_attendance
 from .kpi_reporting import describe_summary
 from .outcomes import outcomes
-from .certificates import summary as certification_summary
 from .daily_kpi import attendance_summary
 
 
 def statistics(rows, employees=None, scope=None):
     rows = list(rows)
-    reference = list(employees) if employees is not None else [SimpleNamespace(pk=pk) for pk in {r.employee_id for r in rows}]
+    reference = employees if employees is not None else [SimpleNamespace(pk=pk) for pk in {r.employee_id for r in rows}]
     summary = attendance_summary(rows, reference, scope=scope or Scope({}, 'Histórico agregado seleccionado', 'all_records', 'selected_people'))
-    from .workforce import apply_reference
-    summary = apply_reference(summary)
-    from dataclasses import replace
-    summary = replace(summary,incomplete_registry={key:sum(not getattr(e,key,None) for e in reference) for key in ("direction","category","gender")})
     measurable = [r for r in rows if r.pk in summary.attendance_pairs]
     days = sum(r.days or 0 for r in measurable)
     presences = sum(r.attendance for r in measurable)
     academic = outcomes(rows, reference_date=scope.date_to if scope else None, cohort_start=scope.date_from if scope else None)
     grades = [row.grade for row in rows if row.grade is not None]
-    return {'certification':certification_summary(rows,scope.date_to if scope else None,scope.date_from if scope else None), 'outcomes': academic, 'total': len(rows), 'hours': summary.metrics['hours'].value,
+    return {'outcomes': academic, 'total': len(rows), 'hours': summary.metrics['hours'].value,
         'planned_hours': sum((row.planned_hours for row in rows if row.planned_hours is not None), Decimal(0)),
         'attendance': summary.metrics['attendance'].value, 'attendance_days': days, 'presences': presences,
         'attendance_provisional': summary.metrics['attendance'].status in ('partial', 'to_verify', 'inconsistent'),

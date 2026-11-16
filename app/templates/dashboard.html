@@ -3,7 +3,7 @@
 {% block heading %}
 DASHBOARD EXECUTIVO{% endblock %}
 {% block extra_styles %}
-<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}?v=kpi-stage10">
+<link rel="stylesheet" href="{% static 'pmf/dashboard.css' %}?v=compact-summary-2">
 {% endblock %}
 {% block content %}
 <div class="executive" id="viewDashboard">
@@ -22,7 +22,7 @@ DASHBOARD EXECUTIVO{% endblock %}
     <div class="exec-summary-layout">
   <section class="exec-primary-kpis">
     {% for item in main_kpis %}
-    <article class="exec-kpi-card" data-primary-kpi>
+    <article class="exec-kpi-card">
       <div class="exec-kpi-top">
         <span>{{ item.label }}</span>
         <div class="exec-icon" style="--tone:{{ item.color }}">
@@ -31,7 +31,7 @@ DASHBOARD EXECUTIVO{% endblock %}
       </div>
       <p class="exec-kpi-val">
         {% if item.value is None %}
-        Sem dados{% elif item.decimal %}{{ item.value|floatformat:2 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
+        —{% elif item.decimal %}{{ item.value|floatformat:2 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small>
       </p>
       <p class="exec-kpi-sub" style="color:{{ item.color }}">
         <span class="material-symbols-outlined">{% if forloop.counter == 3 %}verified{% else %}insights{% endif %}</span>{{ item.note }} {% if item.evidence_status %}· {{ item.evidence_status }}{% endif %}
@@ -47,8 +47,22 @@ DASHBOARD EXECUTIVO{% endblock %}
         <a href="{% url 'executive_reports' %}?{{ query }}" class="exec-button primary"><span class="material-symbols-outlined">download</span>Relatório Executivo PDF</a><a href="{% url 'executive_explore' %}?{{ query }}" class="exec-button"><span class="material-symbols-outlined">manage_search</span>Explorar os registos</a>
       </div>
     </div>
+    <div class="exec-hero-metrics">
+      <div>
+        <span>Unidades operacionais</span><strong>{{ directions_active }} Direcções</strong><small>Com participações seleccionadas</small>
+      </div>
+      <div>
+        <span>Pólos formativos</span><strong>{{ locations }} Locais</strong><small>{{ trainers }} formadores registados</small>
+      </div>
+      <div>
+        <span>Taxa de conclusão</span><strong>{% if completion_rate is None %}—{% else %}{{ completion_rate|floatformat:1 }}%{% endif %}</strong><small>Participações concluídas</small>
+      </div>
+      <div>
+        <span>Certificados entregues</span><strong>{{ stats.certificates }}</strong><small>{{ stats.certificates_pending }} por confirmar</small>
+      </div>
+    </div>
   </section>
-  {% include 'kpi_panels.html' %}
+  {% include 'kpi_details.html' %}
   <nav class="exec-tabs no-print" aria-label="Camadas do centro executivo">
     <a class="active" href="{% url 'dashboard' %}?{{ query }}"><span class="material-symbols-outlined">dashboard</span>Visão estratégica</a><a href="{% url 'executive_explore' %}?{{ query }}"><span class="material-symbols-outlined">analytics</span>Análise detalhada</a><a href="{% url 'executive_reports' %}?{{ query }}"><span class="material-symbols-outlined">description</span>Relatórios e arquivo</a>
   </nav>
@@ -68,6 +82,13 @@ DASHBOARD EXECUTIVO{% endblock %}
   </div>
   {% endif %}
 
+  <section class="exec-secondary-kpis">
+    {% for item in secondary_kpis %}
+    <div class="exec-mini">
+      <span>{{ item.label }}</span><strong>{% if item.value is None %}—{% elif item.decimal %}{{ item.value|floatformat:2 }}{% else %}{{ item.value }}{% endif %}<small>{{ item.suffix }}</small></strong>
+    </div>
+    {% endfor %}
+  </section>
   <section class="exec-grid">
     <article class="exec-glass-box exec-wide">
       <div class="exec-panel-heading">
@@ -291,7 +312,14 @@ DASHBOARD EXECUTIVO{% endblock %}
       </p>
     </article>
   </section>
-  <p class="exec-note"><a href="{% url 'user_manual' %}">Manual de Utilização e definições dos indicadores</a></p>
+  <details class="exec-method"><summary>Critérios dos indicadores</summary>
+  <p>
+    Turmas seguem os mesmos campos da grelha em lote. Técnicos com presença são pessoas distintas. Horas = presenças × horas por dia. Assiduidade = horas verificadas ÷ horas previstas correspondentes, incluindo ausências verificadas e excluindo dados desconhecidos. Aproveitamento = aprovados ÷ (aprovados + reprovados), em participações concluídas. Sem denominador, apresenta-se “—”.
+  </p>
+  <p>
+    A evolução usa a base temporal seleccionada. Na leitura por sessões, o histórico sem datas não é distribuído pelo gráfico. A cobertura divide técnicos com presença pelo cadastro da direcção, que não muda com o período. {% if stats.attendance_provisional %}A assiduidade é provisória: há dados insuficientes, por verificar ou inconsistentes.{% endif %}
+  </p>
+  </details>
 </div>
 <dialog id="execDialog" aria-labelledby="execDialogTitle">
 <div class="exec-dialog-top">

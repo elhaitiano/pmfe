@@ -1,9 +1,0 @@
-<section class="exec-indicator-panels" aria-label="Relatórios e Indicadores">
-<h2>Relatórios e Indicadores</h2>
-{% for panel in indicator_panels %}<details class="exec-glass-box exec-indicator-panel"><summary>{{ panel.title }}</summary>
-<div class="exec-indicator-list">{% for item in panel.items %}<article data-indicator="{{ item.number }}"><h3>{{ item.number }}. {{ item.label }}</h3>
-<p><strong>{% if item.value is None %}Sem dados{% elif item.integral %}{{ item.value }} {{ item.unit }}{% else %}{{ item.value|floatformat:2 }} {{ item.unit }}{% endif %}</strong> · {{ item.status }}</p>
-{% if item.numerator is not None %}<p>Numerador: {{ item.numerator }} · Denominador: {{ item.denominator|default_if_none:'Sem dados' }}</p>{% endif %}
-<p class="exec-note">{{ item.note }}</p></article>{% endfor %}</div></details>{% endfor %}
-<details class="exec-glass-box exec-indicator-panel"><summary>Critérios, filtros e evidência</summary>{% include 'kpi_details.html' %}<a href="{% url 'user_manual' %}">Consultar o Manual de Utilização</a></details>
-</section>

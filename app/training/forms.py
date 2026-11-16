@@ -96,13 +96,6 @@ class TrainingForm(StyledModelForm):
             ('Rastreabilidade do histórico', ['source_course_code', 'historical_name', 'identity_quality', 'matching_method', 'source_row']),
         ]]
 
-    def clean(self):
-        data=super().clean()
-        fields=('certified','certificate_delivery_date','certificate_reference')
-        if any(key in data and data[key] != getattr(self.instance,key) for key in fields):
-            self.add_error(None,'Confirme os estados e datas no formulário Certificado e entregas.')
-        return data
-
     class Meta:
         model = Training
         fields = ['course', 'plan_status', 'source_course_code', 'historical_name', 'identity_quality', 'matching_method', 'source_row',

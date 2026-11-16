@@ -88,7 +88,7 @@ class IndicatorTests(TestCase):
         training.refresh_from_db()
         self.assertEqual(training.evaluation.validated_grade,14)
         response=self.client.get(reverse('indicator_index'))
-        self.assertContains(response,'&lt;5')
+        self.assertContains(response,'Nota final')
         self.assertEqual(response.context['learning_count'],1)
         response=self.client.get(reverse('indicator_index'),{'start':self.today.isoformat()})
         self.assertEqual(response.context['total'],0)

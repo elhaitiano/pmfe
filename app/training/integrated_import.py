@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection, transaction
 
 from .excel_sources import (
-    EMPLOYEE_FIELDS, TRAINING_FIELDS, digest, issue, normalized, read_sheet, text, descriptive_key,
+    EMPLOYEE_FIELDS, TRAINING_FIELDS, digest, issue, normalized, read_sheet, text,
 )
 from .models import AuditEvent, Course, Employee, Training
 
@@ -119,15 +119,9 @@ def prepare_training(record, employee, report):
     return v
 
 
-REPLACEABLE_EMPLOYEE_FIELDS = {'category', 'direction', 'area', 'marital_status', 'function'}
-
-
-def build_plan(workbook, source_sha256, replace_employee_fields=()):
-    replacement_fields = set(replace_employee_fields)
-    if not replacement_fields <= REPLACEABLE_EMPLOYEE_FIELDS:
-        raise ValueError('Campo de substituição não autorizado para este fluxo.')
+def build_plan(workbook, source_sha256):
     report = {
-        'mode': 'dry-run', 'replace_employee_fields': sorted(replacement_fields), 'source_sha256': source_sha256, 'database_sha256': database_digest(),
+        'mode': 'dry-run', 'source_sha256': source_sha256, 'database_sha256': database_digest(),
         'employees_created': 0, 'employees_updated': 0, 'employees_existing': 0,
         'trainings_created': 0, 'trainings_existing': 0,
         'issues': [], 'changes': [], 'sheets': [], 'duplicates_reconciled': 0,
@@ -208,16 +202,6 @@ def build_plan(workbook, source_sha256, replace_employee_fields=()):
         for field, value in merged.items():
             before = getattr(obj, field)
             if value in ('', None) or before == value:
-                continue
-            if old and before not in ('', None) and field in {'gender', 'marital_status', 'category', 'function', 'direction', 'area'} and descriptive_key(before) == descriptive_key(value):
-                add_issue(report, primary, 'Grafia equivalente; valor existente conservado.', 'warning',
-                          field=field, identifier=number)
-                continue
-            if old and before not in ('', None) and field in replacement_fields:
-                setattr(obj, field, value)
-                proposed[field] = {'before': before, 'after': value}
-                add_issue(report, primary, 'Substituição explícita sujeita à confirmação do preview.', 'warning',
-                          identifier=number, field=field, before=str(before), proposed=str(value))
                 continue
             if old and before not in ('', None):
                 add_issue(report, primary, 'Valor existente protegido; rever antes de importar.', field=field,
@@ -300,7 +284,7 @@ def snapshot_database():
     return str(destination)
 
 
-def apply_reviewed(workbook, source_sha256, review_token, actor='import_excel', replace_employee_fields=()):
+def apply_reviewed(workbook, source_sha256, review_token, actor='import_excel'):
     if not review_token:
         raise ValueError('É necessário o review_token de uma simulação revista.')
     backup = snapshot_database()
@@ -308,20 +292,13 @@ def apply_reviewed(workbook, source_sha256, review_token, actor='import_excel', 
         # Reserve SQLite's write lock before checking the reviewed state.
         with connection.cursor() as cursor:
             cursor.execute('UPDATE training_employee SET number = number WHERE 0')
-        plan = build_plan(workbook, source_sha256, replace_employee_fields)
+        plan = build_plan(workbook, source_sha256)
         if not plan.report['can_apply']:
             raise ValueError('Importação bloqueada por erros. Nenhum registo gravado.')
         if plan.report['review_token'] != review_token:
             raise ValueError('O Excel ou a base mudou desde a simulação. Faça uma nova revisão.')
         saved = {}
-        reviewed_changes = {change['identifier']: change for change in plan.report['changes'] if change['entity'] == 'employee'}
         for obj, kind in plan.employees:
-            if kind == 'update':
-                old_source = Employee.objects.get(pk=obj.pk).source_data
-                AuditEvent.objects.create(actor=actor, action='IMPORT_EMPLOYEE_UPDATE', detail=json.dumps({
-                    'employee_id': obj.pk, 'source_sha256':source_sha256, 'review_token':review_token,
-                    'fields':reviewed_changes[obj.number]['fields'], 'previous_source_data':old_source,
-                    'replacement_fields':sorted(replace_employee_fields)}, ensure_ascii=False, default=str))
             if kind != 'existing':
                 obj.full_clean()
                 obj.save()

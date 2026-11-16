@@ -1,9 +1,0 @@
-{% extends 'planning/base.html' %}{% block plan_content %}
-<section class="plan-panel"><h1>Certificação · {{ group }}</h1>
-<p>Confirmação administrativa explícita; não exige anexos. Obtenção, emissão e entrega são independentes da presença e das notas.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}
-{% if preview %}<h2>Destinatários e estados a confirmar</h2><table><tr><th>Formando</th><th>Antes</th><th>Depois</th></tr>
-{% for row in preview %}<tr><td>{{ row.employee }}</td><td>{{ row.before }}</td><td>{{ row.after }}{% for label,value in row.dates %}{% if value %}<br>{{ label }}: {{ value|date:"d/m/Y" }}{% endif %}{% endfor %}<br>{{ row.responsible }} · {{ row.evidence }}</td></tr>{% endfor %}</table>
-<input type="hidden" name="token" value="{{ token }}"><button class="gf-btn" name="action" value="confirm">Confirmar lote revisto</button>
-{% else %}<button class="gf-btn" name="action" value="review">Pré-visualizar destinatários e estados</button>{% endif %}
-</form></section>{% endblock %}

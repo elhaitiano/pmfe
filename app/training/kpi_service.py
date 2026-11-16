@@ -49,7 +49,6 @@ class Summary:
     verified_day_pairs: frozenset = frozenset()
     dated_hours: Mapping[Any, Decimal] = field(default_factory=dict)
     unallocated_participations: int = 0
-    incomplete_registry: Mapping[str, int] = field(default_factory=dict)
 
 
 def _decimal(value):
