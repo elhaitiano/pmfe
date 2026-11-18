@@ -1,13 +1,13 @@
 {
-  "release": "PMFE-8088-avaliacao-directa-20261118",
+  "release": "PMFE-8088-cartoes-visiveis-20261118",
   "origin_main": "8c126d7ae7be82c11bc260800227b4e7343ac0fb",
   "source": "8088 consolidada; sem bases ou dados pessoais",
   "files": {
     ".dockerignore": "53a488459e17fa03e880d14fed056e358cf4393db18b86aacfa9ff35d320ca17",
     ".gitattributes": "860e73e44b46a81d9d504b5d970c9d93d69f9f4f3664c3562f781e0608971081",
-    ".github/workflows/checks.yml": "e02cc45c81bcebeb8cee7e71a76c9a32c7f50e9632405c5361a53cf30b019756",
+    ".github/workflows/checks.yml": "6814ac259ed8b6fa3b235bee4bbacb3863da70093fde60bcb6619577e98897eb",
     ".gitignore": "ff74639ce862909661c8fa831d5922d332490fe1bad94c538ca884fc99cf0a7d",
-    "README.md": "e825aca565411fbe7f2b38118e3265a943dee6ba1c58f073225a532ef75d8d5c",
+    "README.md": "08cb6e2a2ae90ad0e460833c3186b60811000884abb200baf0c1b34102c2422e",
     "app/manage.py": "52080eaad3436e592d539149bf733d5877285f960bce34ce686876528314c588",
     "app/manual_assets/dashboard.png": "1d486cb9f150aa8e75d96faf2c8b273ccd8c6535c2709a68e284e2231aad588e",
     "app/manual_assets/ficha.png": "eaa5cfaad1b1e9cf29c638b73ea874cb818bca9dc5f644fedf32519007c9aa58",
@@ -65,7 +65,7 @@
     "app/static/pmf/epal-module-surfaces.css": "c54bf576ff250fa2d74682cb4ca4fd006b839fdca98a536b889bc5034d0e0898",
     "app/static/pmf/epal-oficial.png": "ae6804155763abd672d016a1a7ff21af41f52ce5ae881360036a5ef5328f401f",
     "app/static/pmf/epal-reference-logo.png": "4d113d5b27f00a9e7b48605c68b691f869b35d44144150076cb7a37b7b012ea5",
-    "app/static/pmf/epal-reference.css": "6333f3617fb9624e95defc92b610702397e37d5829c3d71004e06b407f9182e3",
+    "app/static/pmf/epal-reference.css": "20c4e04463dd3f023ca1b64ce175e5d5dc5b489b65199c2c3dcf2c049f1f20e2",
     "app/static/pmf/epal-report-official.png": "0e1602e74942974241dc9d17329905a68f59fa53a4f68a6da42e9e7db3e290cb",
     "app/static/pmf/epal-sidebar-exact.css": "aa372713c6fdedcf610eda356776572bb028f56994aa6eb93aa1cc944369f74d",
     "app/static/pmf/epal-sidebar-exact.js": "9b9d13680e734ae59d97aecd86420160654e6c9ca1723eb3d05d88f4a43591a6",
@@ -144,7 +144,7 @@
     "app/templates/assistant/index.html": "b4863481c9b48013c78d396503d6cd16e8302793e517333b3b23d4995a645128",
     "app/templates/assistant/manual.html": "521855de5f5a74a06e39b552da47fdeda58ae125f05ef97a61151a340cc1b955",
     "app/templates/audit.html": "73edb9d5e9fbff020db06479169c2511701ca4299641e335785bb1c879a920b1",
-    "app/templates/base.html": "f02c2642fb1ece73dfaab6886175f356047d6d50ceca4026777867175dc51490",
+    "app/templates/base.html": "c073aefb74aa82397ec9576c34b18c014f562ed14c1d67f359598cc246638f0a",
     "app/templates/batch_edit.html": "87bb768bff4854325f963a91ede548c22b6fd0b9f6de04f8304ee0d52ac5444f",
     "app/templates/batch_index.html": "df1abb29caca9ad57cf98dc10be57020894cc9cc26c8d5a944c57d1e483a3036",
     "app/templates/certificate_archive.html": "bd5aeefe76aac79ca253705f5ce2d2d7308334321ec1978158344571ea3e3e9a",
@@ -477,6 +477,7 @@
     "app/training/test_historical.py": "4a78bf297e630722850abb019ba4612bfa0b01fad083566535d6bc1fdf951d88",
     "app/training/test_historical_review.py": "9842477fd06d64f2a9b1aad072efdd82d03ddc6270550df5a134d59fa319535d",
     "app/training/test_history_anchors.py": "9bd757b3353c33637a28d80e5c451e4a6b6a292e3aadc6f984fcc859e3fa3137",
+    "app/training/test_home_card_values.py": "fdea6c45d0f9d9253b3619a2b9cc6c334f3bf8451338abdc88fd6889178524b3",
     "app/training/test_import_review.py": "51c3d2f727ee853b489de2757cd46fa8e76aa3b1ff8c6ae2e7ac6d5c2f99b7c8",
     "app/training/test_improvements.py": "801fa9f803b692ab024c72fb1d9556ce516d4d10886df02fe49663c12c7192f2",
     "app/training/test_indicators.py": "16c5f81f93efbafa7c95c901cb9d8ef01ce54c4fadb271ceff2c0cab785adbfb",
@@ -529,5 +530,6 @@
     "scripts/run_local.py": "d9a5dd39518ba91fb5bd27e018bda828edda41e51a20151674c993fe36cb1759",
     "upgrade-manifest-20261011.json": "146aa76348f9b6f452092e6caeaa85fa4cefb9cc4536f8d18f323aa28c7b931d"
   },
-  "parent_consolidated": "bfff8fcfe681f66f0e752a0b03c311a2fad8535a"
+  "parent_consolidated": "bfff8fcfe681f66f0e752a0b03c311a2fad8535a",
+  "parent_assessment_feature": "8c7c5beb6a48d99faea4aad5b2a85cdbfc760381"
 }

@@ -113,3 +113,9 @@ A migração `0029` acrescenta apenas duas tabelas: escalas por grupo e resultad
 Validação desta etapa: **116 testes locais aprovados**, incluindo 25 novos testes; gravação e descarga Excel/PDF verificadas no Edge, sem erros JavaScript nem extravasamento horizontal da página em ecrã móvel. A suite seleccionada da CI inclui agora `training.test_direct_assessments`; o resultado remoto da CI deve ser consultado no GitHub.
 
 Esta branch é candidata a integração. A criação/publicação desta etapa não activa a migração nas bases locais 8088 ou 8080.
+
+## Correcção de visibilidade dos cartões
+
+Os quatro valores de Colaboradores & Formação eram calculados e renderizados correctamente, mas a regra legada `.gf-kpi b { color: #fff }` deixava-os brancos sobre o cartão branco do tema aprovado. A cor dos valores foi corrigida no tema claro, mantendo dimensões, fontes, layout e efeitos. A referência do CSS recebeu uma nova versão para renovar a cache do navegador.
+
+As consultas e regras de cálculo não foram alteradas. A suite seleccionada passa a incluir `training.test_home_card_values`: **124 testes locais aprovados**, incluindo oito testes de valores sem anexos, universo de 1.510 sem histórico, contagem distinta por pessoa, filtros e registos legados/inactivos. A verificação visual da instalação local é registada separadamente, sem publicar capturas com dados pessoais.

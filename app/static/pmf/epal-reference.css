@@ -161,6 +161,8 @@ html.epal-reference main :is(p,small,figcaption,dt,dd,.helptext,.exec-muted,.exe
 html.epal-reference main a:not([class]){color:#005bc0}
 html.epal-reference .topbar #personSearch{padding-left:44px!important;padding-right:14px!important}
 html.epal-reference :is(.exec-glass-box,.exec-excellence,.exec-donut-wrap,.exec-direction-card,.gf-hero,.gf-kpi,.gf-result,.institutional-header,.kpi-evidence,.ficha-history-frame){background:#fff!important;border:1px solid #90c1da61!important;color:#172b4d!important;border-radius:20px!important;box-shadow:0 10px 30px -8px #00336612!important}
+/* The legacy KPI value is explicitly white; pair it with the light card surface. */
+html.epal-reference .gf-kpi>b{color:#002b5c!important;-webkit-text-fill-color:currentColor}
 html.epal-reference :is(.exec-glass-box,.exec-excellence){padding:24px!important}
 html.epal-reference .exec-glass-box :is(p,span,small),html.epal-reference .exec-excellence :is(p,small){color:#60748b!important}
 html.epal-reference .executive .exec-kpi-val{color:#002b5c!important;background:none!important;-webkit-text-fill-color:#002b5c!important}
