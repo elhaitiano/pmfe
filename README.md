@@ -96,4 +96,20 @@ python app/manage.py test training.test_release_lineage training.test_unified_kp
 
 Criar branches a partir desta base consolidada e rever os diffs antes de integrar. Preservar a estrutura/design aprovados e usar os cálculos partilhados, sem repetir fórmulas em templates ou exportações. `source-manifest.json` identifica os ficheiros publicados.
 
-Próximas fases ainda não implementadas: introdução directa dos testes inicial/final, evolução média da aprendizagem e novo fluxo simplificado de satisfação.
+## Testes e satisfação — nova etapa
+
+Disponível em Gestão de Formações → Avaliação → **Testes e satisfação**, e no resumo do grupo em Planeamento. Não altera o menu principal nem os quatro cartões do Dashboard.
+
+A migração `0029` acrescenta apenas duas tabelas: escalas por grupo e resultados por inscrição. Não modifica notas históricas, presenças, horas, certificados ou utilizadores. Aplicar com `python app/manage.py migrate`, após backup da base de destino e confirmação da linhagem 8088; nunca usar `--fake` para uma base da antiga main.
+
+- Introdução de pontos inicial/final, sem anexos; máximos independentes por teste e fixados após a primeira pontuação.
+- Normalização a /20; evolução final menos inicial somente nos pares completos, incluindo zero e evolução negativa.
+- Satisfação global de 1 a 5, com respostas/participações; ausências de resposta excluídas da média.
+- Agregação por grupo ou formação sobre resultados individuais, sem média de médias de grupos.
+- Correcções com motivo obrigatório e auditoria dos valores anteriores/posteriores; protecção contra gravações desactualizadas e duplicação da inscrição.
+- Excel (Resumo/Resultados) e PDF calculados a partir da mesma função, abrangendo todo o filtro e não apenas a página visível.
+- As menções são uma regra da plataforma, descrita no Manual, e não atribuem certificados. O circuito histórico de provas/tentativas continua separado e preservado.
+
+Validação desta etapa: **116 testes locais aprovados**, incluindo 25 novos testes; gravação e descarga Excel/PDF verificadas no Edge, sem erros JavaScript nem extravasamento horizontal da página em ecrã móvel. A suite seleccionada da CI inclui agora `training.test_direct_assessments`; o resultado remoto da CI deve ser consultado no GitHub.
+
+Esta branch é candidata a integração. A criação/publicação desta etapa não activa a migração nas bases locais 8088 ou 8080.

@@ -3,6 +3,24 @@
   "intro": "Guia da versão isolada em 8088. Os módulos e acções disponíveis dependem das permissões da sua conta. Os exemplos são de ensaio e não constituem registos de formação reais.",
   "sections": [
     {
+      "id": "testes-satisfacao",
+      "title": "Testes e satisfação — registo directo",
+      "steps": [
+        "Em Gestão de Formações → Avaliação, abra Testes e satisfação. Também pode abrir a partir do resumo de um grupo no Planeamento.",
+        "Seleccione a formação e consulte todos os grupos, ou escolha um grupo para preencher. Apenas utilizadores com as permissões existentes de consulta e alteração da formação podem editar.",
+        "Defina os máximos dos testes inicial e final antes do primeiro teste. Pode usar, por exemplo, 20, 60 ou 100 pontos. Cada teste é normalizado pela sua própria escala: pontos obtidos ÷ máximo × 20. A escala fica fixa depois de registar uma pontuação.",
+        "Preencha os pontos de cada formando. Zero é uma nota válida; deixe vazio um teste não realizado. A evolução é final menos inicial, incluindo valores negativos. As médias inicial e final da comparação utilizam exactamente os mesmos pares completos.",
+        "Registe a resposta à pergunta global: Qual a sua satisfação com esta formação? Escala: 1 muito insatisfeito, 2 insatisfeito, 3 nem satisfeito nem insatisfeito, 4 satisfeito, 5 muito satisfeito. Sem resposta não equivale a zero. A média apresenta o número de respostas e de participações elegíveis.",
+        "Clique em Gravar esta página antes de mudar de página ou de grupo. São apresentadas até 30 inscrições por página. Para substituir ou remover um valor existente, indique o motivo da correcção. A plataforma conserva o autor, a data e os valores anteriores e posteriores no registo de actividade.",
+        "Para consultar toda a formação, seleccione Todos os grupos. A plataforma agrega os resultados individuais, sem fazer médias das médias dos grupos. Uma pessoa em grupos legítimos diferentes representa participações diferentes. Grupos cancelados ficam excluídos dos indicadores, mas conservam os resultados para consulta.",
+        "Use Excel ou PDF para exportar todos os resultados do âmbito seleccionado, mesmo quando a tabela tem várias páginas. O Excel apresenta Resumo e Resultados com números já calculados, sem necessidade de anexar ficheiros de aprovação.",
+        "Menções da plataforma, calculadas sem arredondar previamente: abaixo de 10 Insuficiente; 10 a menos de 14 Suficiente; 14 a menos de 16 Bom; 16 a menos de 18 Muito Bom; 18 a 20 Excelente. Sem teste final: Sem avaliação. A menção não atribui, emite nem entrega certificados."
+      ],
+      "important": "Este registo não altera as notas históricas, os testes existentes, a assiduidade, as horas nem os certificados. As correcções são auditadas; um grupo com avaliações fica protegido contra eliminação. Novas tentativas formais continuam no mecanismo existente de provas; esta grelha regista o resultado inicial/final corrente.",
+      "image": "testes-satisfacao.png",
+      "image_alt": "Registo directo de testes e satisfacao com pessoas ficticias"
+    },
+    {
       "id": "inicio",
       "title": "1. Entrar e orientar-se",
       "steps": [

@@ -705,6 +705,8 @@ def attendance_excel(request,pk):
 
 
 def group_deletion_allowed(group):
+    if group.enrollments.filter(direct_assessment__isnull=False).exists() or hasattr(group, 'assessment_scale'):
+        return False
     if hasattr(group,'planningdraft') or group.evaluation_cycles.exists():
         return False
     return group.state in ['Planeada','Cancelada'] and not group_trainings(group).exists()

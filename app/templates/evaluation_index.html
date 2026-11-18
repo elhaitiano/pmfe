@@ -5,6 +5,7 @@
   {% include 'evaluation_nav.html' %}
   <section class="gf-panel">
     <div class="gf-body">
+      {% if perms.training.view_employee and perms.training.view_training and perms.training.view_traininggroup %}<a class="gf-btn" href="{% url 'direct_assessments' %}">Testes e satisfação</a>{% endif %}
       <p>Seleccione uma participação. Aprendizagem, logística e reacção são registos distintos.</p>
       <form method="get" class="mt-4">
         <label class="gf-label" for="evaluation-search">Trabalhador, número ou formação</label>

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block heading %}TESTES E SATISFAÇÃO{% endblock %}
+{% block content %}
+<style>
+.direct-assessment .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.direct-assessment table{min-width:860px}
+.direct-assessment td,.direct-assessment th{padding:10px;text-align:left}
+.direct-assessment td input{min-width:95px;max-width:150px}
+.direct-assessment td select{min-width:140px;max-width:180px}
+.direct-assessment .assessment-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+</style>
+<section class="content p-10 space-y-6 direct-assessment">
+{% include 'evaluation_nav.html' %}
+<section class="gf-panel"><div class="gf-body">
+<form method="get" class="flex flex-wrap gap-4 items-end">
+<label>Formação<select class="gf-field" name="course" required onchange="this.form.elements.group.value=''"><option value="">Seleccionar formação</option>{% for c in courses %}<option value="{{ c.pk|unlocalize }}" {% if c.pk == course.pk %}selected{% endif %}>{{ c.title }}</option>{% endfor %}</select></label>
+<label>Grupo<select class="gf-field" name="group"><option value="">Todos os grupos</option>{% for g in groups %}<option value="{{ g.pk|unlocalize }}" {% if g.pk == group.pk %}selected{% endif %}>{{ g.code }} · {{ g.start|date:'d/m/Y' }}</option>{% endfor %}</select></label>
+<button class="gf-btn">Consultar</button><a class="gf-btn alt" href="{% url 'direct_assessments' %}">Limpar</a>
+</form>
+{% if course %}
+<h2 class="font-bold mt-5">{{ course.title }}{% if group %} · {{ group.code }}{% endif %}</h2>
+<div class="assessment-summary mt-5">
+<article class="gf-panel p-4"><h3>Média final</h3><strong>{{ summary.final|floatformat:2|default:'—' }} /20</strong><p>{{ summary.final_count }} testes finais</p></article>
+<article class="gf-panel p-4"><h3>Evolução da aprendizagem</h3><strong>{{ summary.evolution|floatformat:2|default:'—' }} /20</strong><p>Inicial {{ summary.initial|floatformat:2|default:'—' }} → Final {{ summary.paired_final|floatformat:2|default:'—' }}</p></article>
+<article class="gf-panel p-4"><h3>Satisfação dos formandos</h3><strong>{{ summary.satisfaction|floatformat:2|default:'—' }} /5</strong><p>{{ summary.responses }} respostas / {{ summary.total }} participações</p></article>
+<article class="gf-panel p-4"><h3>Testes emparelhados</h3><strong>{{ summary.pairs }} / {{ summary.total }}</strong><p>Inicial e final do mesmo formando e grupo</p></article>
+</div>
+<div class="flex gap-4 mt-5"><a class="gf-btn alt" href="?{{ query }}&amp;export=xlsx">Excel</a><a class="gf-btn alt" href="?{{ query }}&amp;export=pdf">PDF</a></div>
+{% if not group %}<p class="mt-4">Seleccione um grupo para preencher os resultados.</p>{% endif %}
+{% if group.state == 'Cancelada' %}<p role="status">Grupo cancelado: sem edição e excluído dos indicadores.</p>{% endif %}
+{% if error %}<p class="mt-4" role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<input type="hidden" name="token" value="{{ token }}">
+{% if editable %}<div class="flex flex-wrap gap-4 mt-5">{% for field in scale_form %}<label>{{ field.label }} {{ field }} {{ field.errors }}</label>{% endfor %}</div>{% endif %}
+<div class="mt-5" style="overflow-x:auto"><table class="w-full"><thead><tr><th>N.º mec.</th><th>Formando</th><th>Inicial {% if editable %}(pontos){% else %}/20{% endif %}</th><th>Final {% if editable %}(pontos){% else %}/20{% endif %}</th><th>Evolução /20</th><th>Menção</th><th>Satisfação /5</th></tr></thead><tbody>
+{% for row in page %}<tr><td>{{ row.enrollment.employee.number }}</td><td>{{ row.enrollment.employee.name }}{% if not group %}<small> · {{ row.enrollment.group.code }}</small>{% endif %}</td>
+<td>{% if editable %}<label class="sr-only" for="{{ row.form.initial_points.id_for_label }}">Inicial de {{ row.enrollment.employee.name }}</label>{{ row.form.initial_points }}{{ row.form.initial_points.errors }}{% else %}{{ row.initial|floatformat:2|default:'—' }} /20{% endif %}</td>
+<td>{% if editable %}<label class="sr-only" for="{{ row.form.final_points.id_for_label }}">Final de {{ row.enrollment.employee.name }}</label>{{ row.form.final_points }}{{ row.form.final_points.errors }}{% else %}{{ row.final|floatformat:2|default:'—' }} /20{% endif %}</td>
+<td>{{ row.evolution|floatformat:2|default:'—' }}</td><td>{{ row.mention }}</td>
+<td>{% if editable %}<label class="sr-only" for="{{ row.form.satisfaction.id_for_label }}">Satisfação de {{ row.enrollment.employee.name }}</label>{{ row.form.satisfaction }}{{ row.form.satisfaction.errors }}{% else %}{{ row.satisfaction|default_if_none:'—' }}{% endif %}</td></tr>{% empty %}<tr><td colspan="7">Sem inscrições activas neste âmbito.</td></tr>{% endfor %}
+</tbody></table></div>
+{% if editable %}<button class="gf-btn mt-5">Gravar esta página</button>{% endif %}
+</form>
+<nav class="mt-5" aria-label="Paginação dos resultados">{% if page.has_previous %}<a class="gf-btn alt" href="?{{ query }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %} {{ page.number }} / {{ page.paginator.num_pages }} {% if page.has_next %}<a class="gf-btn alt" href="?{{ query }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}</nav>
+<details class="mt-5"><summary>Regras de cálculo</summary><p>Testes normalizados a /20. Evolução: final menos inicial, apenas nos pares completos. Satisfação: pergunta global «Qual a sua satisfação com esta formação?», de 1 (muito insatisfeito) a 5 (muito satisfeito). Campos vazios não contam como zero. As escalas ficam fixas após o primeiro teste.</p><p>Menções da plataforma: abaixo de 10 Insuficiente; 10 a menos de 14 Suficiente; 14 a menos de 16 Bom; 16 a menos de 18 Muito Bom; 18 a 20 Excelente. Estas menções não atribuem certificados.</p></details>
+{% endif %}
+</div></section></section>
+{% endblock %}

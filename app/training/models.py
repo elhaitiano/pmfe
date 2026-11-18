@@ -584,6 +584,7 @@ class AssistantGuide(models.Model):
     class Meta:
         ordering = ['title', 'pk']
 from .evaluation_models import TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
+from .direct_assessment_models import AssessmentScale, DirectAssessment
 from .competency_models import Competency, RoleProfile, RoleCompetency, EvaluationCycle, CycleCompetency, CycleRater, CompetencyResponse, DevelopmentAction
 from .competency_models import PrivateResponseRevision
 from .scheduling_models import TrainingCentre, TrainingRoom, PlanningLock

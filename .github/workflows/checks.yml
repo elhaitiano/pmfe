@@ -16,4 +16,4 @@ jobs:
       - run: python app/manage.py check
       - run: python app/manage.py makemigrations --check --dry-run
       - run: python app/manage.py collectstatic --noinput
-      - run: python app/manage.py test training.test_release_lineage training.test_unified_kpis training.test_practical_catalogue training.test_planning training.test_scheduling_f6 training.test_attendance_management training.test_dashboard training.test_indicators training.test_certificate_register
+      - run: python app/manage.py test training.test_direct_assessments training.test_release_lineage training.test_unified_kpis training.test_practical_catalogue training.test_planning training.test_scheduling_f6 training.test_attendance_management training.test_dashboard training.test_indicators training.test_certificate_register
