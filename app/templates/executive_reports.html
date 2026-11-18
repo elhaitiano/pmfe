@@ -6,7 +6,6 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
 {% endblock %}
 {% block content %}
 <div class="executive">
-
   <section class="exec-hero">
     <div class="exec-badge-live">
       <span class="pulse-ring"></span>Relatórios institucionais e arquivo
@@ -14,10 +13,10 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
     <p class="exec-hero-copy">
       Relatórios mensais, trimestrais, semestrais, anuais ou personalizados, com resumo automático, gráficos vectoriais, logotipo EPAL e paginação.
     </p>
-    <a href="{% url 'dashboard' %}?{{ query }}" class="exec-button">Voltar ao Dashboard</a>
+    <a href="{% url 'dashboard' %}?{{ query|unlocalize }}" class="exec-button">Voltar ao Dashboard</a>
   </section>
   {% if user.is_staff %}
-  <p class="exec-note">Os relatórios deste centro conservam os totais históricos, incluindo dados provisórios. Consulte os <a class="text-secondary" href="{% url 'indicator_index' %}">Indicadores confirmados</a> para os denominadores de validação e os resultados 360° autorizados.</p>
+  <p class="exec-note">Os relatórios conservam os totais históricos, incluindo dados provisórios. Indicadores validados e resultados 360°: Gestão de Formações → Avaliação.</p>
   {% endif %}
   {% include 'executive_filters.html' %}
   <section class="exec-glass-box">
@@ -34,17 +33,18 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
       Para um relatório por direcção, seleccione a direcção e aplique os filtros. A opção “Todas as direcções” gera o relatório geral. Os relatórios arquivados conservam os dados do momento da geração.
     </p>
     <div class="exec-actions" style="margin-top:20px">
-      <a class="exec-button" href="{% url 'executive_preview' %}?{{ query }}">Pré-visualizar PDF</a>{% if user.is_staff %}
+      <a class="exec-button" href="{% url 'executive_preview' %}?{{ query|unlocalize }}">Pré-visualizar PDF</a>{% if user.is_staff %}
       <form action="{% url 'executive_create' %}" method="post" id="execReportForm">
         {% csrf_token %}
         {% for field in filter_form %}
-        <input type="hidden" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}">{% endfor %}
+        <input type="hidden" name="{{ field.name|unlocalize }}" value="{{ field.value|default_if_none:''|unlocalize }}">{% endfor %}
         <button class="exec-button primary" type="submit">
           <span class="material-symbols-outlined">archive</span>Gerar, arquivar e descarregar PDF
         </button>
       </form>
       {% endif %}
-      <a class="exec-button" href="{% url 'dashboard' %}?{{ query }}{% if query %}&amp;{% endif %}export=csv">Exportar resumo CSV</a>
+      <a class="exec-button" href="{% url 'dashboard' %}?{{ query|unlocalize }}{% if query %}&amp;{% endif %}export=xlsx">Exportar Excel</a>
+      <a class="exec-button" href="{% url 'dashboard' %}?{{ query|unlocalize }}{% if query %}&amp;{% endif %}export=csv">Exportar resumo CSV</a>
     </div>
     <p class="exec-note" id="execReportStatus" role="status">
     </p>
@@ -60,7 +60,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
       <label for="reportSearch">
         Pesquisar no arquivo
       </label>
-      <input id="reportSearch" name="q" value="{{ archive_search }}" placeholder="Mês, ano ou direcção">
+      <input id="reportSearch" name="q" value="{{ archive_search|unlocalize }}" placeholder="Mês, ano ou direcção">
       <button class="exec-button" type="submit">
         Pesquisar
       </button>
@@ -92,7 +92,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
           {% for item in archive_page %}
           <tr>
             <td>
-              {{ item.title }}<small>{{ item.filters.area|default:'Todos os domínios' }}</small>
+              {{ item.title }}<small>{{ item.filters.area|default:'Todas as áreas' }}</small>
             </td>
             <td>
               {{ item.created|date:'d/m/Y H:i' }}
@@ -122,7 +122,7 @@ CENTRO DE RELATÓRIOS{% endblock %}{% block extra_styles %}
     </div>
     <nav class="exec-pagination">
       {% if archive_page.has_previous %}
-      <a href="?q={{ archive_search|urlencode }}&amp;page={{ archive_page.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ archive_page.number }}/{{ archive_page.paginator.num_pages }}</span>{% if archive_page.has_next %}<a href="?q={{ archive_search|urlencode }}&amp;page={{ archive_page.next_page_number }}">Seguinte</a>{% endif %}
+      <a href="?q={{ archive_search|urlencode|unlocalize }}&amp;page={{ archive_page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>Página {{ archive_page.number|unlocalize }}/{{ archive_page.paginator.num_pages }}</span>{% if archive_page.has_next %}<a href="?q={{ archive_search|urlencode|unlocalize }}&amp;page={{ archive_page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
     </nav>
     <p class="exec-note">
       A cópia de segurança da plataforma inclui a base e os PDFs arquivados quando existem relatórios. Guarde o ZIP completo para repor ambos.

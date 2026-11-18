@@ -1,4 +1,4 @@
 <div class="pmf-pagination">
   {% if page.has_previous %}
-  <a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;status={{ status }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;status={{ status }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+  <a href="?q={{ q|urlencode|unlocalize }}&amp;direction={{ direction|urlencode|unlocalize }}&amp;status={{ status|unlocalize }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>{{ page.number|unlocalize }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode|unlocalize }}&amp;direction={{ direction|urlencode|unlocalize }}&amp;status={{ status|unlocalize }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
 </div>

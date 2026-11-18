@@ -99,9 +99,10 @@ class IndicatorTests(TestCase):
 
     def test_full_backup_reserved_for_superuser_and_hidden_for_staff(self):
         self.assertEqual(self.client.post(reverse('backup')).status_code,403)
+        self.assertEqual(self.client.get(reverse('ux_administration')).status_code,403)
         self.assertNotContains(self.client.get(reverse('home')),'action="/backup/"')
         self.admin.is_superuser=True; self.admin.save(update_fields=['is_superuser'])
-        self.assertContains(self.client.get(reverse('home')),'action="/backup/"')
+        self.assertContains(self.client.get(reverse('ux_administration')),'action="/backup/"')
 
 
 from django.test import TransactionTestCase
@@ -111,8 +112,8 @@ from django.db.migrations.executor import MigrationExecutor
 
 class CompetencyMigrationTests(TransactionTestCase):
     def test_existing_results_preserved_without_inventing_validation_or_competencies(self):
-        before=[('training','0017_formation_evaluations')]
-        after=[('training','0018_competencies_development_indicators')]
+        before=[('training','0027_uniform_training_areas')]
+        after=[('training','0028_stabilization_compatibility')]
         executor=MigrationExecutor(connection)
         executor.migrate(before)
         try:

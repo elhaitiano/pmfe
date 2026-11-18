@@ -1,0 +1,16 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel">
+  <h2>Áreas de formação — classificação por concluir</h2>
+  <p>As únicas categorias são: {{ area_categories|join:' · ' }}.</p>
+  <p>{{ issues|length }} ocorrências · {{ affected_participations }} participações · {{ affected_people }} formandos distintos. Os dados e as horas mantêm-se nos totais gerais; a parte sem categoria não é atribuída a uma quinta área.</p>
+  <div class="batch-scroll"><table class="batch-table">
+    <thead><tr><th>Formação</th><th>Motivo / decisão necessária</th><th>Participações / formandos</th><th>Acção</th></tr></thead>
+    <tbody>{% for issue in issues %}<tr>
+      <td>{{ issue.title }}<small>Categoria anterior: {{ issue.original_area|default:'Não registada' }}</small></td>
+      <td>{{ issue.reason }}</td><td>{{ issue.participations }} / {{ issue.people }}</td>
+      <td>{% if issue.course %}<a class="gf-btn alt" href="{% url 'course_edit' issue.course.pk %}">Classificar no catálogo</a>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="4">Não existem classificações pendentes.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

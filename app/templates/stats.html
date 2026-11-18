@@ -7,7 +7,7 @@
       Horas de Formação
     </p>
     <h3 class="text-3xl font-bold">
-      {{ stats.hours|floatformat:2|default:'Sem dados' }} H
+      {% if stats.verified_hours_records %}{{ stats.hours|floatformat:1 }} H{% else %}Sem registo{% endif %}
     </h3>
   </div>
 </div>
@@ -33,7 +33,7 @@
       Assiduidade
     </p>
     <h3 class="text-3xl font-bold">
-      {% if stats.attendance is None %}Sem dados{% else %}{{ stats.attendance|floatformat:2 }}%{% endif %}
+      {{ stats.attendance|floatformat:1 }}%
     </h3>
   </div>
 </div>
@@ -50,4 +50,3 @@
     </h3>
   </div>
 </div>
-

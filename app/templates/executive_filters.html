@@ -1,7 +1,7 @@
 <form method="get" class="exec-filters no-print" id="executiveFilters">
   {% for field in filter_form %}
-  <div class="exec-filter" data-field="{{ field.name }}">
-    <label for="{{ field.id_for_label }}">
+  <div class="exec-filter" data-field="{{ field.name|unlocalize }}">
+    <label for="{{ field.id_for_label|unlocalize }}">
       {{ field.label }}
     </label>
     {{ field }}{% for error in field.errors %}
@@ -14,8 +14,8 @@
   <button class="exec-button primary" type="submit">
     <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>Aplicar filtros
   </button>
-  <a class="exec-reset" href="{{ request.path }}">Limpar</a>
+  <a class="exec-reset" href="{{ request.path|unlocalize }}">Limpar</a>
 </form>
 <p class="exec-scope">
-  <strong>{{ period_label }}</strong> · {{ selected.direction|default:'Todas as direcções' }} · {{ selected.area|default:'Todos os domínios' }} · {{ selected.status|default:'Todas as situações' }}<br>Actualizado em {{ generated_at|date:'d/m/Y H:i' }} · Horas agregadas de participantes, por data de início da formação.
+  <strong>{{ period_label }}</strong> · {{ selected.direction|default:'Todas as direcções' }} · {{ selected.area|default:'Todas as áreas' }} · {{ selected.status|default:'Todas as situações' }}<br>Actualizado em {{ generated_at|date:'d/m/Y H:i' }} · Horas agregadas de participantes, por data de início da formação.
 </p>

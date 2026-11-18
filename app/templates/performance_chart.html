@@ -1,0 +1,87 @@
+{% load l10n %}
+<section class="performance-card" data-performance-card data-scale="{{ chart_scale|default:20|unlocalize }}" aria-labelledby="performance-heading">
+  <h2 id="performance-heading"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span>Evolução de Desempenho</h2>
+  {% if chart_scales %}<form method="get" class="no-print"><label>Escala da fonte <select class="gf-field" name="scale" onchange="this.form.submit()">{% for scale in chart_scales %}<option value="{{ scale|unlocalize }}" {% if chart_scale == scale %}selected{% endif %}>/{{ scale }}</option>{% endfor %}</select></label><input type="hidden" name="year" value="{{ year|unlocalize }}"><input type="hidden" name="area" value="{{ area|unlocalize }}"></form>{% endif %}
+  {% if chart_dots %}
+  <div class="performance-plot">
+    <svg viewBox="0 0 310 166" role="group" aria-label="Evolução cronológica das notas registadas, na escala {{ chart_scale }}">
+      <defs><linearGradient id="performance-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#35e4ce" stop-opacity=".42"/><stop offset="100%" stop-color="#35e4ce" stop-opacity=".015"/></linearGradient></defs>
+      <g class="performance-grid" aria-hidden="true"><path d="M25 10H285 M25 40H285 M25 70H285 M25 100H285 M25 130H285"/></g>
+      <g class="performance-scale" aria-hidden="true"><text x="1" y="14">{{ chart_scale|default:20 }}</text><text x="1" y="74">{{ chart_mid|default:10 }}</text><text x="8" y="134">0</text></g>
+      {% if chart_dots|length > 1 %}<polygon points="{{ chart_area|unlocalize }}" fill="url(#performance-gradient)"/>
+      <polyline class="performance-line" points="{{ chart_points|unlocalize }}"/>{% endif %}
+      {% for point in chart_dots %}
+      <g class="performance-point" tabindex="0" role="button" aria-pressed="false" aria-label="{{ point.title }}; {{ point.date_label }}; nota {{ point.grade }} de {{ chart_scale|default:20 }}{% if point.simulated %}; demonstração{% endif %}" aria-describedby="performance-tooltip"
+         data-title="{{ point.title|unlocalize }}" data-grade="{{ point.grade|unlocalize }}" data-period="{{ point.date_label|unlocalize }}" data-trainer="{{ point.trainer|unlocalize }}" data-simulated="{{ point.simulated|yesno:'true,false'|unlocalize }}">
+        <circle class="performance-hit" cx="{{ point.x|unlocalize }}" cy="{{ point.y|unlocalize }}" r="13"/>
+        <circle class="performance-halo" cx="{{ point.x|unlocalize }}" cy="{{ point.y|unlocalize }}" r="8"/>
+        <circle class="performance-node" cx="{{ point.x|unlocalize }}" cy="{{ point.y|unlocalize }}" r="3"/>
+      </g>{% endfor %}
+      <g class="performance-dates" aria-hidden="true"><text x="25" y="156">{{ chart_first_date }}</text>{% if chart_dots|length > 1 %}<text x="285" y="156" text-anchor="end">{{ chart_last_date }}</text>{% endif %}</g>
+    </svg>
+    <div id="performance-tooltip" class="performance-tooltip" role="tooltip" hidden><strong data-detail="title"></strong><span data-detail="period"></span><span class="performance-detail-grade" data-detail="grade"></span><span data-detail="trainer"></span><span class="performance-demo" data-detail="demo"></span></div>
+  </div>
+  <p class="performance-hint">Passe o rato ou seleccione um ponto para ver os detalhes da formação.</p>
+  {% if chart_dots|length == 1 %}<p class="performance-single">Uma nota registada; ainda não há comparação entre formações.</p>{% endif %}
+  {% else %}<div class="performance-empty"><span class="material-symbols-outlined" aria-hidden="true">show_chart</span><p>Sem notas registadas.</p><small>A evolução aparecerá quando existirem notas disponíveis.</small></div>{% endif %}
+</section>
+<style>
+.performance-card{position:relative;min-width:0;padding:24px 20px 20px;background:linear-gradient(145deg,#143254,#102a49);border:1px solid #36516b;border-radius:12px;box-shadow:0 8px 24px #00132224;}
+.performance-card h2{display:flex;align-items:center;gap:9px;margin:0;color:#dbe8fa;font-size:16px;font-weight:700;line-height:1.4;}
+.performance-card h2 .material-symbols-outlined{color:#a7c8f8;font-size:21px;}
+.performance-plot{position:relative;margin:28px 0 12px;}
+.performance-plot svg{display:block;width:100%;height:auto;overflow:visible;}
+.performance-grid path{fill:none;stroke:#a5c9ec;stroke-opacity:.08;stroke-width:1;}
+.performance-scale,.performance-dates{fill:#839dbb;font-size:9px;font-family:inherit;}
+.performance-line{fill:none;stroke:#45ead3;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}
+.performance-point{cursor:pointer;outline:none;}
+.performance-hit{fill:transparent;}
+.performance-node{fill:#132c4c;stroke:#c8d8f6;stroke-width:1.5;vector-effect:non-scaling-stroke;}
+.performance-halo{fill:#47efd6;opacity:0;}
+.performance-point:hover .performance-halo,.performance-point:focus-visible .performance-halo,.performance-point[data-active] .performance-halo{opacity:.23;}
+.performance-point:hover .performance-node,.performance-point[data-active] .performance-node{fill:#5ff4d6;stroke:#effffb;}
+.performance-point:focus-visible .performance-node{stroke:#ffe18a;stroke-width:3;}
+.performance-tooltip{position:absolute;left:6px;right:6px;top:0;z-index:5;display:grid;gap:5px;padding:13px 15px;background:#071d35f5;border:1px solid #47c7ba;border-radius:10px;color:#c4d6eb;font-size:12px;line-height:1.45;box-shadow:0 10px 25px #0005;pointer-events:none;}
+.performance-tooltip[hidden]{display:none!important;}
+.performance-tooltip strong{font-size:13px;color:#eff8ff;overflow-wrap:anywhere;}
+.performance-detail-grade{font-weight:700;color:#5ff4d6;}
+.performance-demo{color:#f8d58d;}
+.performance-hint,.performance-single{font-size:11px;line-height:1.6;color:#8fa8c6;margin:0;}
+.performance-single{margin-top:8px;color:#a6bed7;}
+.performance-empty{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#a2bbd5;text-align:center;}
+.performance-empty>.material-symbols-outlined{font-size:35px;color:#49cdbd;opacity:.7;}
+.performance-empty small{font-size:11px;line-height:1.5;}
+@media(max-width:600px){.performance-card{padding:20px 16px;}.performance-plot{margin-top:24px;}}
+@media(forced-colors:active){.performance-line,.performance-node{stroke:CanvasText;}.performance-point:focus-visible .performance-node{stroke:Highlight;}}
+</style>
+<script>
+(() => {
+  const card = document.querySelector('[data-performance-card]');
+  if (!card) return;
+  const tooltip = card.querySelector('[role="tooltip"]');
+  if (!tooltip) return;
+  const points = Array.from(card.querySelectorAll('.performance-point'));
+  let pinned = null;
+  function hide() {
+    tooltip.hidden = true;
+    points.forEach(point => { point.removeAttribute('data-active'); point.setAttribute('aria-pressed', 'false'); });
+  }
+  function show(point) {
+    points.forEach(item => { item.toggleAttribute('data-active', item === point); item.setAttribute('aria-pressed', String(item === pinned)); });
+    const values = {title:point.dataset.title,period:point.dataset.period,grade:'Nota: ' + point.dataset.grade + ' /' + (card.dataset.scale || '20'),trainer:point.dataset.trainer || 'Formador não registado',demo:point.dataset.simulated === 'true' ? 'Nota de demonstração — não corresponde a uma prova validada.' : ''};
+    Object.entries(values).forEach(([key,value]) => { tooltip.querySelector('[data-detail="'+key+'"]').textContent = value; });
+    tooltip.hidden = false;
+  }
+  points.forEach(point => {
+    point.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch' && !pinned) show(point); });
+    point.addEventListener('pointerleave', () => { if (!pinned && document.activeElement !== point) hide(); });
+    point.addEventListener('focus', () => show(point));
+    point.addEventListener('blur', () => { if (!pinned) hide(); });
+    function toggle() { if (pinned === point) { pinned = null; hide(); } else { pinned = point; show(point); } }
+    point.addEventListener('click', toggle);
+    point.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); } });
+  });
+  document.addEventListener('pointerdown', event => { if (!card.contains(event.target)) { pinned = null; hide(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { pinned = null; hide(); } });
+})();
+</script>

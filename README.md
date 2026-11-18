@@ -1,372 +1,99 @@
-# PMFE
+﻿# PMFE — base consolidada 8088
 
-**Plataforma de Monitorização de Formação EPAL**, no âmbito do projecto PROÁGUA.
+Plataforma de Monitorização da Formação EPAL / PROÁGUA.
 
-A PMFE reúne o cadastro de técnicos, o planeamento de formações, as inscrições, as presenças, os resultados e a entrega de certificados. Permite acompanhar o percurso formativo de cada técnico e produzir indicadores e relatórios para apoiar a gestão.
+**Branch de trabalho:** `integracao/pmfe-8088-consolidada-20261118`.
+Esta branch reúne a estrutura funcional e o design aprovado da 8088, o catálogo simplificado e os cálculos seleccionados do GitHub adaptados à estrutura existente. O `main` anterior permanece preservado. Para trabalhar nesta versão, ambos os colaboradores devem seleccionar esta branch.
 
-A aplicação funciona localmente num único computador, através do navegador, com interface em português. Após a instalação das dependências, as funcionalidades principais estão disponíveis sem ligação à Internet.
+## O que está incluído
 
-## Funcionalidades
+- Dashboard Executivo com quatro cartões principais, H/D, distribuição de horas, participação por Direcção e Quadro de Excelência.
+- Gestão de Formações: catálogo, grupos, calendário, inscrições, importação de assiduidade, validação de grupos, recursos, formadores e certificados.
+- Fichas individuais, histórico, impressão/PDF e exportações Excel/PDF.
+- Pesquisa de funcionários com sugestões, consultas sobrepostas, notificações e manual interno com exportação PDF.
+- Avaliação, indicadores confirmados e 360° dentro de Gestão de Formações.
+- Administração, permissões, auditoria e mecanismos de backup/recuperação.
+- Login aquático, marca branca, efeitos de elevação e animação da torre antes da entrada.
 
-| Módulo | O que permite fazer |
-| --- | --- |
-| Cadastro de técnicos | Pesquisar por nome ou número mecanográfico, criar e corrigir fichas, consultar direcção, categoria e contactos. |
-| Histórico de formação | Consultar e actualizar participações, duração, presenças, notas, resultados e entrega de certificados. |
-| Ficha individual | Consultar dados e indicadores do técnico, visualizar o histórico e imprimir ou guardar a ficha em PDF pelo navegador. |
-| Catálogo de formações | Criar acções com categoria, objectivos e duração prevista; editar ou arquivar acções existentes. |
-| Planeamento e turmas | Organizar grupos G1, G2… por acção, com capacidade, local, formador, horários e calendário de dias efectivos, incluindo dias não consecutivos. |
-| Inscrições | Seleccionar participantes, rever avisos de histórico, justificar repetições e transferir inscrições entre grupos ainda não iniciados. |
-| Actualização colectiva | Registar presenças verificadas, notas, resultados e certificados de uma mesma edição, com revisão antes da confirmação. |
-| Listas de presença | Gerar listas diárias em PDF ou Excel segundo o modelo institucional, com espaços para assinatura. |
-| Dashboard executivo | Consultar indicadores e gráficos, filtrar por período, direcção, área e situação, e explorar os registos correspondentes. |
-| Relatórios e arquivo | Pré-visualizar, gerar, arquivar e descarregar relatórios PDF por período ou direcção. |
-| Assistente EPAL | Pesquisar orientações locais, seguir passos e utilizar atalhos. Os administradores podem editar e publicar os guias. |
-| Certificados e documentos privados | Distinguir emissão, declaração e entregas ao participante/RH; anexar CV, certificados e comprovativos PDF até 10 MB, com acesso administrativo. |
-| Cópias de segurança e auditoria | Exportar a base, os relatórios e os documentos privados, conservar cópias antes das migrações e consultar o registo das operações administrativas. |
+A estrutura da 8088 foi conservada. As funções diárias por sessão/efectivo DRH exclusivas da antiga versão GitHub não foram copiadas integralmente: foram incorporadas as regras de cálculo compatíveis com os dados da 8088. Os serviços puros `git_kpi_service.py` e `git_certification.py` provêm do commit `8c126d7`, com adaptação em `operational_kpis.py`.
 
-A eliminação de turmas preparatórias e de acções criadas por engano exige acesso administrativo, motivo e confirmação `ELIMINAR`. Turmas com histórico e acções com grupos ou histórico associado ficam protegidas contra eliminação.
+## Dados e compatibilidade
 
-## Percurso de utilização
+O Git contém código, recursos da aplicação e modelos vazios. **Não contém a base dos 1.510 funcionários, contas, palavras-passe, documentos privados, certificados pessoais ou os 100 formandos experimentais.** Uma instalação nova começa vazia; dados de produção são transferidos separadamente pelo responsável, sem os acrescentar ao Git. As imagens do manual usam dados fictícios de ensaio.
 
-1. Criar ou seleccionar uma acção no catálogo.
-2. Criar um grupo e definir dias, horário, capacidade, local e formador.
-3. Seleccionar os técnicos, rever os avisos e confirmar as inscrições.
-4. Gerar a lista de presença de cada dia em PDF ou Excel.
-5. Iniciar o grupo para criar as participações no histórico.
-6. Actualizar presenças verificadas, notas, resultados e entregas de certificados.
-7. Consultar indicadores, produzir relatórios e guardar cópias de segurança.
+Esta branch usa a linhagem de migrações da 8088, diferente da antiga branch `main`. O arranque verifica a compatibilidade e recusa uma base de outra linhagem. Não copie o antigo ficheiro SQLite do GitHub para esta instalação nem utilize `migrate --fake` para contornar a verificação. Use uma pasta/volume novo. Uma transferência de dados entre linhagens exige um procedimento específico, não incluído nesta publicação.
 
-## Regras de tratamento dos dados
+Para uma cópia privada da própria base consolidada 8088, os dados e o ficheiro `secret.key` permanecem fora do Git e devem ser transferidos pelo responsável. Conserve uma cópia anterior antes de qualquer instalação sobre dados existentes.
 
-- Uma inscrição não confirma presença nem formação realizada.
-- **Horas previstas:** dias de formação × horas por dia.
-- **Horas realizadas:** dias de presença × horas por dia.
-- **Assiduidade individual:** presenças ÷ dias previstos × 100.
-- **Assiduidade consolidada:** soma das presenças ÷ soma dos dias elegíveis × 100.
-- Uma nota zero é válida e distingue-se de uma nota não preenchida.
-- O resultado da formação e a entrega do certificado são informações independentes.
-- Zero presenças sem verificação não confirma uma ausência.
-- Um PDF arquivado conserva os dados do momento da geração; alterações posteriores não reescrevem o documento.
+## Instalação local — Python 3.12
 
-## Tecnologias e arquitectura
+No repositório, seleccionar a branch:
 
-| Componente | Tecnologia |
-| --- | --- |
-| Backend | Python 3.12, Django e Waitress |
-| Interface | Templates Django, HTML, CSS/Tailwind já compilado e JavaScript |
-| Serviço frontend | Nginx para ficheiros estáticos e encaminhamento de pedidos para Django |
-| Base de dados | SQLite num volume Docker persistente |
-| Documentos | ReportLab para PDF, openpyxl para importação Excel e modelo XLSX para listas de presença |
-| Execução | Docker Compose |
-
-```text
-Navegador — http://localhost:8080
-    │
-    ▼
-frontend: Nginx
-    ├── CSS, JavaScript, imagens e fontes locais
-    └── backend: Django + Waitress
-                    └── volume database
-                         ├── pmf.sqlite3
-                         ├── secret.key
-                         ├── reports/
-                         ├── documents/ (PDFs privados)
-                         └── backups/
+```sh
+git fetch origin
+git switch --track origin/integracao/pmfe-8088-consolidada-20261118
 ```
 
-Existem **dois serviços Docker**, `frontend` e `backend`. `database` é um volume persistente, não um terceiro contentor. Django gera as páginas HTML no servidor.
+Criar um ambiente virtual e instalar as dependências. Em Windows/PowerShell:
 
-## Instalação
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r app/requirements.txt
+.\.venv\Scripts\python.exe app/manage.py migrate
+.\.venv\Scripts\python.exe app/manage.py createsuperuser
+.\.venv\Scripts\python.exe app/manage.py collectstatic --noinput
+.\.venv\Scripts\python.exe scripts/run_local.py --port 8088
+```
 
-### Requisitos
+Abrir **http://127.0.0.1:8088/entrar/**. Se essa porta já estiver ocupada, usar `--port 8090` para uma instalação de ensaio.
 
-- **Linux:** Docker Engine e Docker Compose instalados e em execução.
-- **Windows:** Docker Desktop configurado para contentores Linux.
-- Ligação à Internet na primeira construção, caso as imagens e dependências ainda não estejam disponíveis localmente.
+Em Linux/macOS, os mesmos comandos usam `.venv/bin/python` em vez de `.\.venv\Scripts\python.exe`.
 
-Não é necessário instalar Python, Node.js ou Microsoft Excel no computador anfitrião para utilizar a aplicação com Docker.
+Por defeito, os dados ficam em `.runtime/pmfe-8088/`, fora do controlo Git. Não existe conta ou palavra-passe pré-definida. O administrador é criado pelo comando acima. A recuperação de palavra-passe mantém a orientação local: contactar o administrador.
 
-### Primeiro arranque
+## Docker
 
-Descarregue ou clone o repositório **pmfe**. A partir da pasta que contém `compose.yaml`, execute:
+```sh
+docker compose up --build -d
+```
 
-```bash
-docker compose config --quiet
-docker compose build
-docker compose up -d --wait
+O endereço predefinido é **http://127.0.0.1:8088/**. O projecto Compose chama-se `pmfe-8088` e utiliza um volume próprio `database_8088`, separado do volume da versão anterior. `PMF_PORT` permite escolher outra porta. O arranque não cria utilizadores ou dados de demonstração.
+
+Criar o administrador:
+
+```sh
 docker compose exec backend python manage.py createsuperuser
 ```
 
-Abra **http://localhost:8080** e entre com a conta criada.
+Os ficheiros do manual são servidos pelo backend. Fontes, imagens e scripts da aplicação estão incluídos para funcionamento sem serviços externos depois da instalação das dependências. Não iniciar estes comandos sobre o serviço operacional da porta 8080.
 
-Um volume novo começa com uma base vazia. Os dados pessoais, as contas e as cópias de segurança não são distribuídos com o repositório. As migrações são aplicadas automaticamente no arranque do backend.
+## Regras dos cálculos
 
-### Configuração local
+- Horas frequentadas: presenças verificadas e duração conhecida, sem contar inscrições como presença.
+- Assiduidade: horas de presença verificadas / horas previstas correspondentes; não é uma média simples de percentagens.
+- H/D: horas verificadas importadas / 7. Dias efectivos são distintos e dependem de marcações diárias suficientes.
+- Dados desconhecidos e zero confirmado permanecem distintos.
+- Certificado obtido: indicação explícita Sim/Não. Não confirma automaticamente emissão nem entrega.
+- Entregas históricas e declarações administrativas existentes são preservadas.
+- Filtros mantêm a base temporal indicada no ecrã, incluindo o início da formação; esta publicação não introduz reconstrução mensal de estados passados nem durações diferentes por sessão dentro do mesmo grupo.
 
-O repositório chama-se `pmfe`. O ficheiro Compose define `pmf-containers` como nome de projecto por defeito. Para uma **nova instalação**, pode definir outro nome num ficheiro `.env`, junto de `compose.yaml`:
+## Catálogo e eliminação
 
-```dotenv
-COMPOSE_PROJECT_NAME=pmfe
-PMF_PORT=8080
+Formações disponíveis podem receber grupos sem confirmação documental prévia. Registos explicitamente marcados para revisão e formações arquivadas continuam protegidos. Criar um grupo/inscrição não cria automaticamente horas, notas ou certificados.
+
+O catálogo apresenta Criar grupo, Ver grupos, Editar e Eliminar formação. A lista e o resumo do grupo apresentam Eliminar grupo quando permitido. A eliminação exige motivo e confirmação `ELIMINAR`, fica auditada e não permite apagar grupos com histórico nem formações com associações protegidas. O número do grupo eliminado não é reutilizado.
+
+## Validação e trabalho conjunto
+
+Foram aprovados 88 testes dos lotes funcionais. A publicação acrescenta três testes da protecção de linhagem, totalizando 91 verificações na suite seleccionada. Não se afirma que todos os testes históricos do repositório tenham sido actualizados ao design e às regras actuais.
+
+```sh
+python app/manage.py check
+python app/manage.py makemigrations --check --dry-run
+python app/manage.py collectstatic --noinput
+python app/manage.py test training.test_release_lineage training.test_unified_kpis training.test_practical_catalogue training.test_planning training.test_scheduling_f6 training.test_attendance_management training.test_dashboard training.test_indicators training.test_certificate_register
 ```
 
-**Numa instalação existente, mantenha o nome de projecto Compose e o ficheiro `.env` utilizados anteriormente.** Mudar o nome do projecto selecciona outro volume e pode apresentar uma base vazia. O exemplo acima não deve substituir a configuração de uma instalação que já contém dados.
+Criar branches a partir desta base consolidada e rever os diffs antes de integrar. Preservar a estrutura/design aprovados e usar os cálculos partilhados, sem repetir fórmulas em templates ou exportações. `source-manifest.json` identifica os ficheiros publicados.
 
-Se a porta 8080 estiver ocupada, verifique se existe outra instância da aplicação em execução. Para escolher outra porta, defina `PMF_PORT=8081` no `.env`, execute `docker compose up -d --wait` e aceda a http://localhost:8081.
-
-O serviço é publicado apenas em `127.0.0.1`, para acesso no próprio computador.
-
-## Contas e permissões
-
-- Utilizadores autenticados podem consultar dados e documentos de acordo com as permissões das páginas.
-- Administradores podem alterar dados, gerir turmas, publicar guias e efectuar eliminações autorizadas. A cópia integral da base é reservada a superutilizadores, porque inclui respostas privadas 360°.
-- A conta criada com `createsuperuser` tem acesso administrativo. Não é necessário recriá-la em cada actualização quando a mesma base é conservada.
-- As permissões são verificadas no servidor.
-
-## Importação de dados Excel
-
-Em **Administração → Preparar importação Excel**, um superutilizador pode enviar um `.xlsx` ou `.xlsm` (até 10 MB), pré-visualizar alterações e descarregar um relatório JSON. **A página apenas simula: não grava trabalhadores nem participações e não conserva o Excel enviado.** O relatório contém dados pessoais e deve ficar numa pasta privada.
-
-Os cabeçalhos são detectados nas primeiras 30 linhas, incluindo cabeçalhos na primeira linha e nomes alternativos. Datas Excel numéricas ou em texto respeitam a época do ficheiro; identificadores textuais e máscaras de zeros são preservados. Zeros já perdidos numa célula numérica sem máscara não podem ser reconstruídos automaticamente e geram um aviso. Fórmulas em campos importados exigem valores confirmados, sem execução de fórmulas ou VBA.
-
-A fonte principal de cadastro é `FUNCIONARIOS`, completada por `FUNCIONARIOS_EPAL` ou `BASE_EPAL`. Empresa, centro de custo e validação podem completar lacunas a partir das participações quando os valores são consistentes. Divergências entre fontes aparecem no relatório; divergências de identidade bloqueiam a importação. `PARTICIPACOES` tem prioridade sobre `BASE_MESTRA_FORMACAO`; cópias coincidentes são conciliadas pelo ID de participação, nunca importadas duas vezes. O formato antigo `Formandos` é reconhecido quando não existe histórico integrado.
-
-O catálogo existente é consultado pelo código, sem criar nem alterar cursos. Participações sem correspondência ficam sem ligação, com aviso. Valores existentes não vazios são protegidos; uma divergência exige revisão, e células vazias não apagam dados. Participações existentes não são actualizadas automaticamente. Não são criadas turmas, provas, avaliações ou respostas 360° a partir das folhas auxiliares. O relatório identifica as folhas fora do âmbito.
-
-Para simular pelo terminal, copie o ficheiro para o backend:
-
-```bash
-docker compose cp dados.xlsx backend:/tmp/import.xlsx
-docker compose exec backend python manage.py import_excel /tmp/import.xlsx --report /tmp/simulacao.json
-```
-
-Reveja `issues`, `changes`, `source_counts` e `totals` no relatório. `errors` deve ser zero; os avisos também devem ser avaliados. As presenças e horas históricas permanecem declaradas, sem validação automática. Uma entrega de certificado sem data documental fica como declaração e não como entrega confirmada.
-
-**Só depois da revisão e autorização para carregar a base operacional**, faça uma cópia de segurança completa no menu da aplicação. O comando de gravação exige o `review_token` do relatório aprovado:
-
-```bash
-docker compose exec backend python manage.py import_excel /tmp/import.xlsx \
-  --apply --review-token TOKEN_DO_RELATORIO_REVISTO \
-  --report /data/resultado-importacao.json
-```
-
-O token vincula a revisão ao Excel e ao estado do cadastro, catálogo e participações. Se algum destes elementos mudar, é necessária nova simulação. A gravação é transaccional: qualquer erro anula toda a operação, sem aceitar parcialmente as linhas válidas. Uma cópia SQLite é criada antes da tentativa; não substitui a cópia completa com documentos. A auditoria guarda apenas identificação da importação e contagens, sem copiar dados pessoais do relatório.
-
-Uma nova simulação da mesma fonte reconhece os registos já importados, sem os duplicar. Os caminhos `/tmp` e `/data` pertencem ao contentor. Os relatórios locais podem ficar em `exports/`, excluído do Git, tal como os Excel de origem.
-
-## Certificados e documentos privados
-
-No histórico, os administradores encontram **Certificado e entregas** em cada participação. A emissão, a declaração do responsável, a entrega confirmada ao participante e a entrega confirmada aos RH têm campos separados. Declarações conservam origem e responsável, sem inventar datas; não aumentam o indicador de entregas confirmadas. A entrega confirmada exige a data efectiva.
-
-O acesso **Documentos privados**, na ficha ou histórico, permite anexar CV e Bilhete de Identidade ao trabalhador e certificados/comprovativos à participação correcta. Na Ficha Individual, a secção **Arquivos**, abaixo do histórico recente, permite carregar estes PDFs, consultar os arquivos activos e abrir a gestão de versões arquivadas. Esta secção não aparece na ficha impressa. Apenas administradores podem carregar, consultar e descarregar os PDFs. Os ficheiros ficam fora dos recursos públicos, com nomes internos UUID e verificação SHA-256. O controlo do formato é básico; o conteúdo não é convertido nem executado pelo servidor.
-
-Arquivar preserva o ficheiro e o histórico; reactivar exige um motivo, tal como arquivar. Anexar um comprovativo não altera automaticamente os estados do certificado. Participações com documentos associados ficam protegidas contra eliminação.
-
-## Cópias de segurança e persistência
-
-A base fica em `/data/pmf.sqlite3` dentro do backend. O volume `database` conserva os dados quando os contentores são substituídos ou removidos sem apagar o volume.
-
-Para exportar uma cópia, entre como administrador e escolha **Cópia de segurança**:
-
-- Sem relatórios nem documentos privados, a aplicação fornece um ficheiro SQLite.
-- Com relatórios ou documentos privados, fornece um ZIP com a base, os PDFs (incluindo documentos arquivados) e a chave local quando disponível. Conserve o ZIP completo. A exportação recusa documentos privados ausentes ou alterados.
-
-No arranque com uma base existente, o script Docker guarda uma cópia da base, dos relatórios, dos documentos privados e da chave em `/data/backups/` antes das migrações. Estas cópias acumulam-se no mesmo volume; mantenha também uma cópia noutro suporte para protecção contra perda do disco.
-
-Para recuperar um ZIP ou SQLite exportado pela aplicação, execute no ambiente Python do backend:
-
-```bash
-python manage.py restore_backup COPIA.zip --destination NOVA_PASTA
-```
-
-A cópia tem de estar acessível nesse ambiente; em Docker, disponibilize-a num volume ou copie-a para o contentor. A pasta principal do destino deve existir, ser gravável pelo backend, e `NOVA_PASTA` não pode existir. A recuperação verifica a integridade SQLite, as relações e as assinaturas dos PDFs; não substitui uma base em uso. O limite é 5 GB por arquivo e 1 GB por ficheiro.
-
-Depois da validação, pare a aplicação, conserve a instalação anterior e configure `PMF_DATA_DIR`/o volume para utilizar a pasta recuperada. Os ficheiros devem continuar acessíveis ao utilizador do backend (`10001:10001`). Não elimine a cópia anterior antes de testar o arranque. Uma exportação SQL exige uma ferramenta SQLite; este comando aceita SQLite binário ou ZIP da aplicação.
-
-**Não utilize `docker compose down -v` numa actualização normal: essa opção remove o volume de dados do projecto.**
-
-## Actualização
-
-Crie uma cópia de segurança, actualize o código e execute na pasta do projecto:
-
-```bash
-docker compose build
-docker compose up -d --wait
-```
-
-Não é necessário executar `down` antes da construção. O comando `up` substitui os contentores que precisam de actualização. Mantenha o mesmo `.env` e o mesmo nome de projecto Compose para conservar a ligação à base existente.
-
-Depois do arranque, actualize o navegador com **Ctrl+F5**. Não volte a importar o Excel para aplicar uma actualização de código: as migrações adaptam a base existente.
-
-## Comandos úteis
-
-```bash
-# Consultar o estado dos contentores
-docker compose ps
-
-# Consultar as últimas mensagens dos serviços
-docker compose logs --tail=100 backend frontend
-
-# Parar e voltar a iniciar os mesmos contentores
-docker compose stop
-docker compose start
-
-# Remover os contentores, conservando o volume de dados
-docker compose down
-
-# Abrir a consola Django
-docker compose exec backend python manage.py shell
-```
-
-## Testes
-
-Para executar os testes com as dependências da imagem backend, sem utilizar a base activa:
-
-```bash
-docker compose run --rm --no-deps -e PMF_DATA_DIR=/tmp/pmf-tests backend python manage.py test --noinput
-```
-
-Os testes abrangem regras de dados, permissões, revisão colectiva, planeamento, exportações, relatórios, assistente e eliminações protegidas. O teste opcional de leitura estrutural de PDF é ignorado quando `pypdf` não está disponível.
-
-## Estrutura do repositório
-
-```text
-pmfe/
-├── app/
-│   ├── pmf/                 # Configuração Django e rotas
-│   ├── training/            # Modelos, lógica, migrações e testes
-│   │   └── resources/       # Modelo Excel de listas de presença
-│   ├── templates/           # Páginas HTML
-│   ├── static/              # CSS, JavaScript, fontes e imagens
-│   ├── manage.py
-│   └── requirements.txt
-├── docker/
-│   ├── nginx.conf
-│   └── startup.py
-├── backend.Dockerfile
-├── frontend.Dockerfile
-├── compose.yaml
-├── .dockerignore
-├── .gitignore
-└── README.md
-```
-
-O `.gitignore` exclui ambientes locais, `.env`, segredos, bases, cópias de segurança, exportações SQL e ficheiros Excel com dados pessoais. O modelo `app/training/resources/attendance_template.xlsx` é conservado porque a aplicação depende dele.
-
-Entre os documentos Markdown, apenas o `README.md` da raiz está previsto para publicação. Os restantes ficheiros `.md` ficam excluídos pelo `.gitignore`.
-
-## Limitações actuais
-
-- A configuração destina-se a um único computador e a uma única instância backend com SQLite.
-- A avaliação 360°, o plano de desenvolvimento e os indicadores confirmados estão disponíveis. A recolha 360° é feita através de contas individuais autorizadas, no computador local. O arquivo privado de CV continua disponível para administradores.
-- O assistente utiliza guias locais; não é uma IA generativa nem aprende automaticamente novas funcionalidades.
-- Existem listas diárias de presença, mas o cálculo de horas utiliza os totais de dias de presença registados.
-- A plataforma acompanha a entrega de certificados; a emissão automática a partir de um modelo ainda não está implementada.
-- Os indicadores dependem da qualidade dos registos. Os dados EPAL não validados pelos RH continuam provisórios.
-
-
-## Avaliação da formação, provas e reacção
-
-O menu **Avaliação**, disponível aos administradores, permite pesquisar uma participação existente e registar:
-
-- **Avaliação da formação:** logística numa escala explícita de 1 a 5, nota final de 0 a 20 e resultado final independentes. Valores desconhecidos permanecem vazios; concluir a formação não atribui aprovação.
-- **Reacção:** organização, conteúdo, formador e utilidade de 1 a 5, com comentários. É possível guardar uma resposta parcial, conservando vazios os itens não respondidos.
-- **Provas:** tipo diagnóstica/intermédia/final, questões de resposta textual com critérios de correcção manual, referência do manual e cotação positiva. O limiar de aprovação é configurável entre 0% e 100%; o formulário propõe 50% e o responsável deve confirmar o critério aplicável.
-- **Tentativas e respostas:** um administrador inicia a primeira tentativa. As seguintes exigem a conclusão da anterior e um motivo de autorização. Todas as tentativas permanecem no histórico.
-
-Para preparar uma prova, guarde o título e as questões. Cada gravação apresenta mais três espaços para novas questões, até ao limite de 100. Após iniciar a primeira tentativa, as questões e o critério ficam fechados; crie uma nova prova para uma versão diferente.
-
-Na correcção, registe as respostas e os pontos atribuídos. Uma pontuação vazia significa **não classificada**; zero é uma classificação explícita. Pode guardar um rascunho. **Concluir correcção** exige todas as pontuações, data, responsável e fonte documental, e conserva o resultado. A percentagem é `pontos obtidos / cotação total × 100`; a nota /20 é a percentagem dividida por cinco. A aprovação compara a percentagem sem arredondamento com o limiar registado; os ecrãs apresentam duas casas decimais.
-
-O resultado de uma tentativa **não altera automaticamente** a nota final da participação. O responsável regista essa decisão em **Avaliação e nota final**, com motivo e fonte. Isto permite distinguir provas diagnósticas, reavaliações e uma classificação final baseada em vários elementos.
-
-Os registos incluem fonte documental, data, responsável e estado **Por confirmar / Validado / Rever**. Marcar como validado exige data, responsável e fonte; não significa que a aplicação tenha verificado o documento. Correcções exigem motivo, conservam o antes/depois na auditoria e rejeitam gravações de uma janela desactualizada. Uma tentativa concluída é conservada; uma nova avaliação exige outra tentativa autorizada.
-
-Os registos são privados aos administradores; não existe portal de realização de provas pelos participantes nem correcção automática de respostas. As relações com a participação evitam duplicar o cadastro do trabalhador. A cópia de segurança e a recuperação da base incluem avaliações, questões, tentativas e respostas. A importação automática de folhas Excel continua a exigir uma fase própria. O módulo 360° é descrito abaixo.
-
-
-## Competências e avaliação 360°
-
-1. Em **Avaliação → Gerir ciclos e competências → Catálogo e funções**, crie competências e funções de referência. Cada regra define nível esperado (1–5), peso relativo da competência e validação RH com responsável e data. Pode desactivar entradas; os ciclos antigos conservam as suas regras.
-2. Crie um ciclo para um trabalhador. A função do catálogo é escolhida explicitamente: o texto `Função` do cadastro não é substituído nem convertido automaticamente. Pode associar a participação do mesmo trabalhador ou uma turma com inscrição activa.
-3. Defina momento, período, pesos dos tipos de avaliador, cobertura mínima por tipo e mínimo de colegas. Os pesos propostos são 10% autoavaliação, 40% superior, 25% colegas e 25% formador; devem somar 100% e são confirmados pelo responsável ao abrir. Tipos com peso zero não recebem avaliadores autorizados.
-4. Autorize contas individuais e confirme a identidade e o tipo de cada avaliador. Cada conta participa uma única vez por ciclo; só existe uma autoavaliação. A aplicação não deduz a identidade de uma conta a partir do nome do trabalhador.
-5. Abra o ciclo. A abertura conserva uma cópia dos nomes, descrições, níveis esperados, pesos, validações RH e configuração. Alterar o catálogo posteriormente não muda os resultados históricos. A configuração, os avaliadores e os prazos ficam fixos.
-6. Cada avaliador entra com a própria conta e utiliza **Minhas avaliações**. Pode guardar e corrigir rascunhos dentro do período. Entregar exige nota 1–5 em todas as competências; a entrega conserva a resposta. Não são enviados convites por correio electrónico.
-7. O responsável fecha o ciclo. Não há médias em tempo real, para evitar inferências a partir de entregas sucessivas. Fechar ou cancelar é definitivo; uma nova recolha exige outro ciclo.
-
-Para criar uma conta de leitura/avaliador sem privilégios administrativos:
-
-```bash
-docker compose exec backend python manage.py create_evaluator nome_do_avaliador
-```
-
-O comando pede e confirma a palavra-passe sem a mostrar e aplica os validadores de palavras-passe. Não coloque palavras-passe em comandos, ficheiros ou Git. A conta mantém as permissões de consulta existentes na plataforma e só responde aos ciclos em que foi autorizada. O comando não autoriza avaliações nem concede acesso administrativo.
-
-### Cálculo e confidencialidade
-
-Para cada competência, calcula-se a média das respostas entregues de cada tipo de avaliador e aplica-se o peso percentual desse tipo. O índice do ciclo é a média desses resultados ponderada pelos pesos relativos das competências. Não se redistribui o peso de grupos em falta.
-
-Cada tipo com peso positivo deve atingir a cobertura configurada, calculada como respostas entregues divididas pelos avaliadores autorizados desse tipo. Colegas exigem ainda **pelo menos três respostas distintas**, mesmo que a cobertura percentual já tenha sido atingida. Se faltar cobertura ou o mínimo de colegas, o resultado fica indisponível; respostas em rascunho não contam e ausência de resposta não equivale a zero.
-
-O responsável do ciclo e os superutilizadores consultam apenas resultados agregados nas páginas de gestão. As respostas e comentários individuais, bem como o histórico das suas correcções, são acessíveis na interface apenas à conta que os registou. A auditoria geral regista a operação de resposta, sem copiar notas, comentários ou motivos privados. Os comentários não são publicados nos agregados. Outros administradores não consultam ciclos que não gerem.
-
-A confidencialidade da interface não oculta a base ao administrador do computador: o SQLite e a cópia integral contêm as respostas e o seu histórico. Por isso, **Cópia de segurança** permanece disponível apenas para superutilizadores. A recuperação conserva esses dados, as autorizações e a configuração histórica dos ciclos.
-
-## Plano de desenvolvimento
-
-Um ciclo fechado com resultados divulgáveis mostra a lacuna por competência: `máximo(0, nível esperado − resultado)`. A partir de uma lacuna positiva, utilize **Planear desenvolvimento** para registar acção, responsável pela execução, prazo e, opcionalmente, formação recomendada do catálogo.
-
-Em **Desenvolvimento**, acompanhe os estados Planeada, Em curso, Concluída e Cancelada, incluindo prazos ultrapassados. Concluir ou cancelar exige data e evidência/comentário de revisão. As correcções são auditadas e gravações de uma janela desactualizada são rejeitadas. Concluir uma acção não modifica a pontuação histórica; um novo ciclo permite medir a evolução. As formações recomendadas não geram inscrições automaticamente.
-
-## Indicadores confirmados
-
-O menu **Indicadores confirmados** e a ligação no dashboard separam cinco famílias de informação, com filtros de trabalhador e período, denominadores e conciliação por participação:
-
-| Família | Regra de inclusão |
-| --- | --- |
-| Presença | Formação concluída, presenças verificadas e dias conhecidos; soma de presenças dividida pela soma dos dias |
-| Aprendizagem | Nota final presente numa participação concluída, com avaliação validada que ainda corresponde exactamente à nota e ao resultado actuais |
-| Logística e satisfação | Avaliações/reacções validadas; cada dimensão conta apenas os valores respondidos, com denominador próprio |
-| Competências | Ciclos fechados, autorizados ao utilizador e com cobertura suficiente; média dos índices históricos por ciclo |
-| Certificados | Emissão, entrega ao participante, entrega aos RH e declarações separados; valores desconhecidos apresentados à parte |
-
-O filtro temporal usa a data de início da participação ou do ciclo. Não é um relatório de entregas ocorridas no período. A média de competências é por ciclo, não por trabalhador único. Uma declaração ou um ficheiro PDF não confirma automaticamente uma entrega.
-
-Os totais são derivados das relações existentes, sem tabelas duplicadas para reproduzir folhas de resumo. Os indicadores mostram os registos excluídos/provisórios e permitem conciliá-los com a participação ou ciclo de origem. Os relatórios executivos anteriores conservam a análise histórica e os seus avisos de dados provisórios; não são apresentados como exportação dos novos indicadores confirmados.
-
-Após a migração, avaliações antigas conservam as notas e fontes, mas não recebem uma confirmação de nota inventada. Para incluí-las na aprendizagem confirmada, reveja e guarde a avaliação com estado **Validado**. Se a nota ou o resultado mudar depois, é necessária nova validação. A importação real de dados e a aceitação visual/manual no Windows permanecem fases posteriores.
-
-
-### Avaliação — mapa de competências e percurso do formando
-
-O mapa encontra-se dentro de **Avaliação**, sem entrada 360° independente na navegação principal. Seleccione um formando para abrir o **Centro de Avaliação de Desempenho**: radar de competências, pontos fortes, áreas a desenvolver, tabela de evolução, participações e momentos de avaliação. A avaliação de uma participação também permite abrir este perfil.
-
-O radar utiliza a apresentação original do centro de avaliação e os resultados reais dos ciclos autorizados ao utilizador. Verde representa o ciclo seleccionado, azul uma avaliação anterior compatível e o tracejado o nível esperado, sempre na escala explícita /5. **Visão 360°** percorre as competências; pode parar a exploração ou seleccionar uma dimensão directamente. A tabela permanece disponível sem JavaScript. Com movimento reduzido, o avanço faz-se manualmente.
-
-A comparação só inclui ciclos anteriores fechados com a mesma função de referência, competências, descrições, níveis esperados e pesos. Valores ausentes ou não divulgáveis não se tornam zero; não se geram notas demonstrativas. Com menos de três competências, apresentam-se os valores em tabela, sem inventar eixos para completar o radar. O percurso de formação e as notas /20 permanecem separados das competências /5.
-
-
-## Administração e primeiros registos
-
-Abra **Administração** no menu ou aceda a `http://localhost:8080/admin/`. Utilize uma conta activa com os atributos de membro da equipa e superutilizador. Uma conta administrativa já existente pode entrar directamente.
-
-O painel apresenta contagens e uma sequência de preparação:
-
-1. **Contas e acessos**: crie contas individuais e, depois, configure o nível de acesso. Conta normal permite consulta e avaliações atribuídas; membro da equipa permite gestão operacional; superutilizador permite administração de contas e cópia integral.
-2. **Trabalhadores**: registe o cadastro dos formandos.
-3. **Catálogo de formação**: prepare as acções antes das turmas e inscrições em Planeamento.
-4. **Competências**: prepare as dimensões de avaliação.
-5. **Funções e regras RH**: associe competências, níveis esperados e pesos às funções.
-
-As listas administrativas permitem pesquisar os cadastros. Adicionar ou alterar um cadastro abre o formulário operacional existente, conservando as suas validações e auditoria. A gestão de contas utiliza os formulários Django, com palavras-passe protegidas. Desactive contas que deixem de ser usadas; a eliminação está desabilitada para preservar o histórico. O administrador não pode retirar os próprios privilégios nesta página.
-
-Respostas individuais de avaliação, provas e documentos privados não são expostos como tabelas editáveis no painel administrativo.
-
-Apenas se ainda não existir um superutilizador, crie o primeiro pelo terminal:
-
-```bash
-docker compose exec backend python manage.py createsuperuser
-```
-
-O build Docker recolhe automaticamente os ficheiros estáticos do painel. Para execução directa fora do Docker, execute `python manage.py collectstatic --noinput` no directório que contém `manage.py`.
+Próximas fases ainda não implementadas: introdução directa dos testes inicial/final, evolução média da aprendizagem e novo fluxo simplificado de satisfação.

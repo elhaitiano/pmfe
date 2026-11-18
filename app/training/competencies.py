@@ -1,3 +1,4 @@
+from .professional_ui import person_ids
 """Catalogue management, private 360 responses, and development follow-up."""
 from django import forms
 from django.contrib import messages
@@ -67,7 +68,7 @@ class CycleForm(EditForm):
         self.fields['role'].queryset = RoleProfile.objects.filter(active=True)
         self.fields['training'].label_from_instance = lambda t: f'{t.employee.number} — {t.title} (#{t.pk})'
         self.fields['training'].queryset = Training.objects.select_related('employee').all()
-        self.fields['employee'].help_text = 'O texto Função do cadastro permanece intacto; confirme a função de referência.'
+        self.fields['employee'].help_text = 'O texto Função do registo permanece intacto; confirme a função de referência.'
         self.fields['minimum_coverage'].help_text = 'Aplica-se separadamente a cada tipo de avaliador com peso positivo.'
         self.fields['minimum_peers'].help_text = 'Nunca inferior a três. Os resultados só são divulgados após o fecho.'
 
@@ -155,7 +156,7 @@ def index(request):
     query = request.GET.get('q','').strip()
     cycles = managed_cycles(request.user)
     if query:
-        cycles = cycles.filter(Q(employee__name__icontains=query) | Q(employee__number__icontains=query))
+        cycles = cycles.filter(Q(employee_id__in=person_ids(query)))
     return render(request, 'competencies/index.html', {'page':Paginator(cycles,25).get_page(request.GET.get('page')), 'q':query})
 
 

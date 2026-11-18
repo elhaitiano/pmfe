@@ -1,0 +1,13 @@
+<div class="panel metrics">
+<p><strong>{{ consolidated_stats.people }}</strong>Formandos distintos com registos</p>
+<p><strong>{{ consolidated_stats.participations }}</strong>Participações / inscrições históricas</p>
+<p><strong>{{ consolidated_stats.actions }}</strong>Formações com histórico</p>
+<p><strong>{{ consolidated_stats.editions }}</strong>Edições identificadas</p>
+<p><strong>{{ consolidated_stats.groups }}</strong>Edições com grupo documentado</p>
+<p><strong>{{ consolidated_stats.with_grades }}</strong>Participações com notas nas escalas de origem</p>
+<p><strong>{{ consolidated_stats.with_attendance }}</strong>Participações com assiduidade calculável</p>
+<p><strong>{{ consolidated_stats.with_result }}</strong>Resultados / menções documentados</p>
+</div>
+<details class="panel"><summary>Cálculos e cobertura dos dados</summary><p>{{ consolidated_stats.people_with_attendance }} formandos distintos com presença positiva comprovada. Uma inscrição ou registo nominal não é presença nem aprovação.</p><p>Carga horária total comprovada em {{ consolidated_stats.with_total_hours }} participações; duração em {{ consolidated_stats.with_duration }}. Horas efetivamente frequentadas conhecidas em {{ consolidated_stats.with_attended_hours }} participações: {{ consolidated_stats.attended_hours|floatformat:2 }} h. Os valores desconhecidos não são tratados como zero.</p><p>Assiduidade agregada nas participações com cobertura suficiente: {% if consolidated_stats.attendance is not None %}{{ consolidated_stats.attendance|floatformat:1 }}%{% else %}Sem denominador comprovado{% endif %}.</p><h3>Notas por fase e escala — sem misturar escalas</h3>{% for group in consolidated_stats.grade_averages %}<p>{{ group.stage }} · escala {{ group.scale }} · {{ group.count }} registos · média {{ group.average|floatformat:2 }}</p>{% endfor %}</details>
+
+{% if consolidated_stats.certified_hours_records %}<div class="panel"><p>{{ consolidated_stats.certificates_reported }} certificados entregues · {{ consolidated_stats.certificate_holders }} formandos distintos com certificado · {{ consolidated_stats.certified_hours|floatformat:'-2' }} h certificadas. As horas certificadas são independentes das horas frequentadas.</p></div>{% endif %}

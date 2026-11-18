@@ -1,0 +1,98 @@
+{% extends 'planning/base.html' %}
+{% load static %}
+{% block plan_content %}
+<header class="plan-panel"><div class="plan-heading"><h2>{{ selected_course.title }}</h2><p><span class="plan-pill plan-code-badge">{{ selected_course.code_profile.label }}</span></p></div><div class="plan-actions">
+  <a class="gf-btn alt" href="{% url 'planning' %}">Voltar às formações</a>
+  {% if user.is_staff %}{% if not selected_course.create_block_reason %}<a class="gf-btn" href="{% url 'group_create' selected_course.pk %}">Criar novo grupo · G{{ selected_course.next_group_preview }}</a>{% else %}<button class="gf-btn" type="button" disabled aria-describedby="create-group-reason">Criar novo grupo · G{{ selected_course.next_group_preview }}</button>{% endif %}{% endif %}
+</div>{% if selected_course.create_block_reason %}<p class="plan-action-reason" id="create-group-reason">{{ selected_course.create_block_reason }}</p>{% endif %}<p class="plan-note">{{ selected_course.group_number_note }}</p><p><a class="gf-btn alt" href="#grupos">Lista de Presença — Excel</a></p><p class="plan-note">Para gerar uma lista de presença, seleccione ou crie uma turma com calendário e formandos inscritos</p></header>
+<form method="get" class="plan-search" role="search"><label for="course-group-search">Pesquisar grupos</label><input class="gf-field" id="course-group-search" name="q" value="{{ q }}" placeholder="Formação, código, local ou formador"><button class="gf-btn">Pesquisar</button><a class="gf-btn alt" href="{% url 'course_groups' selected_course.pk %}">Limpar</a></form>
+<section class="plan-panel" id="grupos">
+  <div class="plan-heading">
+    {% if selected_course %}
+    <p>{% if selected_course.code %}{{ selected_course.code|unlocalize }} · {% endif %}{{ selected_course.title }} — <a href="{% url 'planning' %}">Todas as formações</a></p>
+    {% endif %}
+    <h2>
+      <span class="material-symbols-outlined">groups</span>Grupos e calendário
+    </h2>
+    <p>
+      G1, G2… por acção; os códigos cancelados não são reutilizados.
+    </p>
+  </div>
+  {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}
+  <form id="group-selection" action="{% url 'group_validation' %}" method="get" class="plan-actions">
+    <button class="gf-btn" type="submit" id="validate-selected">Validar seleccionados</button>
+    <span class="plan-note" id="selection-count" aria-live="polite">Seleccione até 10 grupos desta página.</span>
+    {% if selected_course %}<a class="gf-btn alt" href="{% url 'group_validation' %}?course={{ selected_course.pk }}">Validar formação</a>{% endif %}
+  </form>
+  {% endif %}
+  <div class="batch-scroll" tabindex="0" role="region" aria-label="Grupos e calendário">
+    <table class="batch-table">
+      <thead>
+        <tr>
+          {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}<th scope="col"><label><input type="checkbox" id="select-page-groups" aria-label="Seleccionar grupos desta página"> Seleccionar</label></th>{% endif %}
+          <th>
+            Grupo / Acção
+          </th>
+          <th>
+            Período
+          </th>
+          <th>
+            Local / Formador
+          </th>
+          <th>
+            Formandos registados
+          </th>
+          <th>
+            Estado
+          </th>
+          {% if documentary_visible %}<th scope="col">Preparação documental</th>{% endif %}
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for group in page %}
+        <tr>
+          {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}<td><input form="group-selection" type="checkbox" name="group" data-select-group value="{% if group.historical_edition %}edition{% else %}group{% endif %}:{{ group.pk|unlocalize }}" aria-label="Seleccionar {{ group.code }} de {{ group.title }}"></td>{% endif %}
+          <td>
+            <strong>{% if group.course.code %}{{ group.course.code|unlocalize }} · {% endif %}{{ group.code|unlocalize }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
+          </td>
+          <td>
+            {{ group.start|date:'d/m/Y' }} — {{ group.end|date:'d/m/Y' }}<small>{{ group.days|default_if_none:'Sem registo' }} dias efectivos</small>
+          </td>
+          <td>
+            {{ group.location }}<small>{{ group.trainer }}</small>
+          </td>
+          <td>
+            {{ group.participant_count }}
+          </td>
+          <td>
+            <span class="plan-pill">{{ group.display_state }}</span>
+            <small>{% if not group.historical_only %}{{ group.get_planning_confirmation_display }}{% endif %}</small>
+
+          </td>
+          {% if documentary_visible %}<td>{% include 'planning/documentary_readiness.html' with readiness=group.documentary_readiness %}</td>{% endif %}
+          <td>
+            {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}<a class="gf-btn alt" href="{% url 'group_validation' %}?group={% if group.historical_edition %}edition{% else %}group{% endif %}:{{ group.pk|unlocalize }}">Validar grupo</a>{% endif %}
+            <a class="gf-btn" href="{% if group.historical_edition %}{% url 'consolidated_edition' group.pk %}{% else %}{% url 'group_detail' group.pk %}{% endif %}#lista-presenca">Lista de presença</a>
+            {% if not group.historical_edition and not group.historical_only and user.is_staff and perms.training.change_traininggroup and group.state == 'Planeada' %}<a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar grupo</a>{% endif %}{% if user.is_staff and group.can_delete_preparation and not group.historical_only %}<a class="gf-btn alt" href="{% url 'group_delete' group.pk %}">Eliminar grupo</a>{% endif %}
+            <a class="gf-btn alt" href="{% if group.historical_edition %}{% url 'consolidated_edition' group.pk %}{% else %}{% url 'group_detail' group.pk %}{% endif %}">Ver formandos</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{% if documentary_visible %}8{% elif perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}7{% else %}6{% endif %}">
+            Nenhum grupo encontrado.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pmf-pagination">
+    {% if page.has_previous %}
+    <a href="?{{ group_query }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>{{ page.number|unlocalize }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?{{ group_query }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'pmf/gestao-groups.js' %}" defer></script>{% endblock %}

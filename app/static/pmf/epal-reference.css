@@ -1,0 +1,217 @@
+/* Visual system transposed from the supplied code.html. Presentation only. */
+html.epal-reference{--epal-navy:#002b5c;--epal-blue:#005bc0;--epal-azure:#2e6eae;--epal-brand:#35509a;--epal-sky:#90c1da;--epal-ice:#b0d2e4;--epal-sand:#f1d6c4;--epal-teal:#41e4c0;--epal-cyan:#00d4ff;--epal-bg:#f4f8fc;--epal-text:#172b4d;--epal-muted:#60748b;--epal-border:rgba(144,193,218,.38);color-scheme:light}
+html.epal-reference body{margin:0;background:#f4f8fc!important;background-image:none!important;color:#172b4d!important;font-family:'Plus Jakarta Sans','Inter',sans-serif!important;min-height:100vh}
+html.epal-reference body::before,html.epal-reference body::after{display:none!important}
+html.epal-reference ::selection{background:#b0d2e4;color:#002b5c}
+html.epal-reference :focus-visible{outline:3px solid #005bc0!important;outline-offset:3px}
+html.epal-reference :is(input,select,textarea){color-scheme:light}
+html.epal-reference a{transition:color .2s,background .2s,border-color .2s}
+html.epal-reference #mainSidebar{width:270px!important;background:linear-gradient(185deg,#021a38 0%,#003366 45%,#054580 80%,#002244 100%)!important;border:0!important;box-shadow:4px 0 25px #021a3826;overflow-y:auto;overflow-x:hidden;z-index:40}
+html.epal-reference #mainSidebar::before{display:none!important}
+html.epal-reference #sidebarProfilePanel{padding:28px 24px 20px!important;border-bottom:1px solid #ffffff1a;position:relative}
+html.epal-reference #sidebarProfilePanel img{width:auto!important;height:76px;max-width:180px;padding:9px;background:#ffffff14;border:1px solid #ffffff26;border-radius:16px;filter:none!important;margin:auto}
+html.epal-reference #sidebarProfilePanel h2{font-size:11px!important;line-height:1.5!important;color:#90c1da!important;font-weight:500!important;max-width:200px;margin:5px auto 0}
+html.epal-reference #sidebarProfilePanel>div{font-size:16px!important;letter-spacing:.1em;color:#fff!important;margin-top:12px}
+html.epal-reference #mainSidebar nav{padding:18px 12px!important;position:relative;z-index:1}
+.epal-nav-label{display:block;padding:8px 16px 14px;color:#90c1dacc;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800}
+html.epal-reference #mainSidebar .pmfe-main-item{padding:12px 16px!important;margin:4px 0;border:0!important;border-left:4px solid transparent!important;border-radius:12px!important;color:#c7dcf0!important;font-size:13px!important;font-weight:500!important;line-height:1.5;background:transparent!important;gap:12px;min-height:46px}
+html.epal-reference #mainSidebar .pmfe-main-item:hover{background:#ffffff14!important;color:#fff!important;transform:translateX(3px)}
+html.epal-reference #mainSidebar .pmfe-main-item:is(.active,[aria-current=page]){background:linear-gradient(90deg,#41e4c02e,#2e6eae47)!important;border-left-color:#41e4c0!important;color:#fff!important;font-weight:700!important;box-shadow:0 4px 16px #0000001f}
+html.epal-reference #mainSidebar .pmfe-main-item:is(.active,[aria-current=page]) .material-symbols-outlined{color:#41e4c0!important}
+html.epal-reference #mainSidebar>div:last-of-type:not(.sidebar-wave-container){position:relative;z-index:1;padding:18px 20px!important;background:transparent!important}
+.epal-manual-link{position:relative;z-index:1;display:flex;gap:12px;align-items:center;padding:12px;margin-bottom:12px;border:1px solid #ffffff26;border-radius:12px;background:#ffffff1a;color:white;font-size:12px;font-weight:700;backdrop-filter:blur(12px)}
+.epal-manual-link .material-symbols-outlined{color:#41e4c0}
+html.epal-reference #mainSidebar form button{font-size:12px;background:#ffffff1a!important;color:#fff!important;border:1px solid #ffffff26;border-radius:12px;min-height:42px}
+.sidebar-wave-container{position:absolute;bottom:0;left:0;width:100%;height:140px;pointer-events:none;overflow:hidden}
+.wave-svg{position:absolute;bottom:0;left:0;width:200%;height:100%;opacity:.35;animation:epal-wave 14s linear infinite alternate}
+.wave-svg.second{opacity:.22;bottom:10px;animation:epal-wave 9s ease-in-out infinite alternate-reverse}
+@keyframes epal-wave{to{transform:translateX(-50%)}}
+html.epal-reference body>main{margin-left:270px!important;width:calc(100% - 270px)!important;max-width:calc(100% - 270px)!important;background:transparent!important;min-width:0;isolation:isolate}
+.water-wave-banner{position:absolute;top:0;right:0;width:65%;height:160px;pointer-events:none;z-index:-1;opacity:.85;background:radial-gradient(ellipse at 80% 0%,#90c1da73,#2e6eae26 50%,transparent 80%)}
+.water-wave-banner svg{width:100%;height:100%}
+html.epal-reference main>.topbar{height:76px!important;min-height:76px;padding:14px 32px!important;background:#ffffffdd!important;backdrop-filter:blur(16px);border-bottom:1px solid #90c1da33;box-shadow:0 2px 8px #002b5c05;gap:18px}
+html.epal-reference .topbar .pmfe-topbar-tools{flex:1;justify-content:space-between;min-width:0}
+html.epal-reference .topbar #personSearchWrap{max-width:450px;width:100%!important}
+html.epal-reference .topbar #personSearch{background:#f0f6fc!important;border:1px solid #90c1da4d!important;border-radius:12px!important;color:#002b5c!important;box-shadow:none!important;font-size:12px;height:42px}
+html.epal-reference .topbar :is(#pmfBellBtn,button[aria-label=Sair],#sidebarToggle){border-radius:12px!important;background:#f0f6fc!important;border:1px solid #90c1da33!important;color:#2e6eae!important}
+html.epal-reference .topbar form>span{color:#002b5c!important;font-weight:700}
+.epal-page-heading{padding:28px 32px 8px;position:relative;z-index:1}
+.epal-page-eyebrow{display:inline-flex;align-items:center;gap:8px;background:#005bc00d;color:#005bc0;border-radius:999px;padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.08em}
+.epal-page-eyebrow:before{content:'';width:6px;height:6px;background:#005bc0;border-radius:50%}
+html.epal-reference #topbarTitle{font-size:28px!important;font-weight:800!important;line-height:1.3;letter-spacing:-.035em;color:#002b5c!important;text-shadow:none!important;background:none!important;-webkit-text-fill-color:#002b5c!important;margin-top:9px;text-transform:none}
+html.epal-reference :is(.ux-navigation,.pmf-page-navigation){padding:8px 32px 12px!important;color:#60748b!important;background:transparent!important;border:0!important}
+html.epal-reference :is(.ux-navigation,.pmf-page-navigation) a{color:#2e6eae!important}
+html.epal-reference :is(.executive,.plan,.coverage-page,.pmfe-manual){max-width:1600px;margin-left:auto;margin-right:auto;padding:20px 32px 36px!important;color:#172b4d!important}
+html.epal-reference :is(.content,.p-10){padding:24px 32px!important}
+html.epal-reference :is(.glass,.glass-panel,.gf-panel,.plan-panel,.exec-panel,.exec-hero,.exec-kpi-card,.exec-mini,.exec-filter-bar,.exec-filters,.coverage-kpis,.pmfe-manual section,.coverage-page){background:#fff!important;background-image:none!important;border:1px solid #90c1da61!important;border-radius:20px!important;box-shadow:0 10px 30px -8px #00336612,0 4px 12px #2e6eae0a!important;color:#172b4d!important;backdrop-filter:none}
+html.epal-reference :is(.exec-kpi-card,.exec-mini,.plan-course){transition:transform .25s,box-shadow .25s,border-color .25s;position:relative}
+html.epal-reference :is(.exec-kpi-card,.exec-mini,.plan-course):hover{transform:translateY(-3px);box-shadow:0 16px 36px -6px #0033661f,0 0 20px #41e4c026!important;border-color:#2e6eae99!important}
+html.epal-reference main :is(h1,h2,h3,h4,h5,strong,.font-bold,.font-semibold){color:#002b5c}
+html.epal-reference main :is(.text-white,.text-slate-100,.text-slate-200,.text-gray-100,.text-gray-200){color:#172b4d!important}
+html.epal-reference main :is(.text-slate-300,.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-muted){color:#60748b!important}
+html.epal-reference main :is(.text-secondary,.text-primary,.text-cyan-300,.text-blue-300,.text-teal-300){color:#005bc0!important}
+html.epal-reference main :is(.text-amber-300,.text-yellow-300,.text-amber-400){color:#895300!important}
+html.epal-reference main :is(.text-red-300,.text-red-400,.text-rose-300){color:#b42332!important}
+html.epal-reference main :is(.text-green-300,.text-emerald-300,.text-emerald-400){color:#087a65!important}
+html.epal-reference main :is(.text-gradient,.glow){background:none!important;color:#002b5c!important;-webkit-text-fill-color:#002b5c!important;text-shadow:none!important}
+html.epal-reference :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea,.gf-field){background:#fff!important;border:1px solid #90c1da8c!important;color:#1a3962!important;border-radius:12px!important;box-shadow:0 2px 6px #002b5c0a;font-family:inherit;padding:10px 14px;font-size:13px}
+html.epal-reference input::placeholder,html.epal-reference textarea::placeholder{color:#73859a!important;opacity:1}
+html.epal-reference :is(input,select,textarea):focus{border-color:#2e6eae!important;box-shadow:0 0 0 3px #2e6eae26!important}
+html.epal-reference input[type=checkbox],html.epal-reference input[type=radio]{accent-color:#005bc0}
+html.epal-reference :is(input,select,textarea):disabled{background:#eef3f8!important;color:#6b7b90!important}
+html.epal-reference :is(.gf-label,label,.coverage-field>label,.exec-filter label){color:#60748b!important;font-size:12px;font-weight:700}
+html.epal-reference :is(.gf-btn,.exec-button,.coverage-button,.ficha-action,.btn-primary,.btn){background:linear-gradient(110deg,#35509a,#005bc0,#2e6eae)!important;border:1px solid transparent!important;border-radius:12px!important;color:white!important;font-weight:700!important;font-family:inherit;box-shadow:0 4px 10px #005bc01a;font-size:12px!important;min-height:40px;padding:10px 15px!important}
+html.epal-reference :is(.gf-btn,.exec-button,.coverage-button,.ficha-action,.btn) :is(span,strong){color:inherit!important}
+html.epal-reference :is(.gf-btn.alt,.exec-button:not(.primary),.coverage-button:not(.primary),.coverage-icon-button,.exec-tabs a,.plan-nav a,.pmfe-manual-toc a){background:white!important;color:#002b5c!important;border:1px solid #90c1da80!important;border-radius:12px!important;box-shadow:0 2px 6px #002b5c05}
+html.epal-reference :is(.exec-tabs a.active,.plan-nav a.active,.coverage-button.primary){background:#005bc0!important;color:white!important;border-color:#005bc0!important}
+html.epal-reference :is(button:disabled,a[aria-disabled=true]){opacity:.48;cursor:not-allowed!important;box-shadow:none!important;transform:none!important}
+html.epal-reference :is(table,.batch-table,.coverage-table){color:#172b4d!important;border-color:#dce8f2!important;background:white!important}
+html.epal-reference :is(thead,th){background:#f0f6fc!important;color:#002b5c!important;border-color:#dce8f2!important;font-size:11px;letter-spacing:.025em}
+html.epal-reference :is(td,th){border-color:#e6eef7!important}
+html.epal-reference td{background:transparent!important;font-size:12px}
+html.epal-reference tbody tr{background:#fff!important}
+html.epal-reference tbody tr:nth-child(even){background:#f8fbfe!important}
+html.epal-reference tbody tr:hover{background:#eff7fc!important}
+html.epal-reference :is(td a,.coverage-drill,.coverage-reset){color:#005bc0!important}
+html.epal-reference :is(.coverage-number,.coverage-count,.plan-pill,.batch-pill,.exec-chip){background:#eaf2fb!important;color:#35509a!important;border:1px solid #d6e4f1!important;border-radius:7px}
+html.epal-reference :is(.coverage-rate-track,.exec-progress,.progress-bar,.progress-track){background:#e6eef7!important;border-radius:999px!important}
+html.epal-reference :is(.coverage-rate-fill,.exec-progress>span,.progress-fill,.progress-bar-epal){background:linear-gradient(90deg,#41e4c0,#2e6eae 60%,#002b5c)!important;border-radius:999px}
+html.epal-reference :is(dialog,.pmfe-suggest){color:#172b4d!important;background:#fffffff5!important;border:1px solid #90c1da80!important;border-radius:20px!important;box-shadow:0 24px 80px #002b5c33!important;backdrop-filter:blur(16px)}
+html.epal-reference dialog::backdrop{background:#021a3866!important;backdrop-filter:blur(5px)}
+html.epal-reference :is(.pmfe-panel-header,.coverage-dialog>header,.ux-dialog>header){background:#f0f6fc!important;color:#002b5c!important;border-bottom:1px solid #dce8f2!important}
+html.epal-reference :is(.pmfe-panel-header button,.pmfe-panel-header a,.coverage-dialog header button){background:white!important;color:#002b5c!important;border:1px solid #90c1da80!important}
+html.epal-reference #pmfe-frames iframe{background:#f4f8fc!important}
+html.epal-reference :is(.pmfe-suggest button,.pmfe-suggest a,.pmfe-suggest [role=option]){color:#172b4d!important;background:transparent!important}
+html.epal-reference :is(.pmfe-suggest [aria-selected=true],.pmfe-suggest [role=option]:hover){background:#e6f4fc!important}
+html.epal-reference :is(.pmfe-notification-item,.pmfe-notification-item strong){color:#002b5c!important;border-color:#dce8f2!important}
+html.epal-reference :is(.pmfe-notification-item small,.pmfe-notification-empty){color:#60748b!important}
+html.epal-reference :is(.exec-notice,.plan-note,.plan-warning,.coverage-warning,[role=alert],.errorlist){background:#fff5eb!important;color:#835025!important;border-color:#f1d6c4!important;border-radius:12px}
+html.epal-reference .errorlist{padding:10px;list-style:inside}
+html.epal-reference .exec-hero{padding:22px!important;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;background:#ffffff!important;overflow:visible}
+html.epal-reference .exec-hero:before{display:none}
+html.epal-reference .exec-hero-top,html.epal-reference .exec-hero-top>div:first-child{display:contents!important}
+html.epal-reference .exec-badges{grid-column:1;grid-row:1;align-self:center}
+html.epal-reference :is(.exec-badge-live,.exec-period){background:#edf6fc!important;color:#005bc0!important;border-color:#90c1da66!important;font-size:10px!important}
+html.epal-reference .pulse-ring{background:#005bc0!important;box-shadow:none!important}
+html.epal-reference .exec-hero .exec-actions{grid-column:2;grid-row:1;display:flex!important;flex-wrap:wrap;justify-content:flex-end;max-width:650px;gap:7px!important}
+html.epal-reference .exec-hero .exec-actions .exec-button{font-size:10px!important;padding:8px 10px!important;min-height:36px}
+html.epal-reference .exec-hero .exec-primary-kpis{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important;margin:0!important}
+html.epal-reference .exec-hero .exec-kpi-card{min-height:184px;padding:22px 20px!important;overflow:hidden}
+html.epal-reference .exec-kpi-top{flex-direction:row-reverse;justify-content:flex-end!important;align-items:center!important;gap:12px!important}
+html.epal-reference .exec-kpi-top>span{color:#60748b!important;font-size:10px!important;font-weight:800;letter-spacing:.06em}
+html.epal-reference .exec-icon{background:linear-gradient(135deg,#90c1da33,#005bc026)!important;border:1px solid #90c1da66!important;color:#005bc0!important;border-radius:12px!important;width:42px;height:42px;flex-shrink:0}
+html.epal-reference .exec-kpi-val{font-size:32px!important;line-height:1.2!important;margin:14px 0 10px!important;color:#002b5c!important;font-weight:800}
+html.epal-reference .exec-kpi-val small{font-size:13px;color:#60748b!important}
+html.epal-reference .exec-kpi-sub{border-top:1px solid #e6eef7;padding-top:10px;font-size:10px!important;color:#2e6eae!important;line-height:1.55}
+html.epal-reference .exec-man-days{border-color:#e6eef7!important}
+html.epal-reference .exec-man-days :is(span,small){color:#60748b!important}
+html.epal-reference .exec-man-days strong{color:#005bc0!important}
+html.epal-reference .exec-hero-metrics{grid-column:1/-1;margin:0!important;border-color:#e6eef7!important;padding-top:16px!important}
+html.epal-reference .exec-hero-metrics strong{font-size:21px!important;color:#002b5c!important}
+html.epal-reference .exec-hero-metrics :is(span,small){color:#60748b!important}
+html.epal-reference :is(.exec-panel h2,.exec-mini strong,.exec-total,.exec-insight strong){color:#002b5c!important}
+html.epal-reference :is(.exec-mini>span,.exec-caption,.exec-method,.exec-insight,.exec-panel p,.exec-empty){color:#60748b!important}
+html.epal-reference :is(.exec-insight,.exec-conclusion,.exec-empty,.exec-calendar,.calendar-day,.calendar-event,.calendar-controls){background:#f0f6fc!important;border-color:#dce8f2!important}
+html.epal-reference :is(.exec-chart,.exec-donut,.exec-bars,.exec-direction,.exec-method){color:#172b4d!important}
+html.epal-reference .exec-panel svg text{fill:#60748b!important}
+html.epal-reference .exec-panel svg line{stroke:#dce8f2!important}
+html.epal-reference :is(.exec-tooltip,#execTooltip){background:#fff!important;color:#002b5c!important;border:1px solid #90c1da!important;box-shadow:0 8px 25px #002b5c26}
+html.epal-reference :is(.plan-hero,.gf-header,.coverage-heading,.plan-heading){background:transparent!important;color:#002b5c!important;border-color:#e6eef7!important}
+html.epal-reference .plan-course{background:#fff!important;border:1px solid #90c1da61!important;border-radius:20px!important;color:#172b4d!important;box-shadow:0 6px 20px #0033660c}
+html.epal-reference :is(.plan-course p,.plan-course small,.plan-heading p,.gf-help,.helptext){color:#60748b!important}
+html.epal-reference .coverage-page{margin:20px 32px 32px!important;max-width:calc(100% - 64px);padding:26px!important}
+html.epal-reference .coverage-kpis{border-radius:14px!important;box-shadow:none!important}
+html.epal-reference .coverage-summary-item{border-color:#e6eef7!important}
+html.epal-reference .coverage-summary-item>span{color:#60748b!important}
+html.epal-reference .coverage-summary-item>strong{color:#002b5c!important}
+html.epal-reference .coverage-table th[aria-sort]{background:#edf4fc!important;color:#005bc0!important}
+html.epal-reference :is(.coverage-table-wrap,.coverage-scroll){border-color:#dce8f2!important}
+html.epal-reference .coverage-rate-percent{color:#002b5c!important}
+html.epal-reference :is(.coverage-select-trigger,.coverage-select-search,.coverage-select-popover){background:#fffffff5!important;color:#172b4d!important;border-color:#90c1da80!important;border-radius:12px!important}
+html.epal-reference :is(.coverage-select-option,.coverage-select-options button){background:transparent!important;color:#172b4d!important}
+html.epal-reference :is(.coverage-select-option[aria-selected=true],.coverage-select-option:hover){background:#e6f4fc!important;color:#005bc0!important}
+html.epal-reference #viewFicha{color:#172b4d!important}
+html.epal-reference #viewFicha :is(.glass-panel,.ficha-kpi,.ficha-profile,.ficha-chart,.ficha-history){background:#fff!important;border-color:#90c1da61!important;color:#172b4d!important;border-radius:20px!important}
+html.epal-reference #viewFicha :is(.text-gradient,h1,h2,h3,strong){color:#002b5c!important;-webkit-text-fill-color:#002b5c!important;background-image:none!important}
+html.epal-reference #viewFicha .journey-dot{background:#fff!important;border-color:#2e6eae!important}
+html.epal-reference #viewFicha .journey-line:before{background:linear-gradient(#41e4c0,#b0d2e4)!important}
+html.epal-reference :is(.pmfe-manual-toc a,.pmfe-manual figcaption,.pmfe-manual .pmfe-important){color:#2e6eae!important}
+html.epal-reference #epalHelpToggle{background:linear-gradient(110deg,#35509a,#005bc0,#2e6eae)!important;border:1px solid #90c1da80!important;box-shadow:0 8px 24px #005bc026}
+html.epal-reference :is(#epalHelpPanel,.epal-help-panel){background:#fff!important;color:#172b4d!important;border-color:#90c1da80!important}
+html.epal-reference :is(#epalHelpPanel header,.epal-help-header){background:#f0f6fc!important;color:#002b5c!important}
+html.epal-reference .pmfe-embedded .epal-page-heading{padding:18px 24px 0}
+html.epal-reference .pmfe-embedded .water-wave-banner{display:none}
+html.epal-reference .pmfe-embedded main{margin-left:0!important;width:100%!important;max-width:100%!important}
+html.epal-reference ::-webkit-scrollbar{width:7px;height:7px}
+html.epal-reference ::-webkit-scrollbar-track{background:transparent}
+html.epal-reference ::-webkit-scrollbar-thumb{background:#b0c9de;border-radius:20px;border:1px solid #f4f8fc}
+html.epal-reference *{scrollbar-color:#b0c9de transparent;scrollbar-width:thin}
+/* Standalone login, official print sheet and Django administration. */
+html.epal-reference body.epal-login{background:radial-gradient(ellipse at 85% 10%,#90c1da55,transparent 55%),#f4f8fc!important}
+html.epal-reference .epal-login :is(.login-card,.glass-panel,.glass-card){background:#ffffffed!important;color:#002b5c!important;border:1px solid #90c1da66!important;border-radius:24px;box-shadow:0 20px 60px #002b5c1a!important}
+html.epal-reference .epal-login :is(h1,h2,h3,label,p){color:#002b5c!important;text-shadow:none!important}
+html.epal-reference .epal-login .text-gradient{-webkit-text-fill-color:#002b5c!important;background:none!important}
+html.epal-reference .epal-login button[type=submit]{background:linear-gradient(110deg,#35509a,#005bc0,#2e6eae)!important;color:white!important;border-radius:12px}
+html.epal-reference body.epal-print{background:#f4f8fc!important;color:#002b5c!important}
+html.epal-reference .epal-print .toolbar{background:#fffffff2;border-bottom:1px solid #90c1da66;box-shadow:0 3px 16px #002b5c0a}
+html.epal-reference .epal-print .toolbar :is(button,a){border-radius:12px!important}
+html.epal-reference .epal-print .page{border:1px solid #90c1da55;box-shadow:0 10px 35px #00336612}
+/* Legacy module surfaces and chart labels use the same light visual tokens. */
+html.epal-reference main :is(p,small,figcaption,dt,dd,.helptext,.exec-muted,.exec-note){color:#60748b!important}
+html.epal-reference main a:not([class]){color:#005bc0}
+html.epal-reference .topbar #personSearch{padding-left:44px!important;padding-right:14px!important}
+html.epal-reference :is(.exec-glass-box,.exec-excellence,.exec-donut-wrap,.exec-direction-card,.gf-hero,.gf-kpi,.gf-result,.institutional-header,.kpi-evidence,.ficha-history-frame){background:#fff!important;border:1px solid #90c1da61!important;color:#172b4d!important;border-radius:20px!important;box-shadow:0 10px 30px -8px #00336612!important}
+html.epal-reference :is(.exec-glass-box,.exec-excellence){padding:24px!important}
+html.epal-reference .exec-glass-box :is(p,span,small),html.epal-reference .exec-excellence :is(p,small){color:#60748b!important}
+html.epal-reference .executive .exec-kpi-val{color:#002b5c!important;background:none!important;-webkit-text-fill-color:#002b5c!important}
+html.epal-reference .executive .exec-kpi-val small{-webkit-text-fill-color:#60748b!important}
+html.epal-reference .exec-donut-total{color:#002b5c!important;-webkit-text-fill-color:#002b5c!important}
+html.epal-reference .exec-donut-unit{color:#60748b!important}
+html.epal-reference .exec-panel-heading :is(h2,span),html.epal-reference .exec-direction-card strong{color:#002b5c!important}
+html.epal-reference :is(.exec-bar-track,.exec-column-track,.exec-summary .exec-bar-track){background:#e6eef7!important}
+html.epal-reference .exec-bar-fill{background:linear-gradient(90deg,#41e4c0,#2e6eae 60%,#002b5c)!important}
+html.epal-reference :is(.exec-bar-caption,.exec-bar-caption strong,.exec-column-value,.exec-column-label){color:#002b5c!important}
+html.epal-reference :is(.exec-insight,.exec-conclusion){border:1px solid #dce8f2!important;border-radius:12px;padding:12px 16px}
+html.epal-reference :is(.exec-grid svg text,.ficha-charts svg text){fill:#60748b!important}
+html.epal-reference :is(.exec-grid svg line,.ficha-charts svg line){stroke:#dce8f2!important}
+html.epal-reference .exec-donut circle[fill]:not([fill=none]){fill:#fff!important}
+html.epal-reference #viewFicha :is(.donut,.donut-inner,.pmf-donut-center,.profile-avatar){background:#edf4fc!important;color:#005bc0!important}
+html.epal-reference #viewFicha .ficha-charts [class*="bg-"]{background-color:#fff!important}
+html.epal-reference :is(.pmf-chart-tooltip,.pmf-chart-tooltip .tt-title,.pmf-chart-tooltip .tt-value){background:#fff!important;color:#002b5c!important;border-color:#90c1da80!important}
+html.epal-reference :is(.pmf-chart-tooltip .tt-label,.pmf-chart-tooltip .tt-note){color:#60748b!important}
+html.epal-reference #viewFicha :is(.donut-center,.chart-center,.avatar-placeholder){background:#edf4fc!important;color:#005bc0!important}
+html.epal-reference #viewFicha .ficha-charts svg circle[fill]:not([fill=none]){fill:#fff!important}
+html.epal-reference :is(.coverage-course-popup,.coverage-course-popup [role=option]){background:#fffffff5!important;color:#172b4d!important;border-color:#90c1da80!important}
+html.epal-reference .coverage-course-popup [role=option]:is(:hover,[aria-selected=true]){background:#e6f4fc!important;color:#005bc0!important;border-color:#90c1da!important}
+html.epal-reference :is(.coverage-course-count,.coverage-course-empty,.pmfe-suggest small,.pmfe-suggest .pmfe-empty){color:#60748b!important}
+html.epal-reference .exec-hero .exec-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:450px!important;max-width:450px;align-self:center;flex:none!important}
+html.epal-reference .exec-hero .exec-actions .exec-button{height:auto!important;min-height:38px;line-height:1.5}
+html.epal-reference :is(.plan-hero,.gf-hero,.institutional-header){box-shadow:0 4px 16px #002b5c08!important;border-radius:20px!important}
+html.epal-reference :is(.plan-eyebrow,.plan-eyebrow .material-symbols-outlined,.plan-heading .material-symbols-outlined){color:#2e6eae!important}
+html.epal-reference .epal-login :is(.text-slate-300,.text-slate-400,.text-slate-500){color:#60748b!important}
+html.epal-reference .epal-login .water-glow-orb{opacity:.15!important}
+html.epal-reference .epal-login img{filter:none!important;opacity:1!important}
+html.epal-reference .epal-login :is(.text-slate-200,.text-slate-300,.text-slate-400,.text-white\/50,.text-white\/60){color:#60748b!important}
+html.epal-reference :is(.batch-scroll,.doc-info-block){background:#fff!important;color:#172b4d!important;border-color:#dce8f2!important}
+html.epal-reference #viewFicha .ficha-profile [class*="bg-"]{background:#edf4fc!important}
+html.epal-reference main :is(summary,.coverage-reset,.exec-filter-clear){color:#005bc0!important}
+html.epal-reference .coverage-page{--cv-bg:#fff;--cv-input:#fff;--cv-border:#dce8f2;--cv-purple:#005bc0;--cv-muted:#60748b;font-family:'Plus Jakarta Sans',Inter,sans-serif!important}
+html.epal-reference .coverage-kpis>div{border:0!important;border-right:1px solid #e6eef7!important;border-radius:0!important;box-shadow:none!important}
+html.epal-reference .coverage-kpis>div:last-child{border-right:0!important}
+html.epal-reference .coverage-progress{height:8px!important;background:#e6eef7!important;border-radius:999px!important}
+html.epal-reference .coverage-progress>span{background:linear-gradient(90deg,#41e4c0,#2e6eae 60%,#002b5c)!important}
+html.epal-reference .coverage-table-footer nav [aria-current=page]{background:#005bc0!important;color:white!important}
+html.epal-reference tbody th{background:transparent!important}
+/* The restored history keeps its original chart and the current light theme. */
+html.epal-reference .performance-card{background:#fff!important;background-image:none!important;color:#172b4d!important;border:1px solid #90c1da61!important;border-radius:20px!important;box-shadow:0 10px 30px -8px #00336612!important}
+html.epal-reference .performance-card h2{color:#002b5c!important}
+html.epal-reference .performance-card :is(p,small,.performance-empty){color:#60748b!important}
+html.epal-reference .performance-card svg text{fill:#60748b!important}
+html.epal-reference .performance-grid path{stroke:#dce8f2!important}
+html.epal-reference .exec-glass-box [style*="color"],html.epal-reference .exec-excellence [style*="color"]{color:#2e6eae!important}
+@media(min-width:1800px){html.epal-reference .exec-hero .exec-kpi-card{min-height:200px}}
+@media(max-width:1200px){html.epal-reference .exec-hero{grid-template-columns:1fr}.exec-badges{grid-column:1!important;grid-row:auto!important}html.epal-reference .exec-hero .exec-actions{grid-column:1;grid-row:auto;justify-content:flex-start;max-width:none;width:100%!important}html.epal-reference .exec-hero .exec-primary-kpis{grid-row:auto;grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:820px){html.epal-reference #mainSidebar{width:270px!important}html.epal-reference body>main{margin-left:0!important;width:100%!important;max-width:100%!important}html.epal-reference main>.topbar{height:auto!important;min-height:76px;padding:12px 16px!important;flex-wrap:wrap}html.epal-reference .topbar .pmfe-topbar-tools{order:3;flex-basis:100%}.epal-page-heading{padding:22px 16px 6px}html.epal-reference #topbarTitle{font-size:23px!important}html.epal-reference :is(.executive,.plan,.pmfe-manual,.content,.p-10){padding:16px!important}html.epal-reference :is(.ux-navigation,.pmf-page-navigation){padding-left:16px!important;padding-right:16px!important}html.epal-reference .coverage-page{margin:16px!important;max-width:calc(100% - 32px);padding:16px!important}html.epal-reference .exec-hero{padding:16px!important;gap:14px}html.epal-reference .exec-hero .exec-kpi-card{padding:16px!important}html.epal-reference .exec-kpi-val{font-size:27px!important}html.epal-reference .exec-hero .exec-actions .exec-button{flex:1 1 145px}html.epal-reference #pmfe-notifications{margin-top:135px}}
+@media(max-width:480px){html.epal-reference .exec-hero .exec-primary-kpis{grid-template-columns:1fr!important}html.epal-reference .exec-hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px}html.epal-reference .exec-hero .exec-kpi-card{min-height:165px}html.epal-reference .exec-kpi-top{justify-content:flex-end}html.epal-reference #mainSidebar{max-width:86vw}}
+@media(prefers-reduced-motion:reduce){html.epal-reference *,html.epal-reference *:before,html.epal-reference *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media print{html.epal-reference body{background:white!important;color:#172b4d!important}.water-wave-banner,.epal-page-eyebrow,.sidebar-wave-container,.epal-page-heading{display:none!important}html.epal-reference .epal-print .page{box-shadow:none!important;border:0!important}html.epal-reference body>main{margin:0!important}html.epal-reference :is(.exec-kpi-card,.plan-course){transform:none!important;box-shadow:none!important}}

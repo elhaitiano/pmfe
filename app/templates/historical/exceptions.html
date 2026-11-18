@@ -1,0 +1,44 @@
+{% extends 'base.html' %}{% load static %}
+{% block extra_styles %}<link rel="stylesheet" href="{% static 'pmf/historical-regularization.css' %}">{% endblock %}
+{% block heading %}REGULARIZAÇÃO DO HISTÓRICO{% endblock %}
+{% block content %}
+<section class="historical-ui content p-10 space-y-6">
+{% if review_snapshot.report.certificate_folder_regularization %}{% with batch=review_snapshot.report.certificate_folder_regularization %}
+<div class="glass rounded-xl p-6"><h2 class="text-xl font-bold">Certificados nas duas origens — 06/11/2026</h2>
+<p>{{ batch.counts.certificates }} certificados associados sem duplicar cópias ou versões; {{ batch.counts.confirmed_deliveries }} entregas confirmadas e {{ batch.counts.already_delivered }} já entregues.</p>
+<p>{{ batch.counts.learners_updated }} formandos actualizados · {{ batch.counts.date_corrections }} participações com datas corrigidas · {{ batch.counts.certified_hours_recorded }} cargas horárias certificadas registadas.</p>
+<p>Os PDFs podem ser consultados nas fichas a partir das origens. A cópia para o arquivo fica para a próxima fase; não foi presumida entrega aos RH nem data de entrega.</p>
+<a class="btn" href="{% url 'certificate_folder_review' %}">Ver conferência, documentos e excepções</a></div>
+{% endwith %}{% endif %}
+{% if review_snapshot.report.incremental_regularization %}
+{% with update=review_snapshot.report.incremental_regularization %}
+<div class="glass rounded-xl p-6"><h2 class="text-xl font-bold">Conferência documental de 06/11/2026</h2>
+<p>Dados aplicados a partir de fontes comprovadas. As entregas históricas anteriores foram preservadas.</p>
+<div class="grid grid-cols-3 gap-4 mt-4">
+<p><strong>{{ update.counts.issuance_flags_regularized|default:0 }}</strong> emissões regularizadas com PDF final já arquivado</p>
+<p><strong>{{ update.counts.grades_added|default:0 }}</strong> resultados nas escalas originais</p>
+<p><strong>{{ update.counts.daily_attendance_evidence|default:0 }}</strong> marcas de presença documentadas</p>
+<p><strong>{{ update.counts.contexts_resolved|default:0 }}</strong> contextos regularizados</p>
+<p><strong>{{ update.counts.contexts_partially_resolved|default:0 }}</strong> contextos com campos recuperados</p>
+<p><strong>{{ update.counts.pdfs_archived|default:0 }}</strong> novos PDFs associados</p>
+</div>{% if update.hours_confirmation %}<p class="mt-4"><strong>{{ update.hours_confirmation.hours|floatformat:0 }} h</strong> confirmadas pelo responsável para Sparkoper de 29/10/2026; {{ update.hours_confirmation.hours_added|floatformat:0 }} horas de participantes integradas com frequência integral comprovada.</p>{% endif %}<p>{{ update.counts.documented_issue_dates_recovered|default:0 }} datas de emissão recuperadas de PDFs concordantes. As datas de entrega desconhecidas permanecem vazias.</p><p class="mt-4">Rubricas em branco, identidades ambíguas, presenças parciais e horários divergentes permanecem separados dos valores confirmados. Não foram presumidas datas de entrega, notas ou horas.</p></div>
+{% endwith %}{% endif %}
+<div class="glass rounded-xl p-6"><h2 class="text-xl font-bold">Certificados e dados de formação</h2>
+<p>A entrega histórica confirmada pelo responsável não confirma notas, horas ou presenças.</p>
+<div class="grid grid-cols-3 gap-4 mt-4">
+<p><strong>{{ counts.historical_delivered_total }}</strong> entregas históricas confirmadas</p>
+<p><strong>{{ counts.archived_pdf_total }}</strong> PDFs arquivados</p>
+<p><strong>{{ counts.delivered_pdf_missing }}</strong> entregues com PDF por arquivar</p></div>
+<div class="flex gap-3 mt-4"><a class="gf-btn" href="{% url 'historical_review_workbook' %}">Descarregar listas Excel</a><a class="gf-btn" href="{% url 'historical_regularization_report' %}">Descarregar relatório</a><a class="gf-btn" href="{% url 'historical_certificate_archive' %}">Descarregar arquivo EPAL</a></div></div>
+{% if review_snapshot %}{% include 'historical/review_summary.html' %}{% endif %}
+<details class="glass rounded-xl p-6"><summary>Certificados entregues com PDF por arquivar — {{ counts.delivered_pdf_missing }}</summary>
+<p>A entrega mantém-se confirmada. Falta apenas localizar e arquivar o PDF final.</p>
+<div style="max-height:440px;overflow:auto"><table><thead><tr><th>N.º mec. / formando</th><th>Formação</th><th>Participação</th><th>Ação</th></tr></thead><tbody>{% for state in missing_archive_rows %}<tr><td>{{ state.training.employee.number|unlocalize }} — {{ state.training.employee.name }}</td><td>{{ state.training.title }}</td><td>#{{ state.training_id|unlocalize }}</td><td><a class="gf-btn" href="{% url 'employee_data' state.training.employee_id %}">Abrir ficha / arquivar PDF</a></td></tr>{% empty %}<tr><td colspan="4">Sem PDFs em falta neste conjunto.</td></tr>{% endfor %}</tbody></table></div></details>
+<div class="glass rounded-xl p-6"><h2 class="text-xl font-bold">Exceções por rever — {{ pending_count }}</h2>
+<p>Os dados comprovados não exigem nova confirmação. Apenas faltas de informação, divergências e associações incertas aparecem nesta lista.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="get" class="flex gap-3 mt-4"><label>Pesquisar nome, n.º mecanográfico ou formação <input class="gf-field" name="q" value="{{ query|unlocalize }}"></label><label>Tipo de exceção<select class="gf-field" name="kind"><option value="">Todas</option><option value="conflicts" {% if kind_filter == 'conflicts' %}selected{% endif %}>Fontes discordantes</option><option value="missing" {% if kind_filter == 'missing' %}selected{% endif %}>Dados em falta ou sem comprovação</option><option value="unlinked_test" {% if kind_filter == 'unlinked_test' %}selected{% endif %}>Testes sem vínculo</option><option value="certificate_reference" {% if kind_filter == 'certificate_reference' %}selected{% endif %}>Certificados por associar</option><option value="document_issue" {% if kind_filter == 'document_issue' %}selected{% endif %}>Documentos por retificar</option><option value="context" {% if kind_filter == 'context' %}selected{% endif %}>Horas, duração e períodos</option></select></label><button class="gf-btn">Pesquisar</button></form>
+<div class="overflow-x-auto mt-4"><table class="w-full"><thead><tr><th>Formando / N.º mec.</th><th>Formação</th><th>Campo afetado</th><th>Motivo / estado da fonte</th><th>Ação</th></tr></thead>
+<tbody>{% for entry in page %}<tr><td>{% if entry.record.employee %}{{ entry.record.employee.name }}{% elif entry.record.payload.name_literal %}{{ entry.record.payload.name_literal }} · identidade por associar{% else %}Contexto de formação{% endif %}<br>{{ entry.record.employee.number|default:"Vários formandos: consultar detalhe"|unlocalize }}</td><td>{{ entry.course }}</td><td>{{ entry.field }}</td><td>{{ entry.reason }}</td><td><a class="gf-btn" href="{% url 'historical_exception_detail' entry.record.pk %}">Ver fontes e resolver</a></td></tr>{% empty %}<tr><td colspan="5">Sem pendências neste filtro.</td></tr>{% endfor %}</tbody></table></div>
+<div class="flex gap-3 mt-4">{% if page.has_previous %}<a href="?q={{ query|urlencode|unlocalize }}&kind={{ kind_filter|urlencode|unlocalize }}&page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>Página {{ page.number|unlocalize }} de {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ query|urlencode|unlocalize }}&kind={{ kind_filter|urlencode|unlocalize }}&page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}</div></div></section>
+{% endblock %}

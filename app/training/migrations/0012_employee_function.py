@@ -1,30 +1,52 @@
 from django.db import migrations, models
 
 
-def copy_function(apps, schema_editor):
+def copy_function_from_source_data(apps, schema_editor):
     Employee = apps.get_model('training', 'Employee')
-    employees = Employee.objects.using(schema_editor.connection.alias)
-    for employee in employees.all().iterator():
-        value = (employee.source_data or {}).get('Função')
-        if value is not None:
-            employees.filter(pk=employee.pk).update(function=str(value))
+    database = schema_editor.connection.alias
 
+    for employee in Employee.objects.using(database).only(
+        'pk', 'source_data'
+    ).iterator():
 
-def preserve_function_in_source(apps, schema_editor):
-    Employee = apps.get_model('training', 'Employee')
-    employees = Employee.objects.using(schema_editor.connection.alias)
-    for employee in employees.all().iterator():
-        source = dict(employee.source_data or {})
-        source['Função'] = employee.function
-        employees.filter(pk=employee.pk).update(source_data=source)
+        source_data = employee.source_data or {}
+
+        if not isinstance(source_data, dict):
+            continue
+
+        value = (
+            source_data.get('Função exercida')
+            or source_data.get('Função Exercida')
+            or source_data.get('Função')
+        )
+
+        if value and str(value).strip():
+            Employee.objects.using(database).filter(
+                pk=employee.pk
+            ).update(
+                function=str(value).strip()[:200]
+            )
 
 
 class Migration(migrations.Migration):
-    dependencies = [('training', '0011_course_deletion_guidance')]
+
+    dependencies = [
+        ('training', '0011_course_deletion_guidance')
+    ]
+
     operations = [
         migrations.AddField(
-            model_name='employee', name='function',
-            field=models.CharField('Função', max_length=200, blank=True),
+            model_name='employee',
+            name='function',
+            field=models.CharField(
+                blank=True,
+                max_length=200,
+                verbose_name='Função exercida'
+            ),
         ),
-        migrations.RunPython(copy_function, preserve_function_in_source),
+
+        migrations.RunPython(
+            copy_function_from_source_data,
+            migrations.RunPython.noop
+        ),
     ]

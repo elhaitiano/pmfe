@@ -11,14 +11,14 @@
       <form method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        {{ form.revision }}{{ form.revision.errors }}
+        {{ form.revision|unlocalize }}{{ form.revision.errors }}
         {% for item, score, comment in form.rows %}
         <fieldset class="border-b border-white/10 py-4">
           <legend>{{ item.name }} · {{ item.dimension }}</legend>
           <p>{{ item.description|linebreaksbr }}</p>
-          <label for="{{ score.id_for_label }}" class="gf-label">{{ score.label }}</label>
+          <label for="{{ score.id_for_label|unlocalize }}" class="gf-label">{{ score.label }}</label>
           {{ score }}{{ score.errors }}
-          <label for="{{ comment.id_for_label }}" class="gf-label">{{ comment.label }}</label>
+          <label for="{{ comment.id_for_label|unlocalize }}" class="gf-label">{{ comment.label }}</label>
           {{ comment }}{{ comment.errors }}
         </fieldset>
         {% endfor %}

@@ -1,0 +1,137 @@
+/* Composition and exact interaction effects from the supplied EPAL prototype. */
+html.epal-reference .epal-card{position:relative;transition:all .25s cubic-bezier(.16,1,.3,1)!important}
+html.epal-reference .epal-card:before{content:'';position:absolute;top:0;left:20px;right:20px;height:3px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,#41e4c0,#2e6eae,#35509a);opacity:0;transition:opacity .3s;pointer-events:none}
+html.epal-reference .epal-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -6px #0033661f,0 0 20px #41e4c026!important;border-color:#2e6eae99!important}
+html.epal-reference .epal-card:hover:before{opacity:1}
+.water-bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffffffcc,#41e4c033);opacity:.45;animation:epal-float-bubble 8s infinite ease-in-out;pointer-events:none}
+.epal-bubble-one{width:32px;height:32px;top:6px;left:16px}.epal-bubble-two{width:20px;height:20px;top:40px;right:24px;animation-delay:2s}
+@keyframes epal-float-bubble{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-16px) scale(1.08)}}
+html.epal-reference #sidebarProfilePanel{padding:28px 24px 20px!important}
+html.epal-reference #sidebarProfilePanel img{height:86px!important;width:94px!important;padding:10px!important;object-fit:contain;background:#ffffff1a!important;box-shadow:0 12px 25px #0002!important}
+html.epal-reference #sidebarProfilePanel>div{margin-top:18px!important}
+html.epal-reference #sidebarProfilePanel h2{line-height:1.35!important}
+html.epal-reference #mainSidebar .pmfe-main-item:hover:not([aria-current=page]){transform:translateX(4px)}
+html.epal-reference #mainSidebar .pmfe-main-item[aria-current=page]:hover{transform:none}
+.epal-sidebar-status{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;margin-top:14px;border-radius:999px;background:#41e4c026;border:1px solid #41e4c04d;color:#41e4c0;font-size:10px;font-weight:800}
+.epal-sidebar-status>span{width:7px;height:7px;background:#41e4c0;border-radius:50%;box-shadow:0 0 0 0 #41e4c04d;animation:epal-status-pulse 2.8s ease-in-out infinite}
+@keyframes epal-status-pulse{50%{box-shadow:0 0 0 4px #41e4c000;opacity:.65}}
+.epal-user-avatar{display:flex;align-items:center;justify-content:center;border:2px solid #2e6eae;border-radius:50%;width:36px;height:36px;color:#002b5c;font-size:20px;flex-shrink:0}
+.epal-user-caption{display:flex;flex-direction:column;gap:2px;min-width:60px}.epal-user-caption strong{font-size:12px;font-weight:800}.epal-user-caption small{font-size:10px;font-weight:500;color:#60748b}
+html.epal-reference .epal-page-heading{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:32px 32px 0}
+.epal-title-copy{min-width:0}.epal-page-subtitle:empty,.epal-title-actions:empty{display:none}
+html.epal-reference .epal-page-subtitle{font-size:14px!important;margin-top:4px!important;color:#526b85!important;font-weight:500}
+html.epal-reference .epal-title-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0}
+html.epal-reference .epal-title-actions .exec-button{min-height:48px;padding:12px 18px!important;font-size:12px!important}
+html.epal-reference #topbarTitle{font-size:30px!important;font-weight:800!important;letter-spacing:-.035em;margin-top:10px}
+html.epal-reference body:has(.epal-exact) .ux-navigation{display:none!important}
+html.epal-reference .executive.epal-exact{padding-top:28px!important;display:flex;flex-direction:column;gap:28px}
+html.epal-reference .epal-reference-filters{display:block!important;padding:20px!important;border-radius:16px!important;box-shadow:0 2px 6px #002b5c08!important;margin:0!important}
+.epal-filter-primary{display:grid;grid-template-columns:1fr .75fr 1.5fr 1.3fr;gap:16px;align-items:end}
+.epal-filter-primary .exec-filter{min-width:0}.epal-filter-primary select{width:100%}
+html.epal-reference .epal-reference-filters label{font-size:11px!important;letter-spacing:.06em;font-weight:700}
+.epal-filter-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.epal-filter-more{margin-left:auto}.epal-filter-more>summary{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:9px 12px;cursor:pointer;list-style:none;border-radius:10px}
+.epal-filter-more>summary:hover{background:#f0f6fc}.epal-filter-more[open]{flex-basis:100%;margin:0}
+.epal-filter-more>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;border-top:1px solid #e6eef7;padding-top:16px;margin-top:10px}
+.epal-filter-more select,.epal-filter-more input{width:100%}
+html.epal-reference .epal-kpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:20px!important;margin:0!important}
+html.epal-reference .epal-kpis .exec-kpi-card{padding:24px!important;min-height:170px!important;display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:12px;row-gap:0;align-content:start;overflow:visible}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(1){order:1}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(4){order:2}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(2){order:3}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(3){order:4}
+html.epal-reference .epal-kpis .exec-kpi-top{display:contents!important}
+html.epal-reference .epal-kpis .exec-kpi-top>span{grid-column:2;grid-row:1;font-size:10px!important;line-height:1.45;letter-spacing:.04em;color:#60748b!important;align-self:end}
+html.epal-reference .epal-kpis .exec-icon{grid-column:1;grid-row:1/3;align-self:center;width:42px!important;height:48px!important;box-shadow:none}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(4) .exec-icon{background:#00d4ff22!important;border-color:#00d4ff55!important;color:#2e6eae!important}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(2) .exec-icon{background:#41e4c033!important;border-color:#41e4c080!important;color:#00877e!important}
+html.epal-reference .epal-kpis .exec-kpi-card:nth-child(3) .exec-icon{background:#e0e7ff!important;border-color:#c7d2fe!important;color:#35509a!important}
+html.epal-reference .epal-kpis .exec-kpi-val{grid-column:2;grid-row:2;margin:3px 0 0!important;font-size:30px!important;line-height:1.15!important;align-self:start}
+html.epal-reference .epal-kpis .exec-kpi-sub{grid-column:1/-1;grid-row:3;margin:20px 0 0!important;padding-top:12px!important;font-size:10px!important;font-weight:500;line-height:1.4!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:block!important}
+html.epal-reference .epal-kpis .exec-kpi-sub .material-symbols-outlined{display:none}
+html.epal-reference .epal-kpis .exec-man-days{grid-column:1/-1;grid-row:3;margin:20px 0 0;padding-top:12px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+html.epal-reference .epal-kpis .exec-man-days>span{font-size:10px}
+html.epal-reference .epal-kpis .exec-man-days strong{font-size:12px!important;color:#002b5c!important;white-space:nowrap}
+html.epal-reference .epal-kpis .exec-man-days small{font-size:9px!important}
+html.epal-reference .epal-kpis .exec-kpi-card:has(.exec-man-days) .exec-kpi-sub{position:absolute;left:16px;bottom:4px;border:0!important;padding:0!important;margin:0!important;font-size:8px!important;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s}
+html.epal-reference .epal-kpis .exec-kpi-card:has(.exec-man-days):hover .exec-kpi-sub{opacity:1}
+.epal-graphs{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px;align-items:stretch}
+html.epal-reference .epal-graphs>.exec-glass-box{grid-column:auto!important;min-width:0;padding:24px!important;margin:0!important;min-height:390px;box-shadow:0 10px 30px -8px #00336612,0 4px 12px #2e6eae0a!important}
+.epal-graphs .exec-panel-heading{align-items:flex-start;margin-bottom:12px;gap:8px}
+.epal-graphs .exec-panel-heading h3{font-size:15px;font-weight:800;line-height:1.5}
+.epal-graphs .exec-panel-heading h3>.material-symbols-outlined{font-size:22px;color:#005bc0!important}
+.epal-graphs .exec-panel-heading>span{display:none}
+.epal-evolution-card .exec-evolution{height:285px!important;display:block!important;padding:12px 0 0!important;border:0!important;position:relative}
+.epal-line-chart{width:100%;height:100%}.epal-line-chart svg{width:100%;height:100%;overflow:visible}
+.epal-line-chart svg text{font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;fill:#7186a0}
+.epal-line-chart svg a circle{transition:all .2s;transform-box:fill-box;transform-origin:center;cursor:pointer}
+.epal-line-chart svg a:hover circle,.epal-line-chart svg a:focus circle{r:7;fill:#41e4c0;filter:drop-shadow(0 0 6px #41e4c088)}
+.epal-has-line>.exec-column{display:none!important}
+html.epal-reference .epal-distribution-card .exec-area-composition{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+html.epal-reference .epal-distribution-card .exec-donut-wrap{order:0;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;min-width:0;width:100%;max-width:200px;margin:4px auto 0}
+.epal-distribution-card .exec-donut{width:100%;height:auto;max-height:176px}
+.epal-distribution-card .exec-donut-mini,.epal-distribution-card .exec-donut-wrap>small,.epal-distribution-card>.exec-conclusion{display:none}
+.epal-distribution-card .exec-area-list{order:1;width:100%}
+.epal-distribution-card .exec-bar-row{padding:4px 0!important;margin:0!important}
+.epal-distribution-card .exec-bar-track{display:none}
+.epal-distribution-card .exec-bar-caption{gap:10px;align-items:center;font-size:11px!important;line-height:1.5}
+.epal-distribution-card .exec-bar-caption>span{display:flex;align-items:center;gap:7px}
+.epal-distribution-card .exec-bar-caption>span:before{content:'';display:block;width:10px;height:10px;border-radius:50%;background:var(--epal-segment,#005bc0);flex-shrink:0}
+.epal-distribution-card .exec-bar-caption strong{font-size:10px!important}
+html.epal-reference .epal-graphs .epal-certification-card{display:flex;flex-direction:column;gap:12px}
+.epal-certification-card .exec-panel-heading{margin-bottom:0}
+html.epal-reference .epal-card-caption{font-size:11px!important;line-height:1.5;margin:-7px 0 6px}
+.epal-certificate-stat{display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;background:linear-gradient(90deg,#eff6ffcc,#eef2ff80);border:1px solid #dbeafe}
+.epal-certificate-stat>div{min-width:0}.epal-certificate-stat strong{display:block;font-size:23px;line-height:1.3;font-weight:800}
+.epal-certificate-stat>div>span{display:block;font-size:10px;color:#526b85;font-weight:600;line-height:1.5}
+.epal-stat-icon{width:38px;height:44px;background:white;color:#005bc0;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:23px;box-shadow:0 2px 4px #002b5c06;flex-shrink:0}
+.epal-stat-green{background:linear-gradient(90deg,#ecfdf5cc,#f0fdfa80);border-color:#d1fae5}.epal-stat-green .epal-stat-icon{color:#00a785}
+.epal-certification-footer{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid #e6eef7;font-size:11px;color:#60748b}
+.epal-certification-footer .progress-track{grid-column:1/-1}
+.progress-track{height:8px;border-radius:999px;background:#e6eef7;overflow:hidden}.progress-bar-epal{height:100%;border-radius:999px;background:linear-gradient(90deg,#41e4c0,#2e6eae 60%,#002b5c);transition:width 1s ease-in-out}
+.epal-quick-section h2{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;margin-bottom:16px}.epal-quick-section h2>.material-symbols-outlined{color:#005bc0;font-size:24px}
+.epal-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.epal-quick-card{display:flex;align-items:center;gap:14px;padding:20px;background:white;border:1px solid #90c1da61;border-radius:20px;box-shadow:0 10px 30px -8px #00336612;min-width:0;cursor:pointer;text-decoration:none}
+.epal-quick-card>span:nth-child(2){flex:1;min-width:0}.epal-quick-card strong{display:block;font-size:11px;font-weight:800;line-height:1.45}.epal-quick-card small{display:block;font-size:10px;line-height:1.5;margin-top:2px}
+.epal-quick-icon{width:44px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#005bc0;background:#005bc01a;flex-shrink:0;transition:background .2s,color .2s}
+.epal-quick-green .epal-quick-icon{background:#d1fae5b3;color:#047857}.epal-quick-indigo .epal-quick-icon{background:#e0e7ffb3;color:#35509a}.epal-quick-cyan .epal-quick-icon{background:#cffafeb3;color:#155e75}
+.epal-quick-card:hover .epal-quick-icon{background:#005bc0;color:white}.epal-quick-green:hover .epal-quick-icon{background:#059669}.epal-quick-indigo:hover .epal-quick-icon{background:#35509a}.epal-quick-cyan:hover .epal-quick-icon{background:#0e7490}
+.epal-arrow{color:#94a3b8;font-size:20px;transition:transform .2s,color .2s}.epal-quick-card:hover .epal-arrow{transform:translateX(4px);color:#005bc0}
+.epal-directions-overview .exec-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:22px}.epal-directions-overview h2{font-size:16px;font-weight:800}.epal-directions-overview p{font-size:11px}
+.epal-overview-scroll{overflow-x:auto}.epal-directions-overview table{width:100%;border-collapse:collapse;text-align:left;min-width:820px}
+html.epal-reference .epal-directions-overview thead th{font-size:10px!important;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:#60748b!important;background:#f8fbfe!important;padding:14px 16px;white-space:normal}
+.epal-directions-overview tbody :is(th,td){padding:17px 16px;border-bottom:1px solid #e6eef7;line-height:1.5;font-size:11px!important}
+.epal-directions-overview tbody tr:last-child :is(th,td){border-bottom:0}.epal-directions-overview tbody th{max-width:240px;min-width:190px;font-weight:700}
+.epal-directions-overview tbody th>a{display:flex;align-items:center;gap:12px;color:#002b5c!important;min-width:0}
+.epal-table-icon{width:32px;height:32px;border-radius:8px;background:#dbeafe;color:#005bc0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.epal-directions-overview tr:nth-child(2n) .epal-table-icon{background:#ccfbf1;color:#0f766e}.epal-directions-overview tr:nth-child(3n) .epal-table-icon{background:#e0e7ff;color:#35509a}
+.epal-table-progress{display:flex;align-items:center;gap:12px;min-width:130px}.epal-table-progress .progress-track{width:92px;flex:1}.epal-table-progress strong{font-size:11px;min-width:38px}
+.epal-table-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#005bc0;font-size:10px;font-weight:700}
+.epal-table-open{display:flex;padding:5px;border-radius:8px;color:#94a3b8!important}.epal-table-open:hover{background:#eff6ff;color:#005bc0!important}
+.epal-data-notice{display:flex;align-items:center;gap:9px;padding:12px 16px;border:1px solid #f1d6c4;border-radius:12px;background:#fff8f2;color:#835025;font-size:11px;line-height:1.5}
+.epal-data-notice .material-symbols-outlined{font-size:19px;color:#9b6a31}
+.epal-more-analysis{border:1px solid #90c1da61;background:white;border-radius:20px;padding:20px}
+.epal-more-analysis>summary{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+.epal-more-analysis>summary:after{content:'+';margin-left:auto;font-size:22px;font-weight:400}.epal-more-analysis[open]>summary:after{content:'−'}.epal-more-analysis[open]>summary{margin-bottom:24px}
+.epal-more-analysis .exec-hero-metrics{padding:16px 0!important}.epal-more-analysis .exec-secondary-kpis{margin:20px 0!important}
+.epal-more-analysis .exec-glass-box{margin-top:16px}.epal-more-analysis .exec-grid{gap:20px}
+html.epal-reference .epal-exact .exec-method{margin-top:20px}
+html.epal-reference .epal-distribution-card .exec-donut-total{fill:#002b5c!important;color:#002b5c!important;-webkit-text-fill-color:#002b5c!important;font-size:17px;font-weight:800}
+.epal-distribution-card .exec-bar-caption i{display:none!important}
+html.epal-reference main td{color:#526b85!important}
+html.epal-reference tbody th{text-transform:none}
+html.epal-reference .epal-certification-card .epal-stat-icon{color:#005bc0!important}
+html.epal-reference .epal-certification-card .epal-stat-green .epal-stat-icon{color:#00a785!important}
+html.epal-reference #epalHelpToggle{width:48px;height:48px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%!important;font-size:0;right:18px;bottom:18px}
+html.epal-reference #epalHelpToggle .material-symbols-outlined{font-size:24px}
+.epal-reference-filters [data-field]>label{display:flex;align-items:center;gap:7px}
+.epal-reference-filters [data-field]>label:before{font-family:'Material Symbols Outlined';font-size:15px;font-weight:400;color:#005bc0;line-height:1;text-transform:none;letter-spacing:normal}
+.epal-reference-filters [data-field=period]>label:before,.epal-reference-filters [data-field=year]>label:before{content:'calendar_month'}
+.epal-reference-filters [data-field=direction]>label:before{content:'corporate_fare'}
+.epal-reference-filters [data-field=area]>label:before{content:'school'}
+@media(min-width:1600px){html.epal-reference .epal-kpis .exec-kpi-top>span{font-size:11px!important}}
+@media(max-width:1300px){.epal-graphs{grid-template-columns:1.5fr 1fr}.epal-certification-card{grid-column:1/-1!important;min-height:0!important;display:grid!important;grid-template-columns:1fr 1fr;gap:12px!important}.epal-certification-card .exec-panel-heading,.epal-certification-card .epal-card-caption,.epal-certification-card .epal-certification-footer{grid-column:1/-1}.epal-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html.epal-reference .epal-title-actions{gap:8px}html.epal-reference .epal-title-actions .exec-button{font-size:10px!important;padding:10px 12px!important}.epal-filter-primary{grid-template-columns:repeat(2,minmax(0,1fr))}html.epal-reference .epal-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:820px){html.epal-reference .epal-page-heading{padding:24px 16px 0;align-items:flex-start;flex-direction:column;gap:16px}html.epal-reference #topbarTitle{font-size:25px!important}html.epal-reference .epal-title-actions{justify-content:flex-start;flex-wrap:wrap}html.epal-reference .epal-page-subtitle{font-size:12px!important}html.epal-reference .executive.epal-exact{padding-top:22px!important;gap:20px}.epal-user-caption{display:none}.epal-graphs{grid-template-columns:1fr!important}.epal-certification-card{grid-column:auto!important}.epal-filter-more>div{grid-template-columns:repeat(2,minmax(0,1fr))}.epal-directions-overview .exec-panel-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:480px){html.epal-reference .epal-kpis{grid-template-columns:1fr!important}.epal-quick-grid,.epal-filter-primary,.epal-filter-more>div{grid-template-columns:1fr}.epal-filter-more{margin-left:0}.epal-certification-card{display:flex!important}.epal-graphs>.exec-glass-box{padding:20px!important}.epal-title-actions .exec-button{flex:1}.epal-quick-card{padding:16px}.epal-user-avatar{width:30px;height:30px;font-size:18px}}
+@media(prefers-reduced-motion:reduce){html.epal-reference .epal-card,html.epal-reference .epal-card:before,.water-bubble,.epal-sidebar-status>span,.epal-arrow,.epal-line-chart *{animation:none!important;transition:none!important}html.epal-reference .epal-card:hover{transform:none!important}}
+@media print{.epal-title-actions,.epal-quick-section,.epal-more-analysis>summary{display:none!important}.epal-graphs{break-inside:avoid}.epal-card:before{display:none}.epal-more-analysis{border:0}}

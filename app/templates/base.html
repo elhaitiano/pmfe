@@ -1,123 +1,95 @@
-{% load static navigation %}
+{% load static reference_a %}
 <!doctype html>
-<html lang="pt" class="dark">
+<html lang="pt" class="epal-reference">
   <head>
     <meta charset="utf-8">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#002b5c">
+    {% include 'favicon_links.html' %}
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>
-      PMF · PROÁGUA / EPAL
+      PMFE | Gestão de Formação
     </title>
     <link rel="stylesheet" href="{% static 'pmf/fonts.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/tailwind.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/platform-original.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/adapters.css' %}">
     <link rel="stylesheet" href="{% static 'pmf/evaluation-navigation.css' %}">
-    {% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'pmf/post-audit.css' %}">
+<link rel="stylesheet" href="{% static 'pmf/ux-epal.css' %}"><link rel="stylesheet" href="{% static 'pmf/professional-ui.css' %}">{% block extra_styles %}
     {% endblock %}
-    <link rel="stylesheet" href="{% static 'pmf/entry-loader.css' %}">
-    <script>try{var epalStarted=Number(sessionStorage.getItem('pmf.entry.started'));if(epalStarted && Date.now()-epalStarted<30000){document.documentElement.classList.add('epal-entering');setTimeout(function(){document.documentElement.classList.remove('epal-entering');},8000);}else{sessionStorage.removeItem('pmf.entry.started');}}catch(e){}</script>
+    {% include 'selection_feedback.html' %}
+    <link rel="stylesheet" href="{% static 'pmf/epal-jakarta.css' %}">
+    <link rel="stylesheet" href="{% static 'pmf/epal-reference.css' %}?v=20261116-1">
+    <link rel="stylesheet" href="{% static 'pmf/epal-fidelity.css' %}?v=20261116-2">
+    <link rel="stylesheet" href="{% static 'pmf/epal-sidebar-exact.css' %}?v=20261117-1">
+  <link rel="stylesheet" href="{% static 'pmf/epal-typography.css' %}?v=20261117-1">
+  <link rel="stylesheet" href="{% static 'pmf/epal-light-controls.css' %}?v=20261117-1">
+<link rel="stylesheet" href="{% static 'pmf/epal-module-surfaces.css' %}?v=20261117-1">
+<link rel="stylesheet" href="{% static 'pmf/card-effects.css' %}?v=20261117-1">
+<link rel="stylesheet" href="{% static 'pmf/sidebar-white-logo.css' %}?v=20261118-1">
   </head>
-  <body class="water-bg">
-    {% include 'entry_loader.html' with entry_page='platform' %}
-    <aside class="fixed left-0 top-0 h-screen w-[280px] border-r border-white/15 bg-black/20 backdrop-blur-3xl z-40 flex flex-col" id="mainSidebar">
+  <body class="water-bg{% if request.GET.pmfe_panel %} pmfe-embedded{% endif %}">
+    {% reference_a_identity as reference_identity %}
+
+    <aside class="epal-sidebar fixed left-0 top-0 h-screen w-[280px] border-r border-white/15 bg-black/20 backdrop-blur-3xl z-40 flex flex-col" id="mainSidebar">
       <div class="p-6 border-b border-white/10 text-center" id="sidebarProfilePanel">
-        <img alt="EPAL" class="mx-auto w-[150px] max-w-[82%] h-auto object-contain drop-shadow-[0_0_18px_rgba(0,174,255,.20)]" src="/static/pmf/epal-sidebar.png"/>
+        <span class="water-bubble epal-bubble-one" aria-hidden="true"></span><span class="water-bubble epal-bubble-two" aria-hidden="true"></span>
+        <svg width="0" height="0" class="epal-sidebar-logo-filter" aria-hidden="true"><defs><filter id="epal-sidebar-white-ink" color-interpolation-filters="sRGB"><feColorMatrix type="luminanceToAlpha"/><feGaussianBlur stdDeviation="0.2"/><feComponentTransfer result="ink"><feFuncA type="linear" slope="5" intercept="-2"/></feComponentTransfer><feFlood flood-color="white"/><feComposite operator="in" in2="ink"/></filter></defs></svg><span class="epal-sidebar-logo-frame"><img alt="EPAL" class="epal-sidebar-white-logo" src="{% static 'pmf/aquatic/epal-branco-original.jpg' %}"></span>
         <div class="mt-4 text-[11px] uppercase tracking-[.24em] text-secondary font-black">
-          PMF
+          PMFE
         </div>
         <h2 class="mt-1 text-[15px] leading-snug font-extrabold text-white">
-          Plataforma de Monitorização de Formação
+          Plataforma de Monitoria da Formação da EPAL
         </h2>
-        
+        <span class="epal-sidebar-status" title="Ligação à plataforma local"><span aria-hidden="true"></span>REDE PROÁGUA • ONLINE</span>
       </div>
-      <nav class="p-5 flex-1" aria-label="Navegação principal">
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'executive_explore' or request.resolver_match.url_name == 'executive_reports' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% url 'dashboard' %}" id="navDashboard">
-          <span class="material-symbols-outlined">dashboard</span>Dashboard Executivo
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'batch_index' or request.resolver_match.url_name == 'batch_edit' or request.resolver_match.url_name == 'planning' or request.resolver_match.url_name == 'group_detail' or request.resolver_match.url_name == 'group_enrol' or request.resolver_match.url_name == 'group_edit' or request.resolver_match.url_name == 'group_create' or request.resolver_match.url_name == 'course_create' or request.resolver_match.url_name == 'course_edit' or request.resolver_match.url_name == 'course_delete' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% url 'home' %}" id="navGestao">
-          <span class="material-symbols-outlined">school</span>Gestão de Formações
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'employee_data' or request.resolver_match.url_name == 'employee_data_select' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% if employee %}{% url 'employee_data' employee.pk %}{% else %}{% url 'employee_data_select' %}{% endif %}" id="navFicha">
-          <span class="material-symbols-outlined">person</span>Fichas Individuais
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'employee_detail' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% if employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'home' %}?status=trained{% endif %}" id="navHistorico">
-          <span class="material-symbols-outlined">history</span>Histórico de Formações
-        </a>
-        {% if user.is_staff %}
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5" href="{% url 'assistant_admin' %}">
-          <span class="material-symbols-outlined">support_agent</span>Gerir Assistente
-        </a>
-        {% endif %}
-        {% if ux_admin_visible %}
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'ux_administration' %}bg-primary/10 border-l-4 border-primary text-primary font-semibold mb-2{% else %}text-slate-400 hover:bg-white/5{% endif %}" href="{% url 'ux_administration' %}" id="navAdministracao">
-          <span class="material-symbols-outlined">admin_panel_settings</span>Administração e Definições
-        </a>
-        {% endif %}
-      </nav>
-      <div class="p-6 border-t border-white/10">
-        {% if user.is_superuser %}
-        <form action="{% url 'backup' %}" method="post">
-          {% csrf_token %}
-          <button class="w-full py-3 rounded-lg bg-gradient-to-r from-[#005bc0] to-[#4a8eff] font-semibold flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined">backup</span>Cópia de segurança
-          </button>
-        </form>
-        {% endif %}
+      <nav class="epal-primary-navigation" aria-label="Menu principal"><span class="epal-nav-label">Navegação Executiva</span>{% include 'professional_navigation.html' %}</nav>
+      <div class="epal-sidebar-footer">
+        {% if user.is_staff %}<a class="epal-manual-link" href="{% url 'professional_manual' %}"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span><strong>Manual do Utilizador</strong><small>Guia Operacional</small></span></a>{% endif %}
       </div>
+      <div class="sidebar-wave-container" aria-hidden="true"><svg class="wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,60 L1200,120 L0,120 Z" fill="#2e6eae"/></svg><svg class="wave-svg second" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,20 C200,120 400,-10 600,60 C800,130 1000,20 1200,80 L1200,120 L0,120 Z" fill="#41e4c0"/></svg></div>
     </aside>
     <main class="ml-[280px] min-h-screen relative z-10">
+      <div class="water-wave-banner" aria-hidden="true"><svg viewBox="0 0 900 200" fill="none" style="opacity:.6"><path d="M0,60 C250,160 450,-30 700,90 C850,150 950,20 1000,50 L1000,0 L0,0 Z" fill="url(#waveGrad)"/><path d="M50,30 C300,130 500,10 750,70 C880,100 960,30 1000,40 L1000,0 L50,0 Z" fill="url(#waveGrad2)"/><defs><linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#41e4c0" stop-opacity=".3"/><stop offset="50%" stop-color="#2e6eae" stop-opacity=".25"/><stop offset="100%" stop-color="#002b5c" stop-opacity=".1"/></linearGradient><linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#90c1da" stop-opacity=".4"/><stop offset="100%" stop-color="#41e4c0" stop-opacity=".2"/></linearGradient></defs></svg></div>
       <header class="topbar h-20 px-10 flex items-center justify-between sticky top-0 backdrop-blur-md bg-[#071a32]/30 z-30">
         <button type="button" id="sidebarToggle" class="pmf-mobile-menu glass rounded-lg p-2" aria-label="Abrir navegação" aria-controls="mainSidebar" aria-expanded="false">
           <span class="material-symbols-outlined">menu</span>
         </button>
-        <div>
-          <h1 class="text-2xl md:text-3xl font-black text-secondary glow" id="topbarTitle">
-            {% block heading %}
-            GESTÃO DE FORMAÇÃO{% endblock %}
-          </h1>
-        </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 pmfe-topbar-tools">
           <form action="{% url 'home' %}" class="relative w-[330px]" id="personSearchWrap" method="get">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span><input aria-label="Pesquisar formando por nome ou número mecanográfico" autocomplete="off" class="glass rounded-full pl-11 pr-4 py-2.5 text-sm border-white/15 w-full" id="personSearch" name="q" placeholder="Pesquisar formando ou N.º Mecan." type="search" value="{{ q }}"/>
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span><input {% if request.resolver_match.url_name == 'history_index' or request.resolver_match.url_name == 'employee_detail' %}data-pmfe-person-destination="{% url 'employee_detail' 0 %}"{% endif %} aria-label="Pesquisar formando por nome ou número mecanográfico" autocomplete="off" class="glass rounded-full pl-11 pr-4 py-2.5 text-sm border-white/15 w-full" id="personSearch" name="q" placeholder="Pesquisar formando ou N.º Mecan." type="search" value="{{ q|unlocalize }}"/>
           </form>
           {% if user.is_staff %}
-          <a aria-label="Histórico de actividade" class="w-10 h-10 glass rounded-full flex items-center justify-center" href="{% url 'audit' %}" id="pmfBellBtn"><span class="material-symbols-outlined">notifications</span></a>{% endif %}
+          <button type="button" aria-label="Notificações pendentes" aria-haspopup="dialog" aria-expanded="false" aria-controls="pmfe-notifications" class="w-10 h-10 glass rounded-full flex items-center justify-center" id="pmfBellBtn"><span class="material-symbols-outlined" aria-hidden="true">notifications</span><span id="pmfe-notification-count" hidden></span></button>{% endif %}
         </div>
         <form method="post" action="{% url 'logout' %}" class="flex items-center gap-2">
           {% csrf_token %}
-          <span class="text-xs text-slate-400">{{ user.username }}</span>
+          <span class="epal-user-avatar material-symbols-outlined" aria-hidden="true">person</span><span class="epal-user-caption"><strong>{{ user.username }}</strong><small>{% if user.is_superuser %}Administração{% elif user.is_staff %}Gestão de Formação{% else %}Utilizador{% endif %}</small></span>
           <button class="glass rounded-full w-10 h-10 flex items-center justify-center" aria-label="Sair">
             <span class="material-symbols-outlined">logout</span>
           </button>
         </form>
       </header>
-      <div class="pmf-page-navigation">
-        <a class="pmf-back-link" href="{% url 'home' %}" id="pmfBackLink">
-          <span aria-hidden="true">←</span> Voltar
-        </a>
-        <nav aria-label="Localização na plataforma">
-          <ol class="pmf-breadcrumb">
-            <li><a href="{% url 'home' %}">Início</a></li>
-            <li aria-hidden="true">›</li>
-            <li aria-current="page">{% block breadcrumb_label %}{% current_page_label %}{% endblock %}</li>
-          </ol>
-        </nav>
-      </div>
+      <div class="epal-page-heading"><div class="epal-title-copy"><span class="epal-page-eyebrow">PROÁGUA EPAL</span><h1 id="topbarTitle">{% block heading %}GESTÃO DE FORMAÇÃO{% endblock %}</h1><p class="epal-page-subtitle">{% block page_subtitle %}{% endblock %}</p></div><div class="epal-title-actions">{% block page_actions %}{% endblock %}</div></div>
       {% for message in messages %}
       <div class="mx-10 mt-4 glass-accent rounded-xl p-4 text-secondary" role="status">
         {{ message }}
       </div>
       {% endfor %}
-      {% block content %}
+      {% include 'validation/notice.html' %}{% include 'ux_navigation.html' %}{% block content %}
       {% endblock %}
       {% block extra_scripts %}
       {% endblock %}
     </main>
+    <link rel="stylesheet" href="{% static 'pmf/calendar.css' %}"><script src="{% static 'pmf/calendar.js' %}" defer></script>
     <script src="{% static 'pmf/app.js' %}" defer></script>
-    <script src="{% static 'pmf/entry-water.js' %}" defer></script>
-    <script src="{% static 'pmf/entry-loader.js' %}" defer></script>
     {% if user.is_authenticated %}
     {% include 'help_assistant.html' %}
     {% endif %}
+    {% include 'professional_shell.html' %}{{ pmfe_ui_config|json_script:'pmfe-ui-config' }}<script src="{% static 'pmf/professional-ui.js' %}" defer></script>
+    <script src="{% static 'pmf/card-effects.js' %}?v=20261117-1" defer></script>
+<script src="{% static 'pmf/epal-fidelity.js' %}" defer></script>
+    <script src="{% static 'pmf/epal-sidebar-exact.js' %}?v=20261117-avaliacao" defer></script>
   </body>
 </html>

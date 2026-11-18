@@ -12,7 +12,7 @@ class CourseCodeTests(TestCase):
         Course.objects.create(title='Antiga B')
         course = Course.objects.create(title='Curso', code=' capt ')
         self.assertEqual(course.code, 'CAPT')
-        form = CourseForm(data={'title': 'Outro', 'code': 'capt', 'default_days': 1, 'default_hours': 7})
+        form = CourseForm(data={'title': 'Outro', 'code': 'capt', 'default_days': 1, 'area':'Técnica','default_hours': 7})
         self.assertFalse(form.is_valid())
         self.assertIn('code', form.errors)
         with self.assertRaises(IntegrityError), transaction.atomic():
@@ -23,7 +23,7 @@ class CourseCodeTests(TestCase):
         course = Course.objects.create(title='Nome anterior', code='CAPT')
         response = self.client.post(reverse('course_edit', args=[course.pk]), {
             'code': 'TENTATIVA', 'title': 'Nome corrigido', 'default_days': 1,
-            'default_hours': 7, 'active': 'on', 'revision': course.revision})
+            'area':'Técnica','default_hours': 7, 'active': 'on', 'revision': course.revision})
         self.assertEqual(response.status_code, 302)
         course.refresh_from_db()
         self.assertEqual(course.code, 'CAPT')
@@ -36,6 +36,6 @@ class CourseCodeTests(TestCase):
     def test_assign_code_to_legacy_course(self):
         course = Course.objects.create(title='Histórico')
         form = CourseForm(instance=course, data={'title': course.title, 'code': ' lgde ',
-            'default_days': 1, 'default_hours': 7})
+            'default_days': 1, 'area':'Técnica','default_hours': 7})
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.save().code, 'LGDE')

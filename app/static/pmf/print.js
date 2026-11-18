@@ -27,6 +27,11 @@
   }
   const pristine = document.querySelector("#pages .page").cloneNode(true);
   function paginate(force = false) {
+    // Refresh before each print, including a sheet left open overnight.
+    const printedAt = new Date();
+    const date = new Intl.DateTimeFormat('pt-PT', {timeZone:'Africa/Luanda',day:'2-digit',month:'2-digit',year:'numeric'}).format(printedAt);
+    const time = new Intl.DateTimeFormat('pt-PT', {timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(printedAt);
+    pristine.querySelectorAll('[data-print-timestamp]').forEach(node => {node.textContent = `Data: ${date} | ${time}`;});
     document.getElementById("pages").replaceChildren(pristine.cloneNode(true));
     const host = document.getElementById('pages'), original = host.querySelector('.page');
     const header = original.querySelector('.header'), tableSection = original.querySelector('.table-section');

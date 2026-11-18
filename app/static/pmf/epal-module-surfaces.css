@@ -1,0 +1,33 @@
+﻿/* Remaining legacy modules share the approved light surfaces. Sidebar, print
+   documents, chart data, status meanings and all form behaviours are preserved. */
+html.epal-reference main :is(.evaluation-centre-heading,.evaluation-section,.eval-hero,.eval-card,.eval-panel,.eval-decision,.decision-metric,.comp-detail,.gf-edit-card,.gf-toast,.cr-filters,.cr-correction,.cr-kpis article,.cr-panel,.history-kpis>div,.history-chart,.history-results,.history-nominal,.history-person-data,.historical-ui .glass,.historical-documents,.batch-note,.batch-review-note,.batch-scroll,.plan-people-toolbar,.plan-review,.plan-selection,.plan-warning,.pmf-confirm-card){background:#fff!important;background-image:none!important;color:#334155!important;border:1px solid #90c1da61!important;border-radius:16px!important;box-shadow:0 6px 22px #00336609!important}
+html.epal-reference main :is(.evaluation-centre-heading,.eval-hero,.cr-panel,.history-chart,.history-results){padding:24px}
+html.epal-reference main :is(.evaluation-centre-heading h2,.evaluation-section,.eval-panel h2,.eval-panel h3,.eval-card h3,.cr-page h2,.cr-page h3,.cr-kpis strong,.history-kpis strong,.history-chart h3,.history-results h3){color:#002b5c!important;-webkit-text-fill-color:currentColor}
+html.epal-reference main .evaluation-centre-heading>span{color:#60748b!important}
+html.epal-reference main .evaluation-section{min-height:76px;padding:16px;transition:background .2s,border-color .2s}
+html.epal-reference main .evaluation-section:is(:hover,[aria-current=page]){background:#eff6ff!important;border-color:#93c5fd!important}
+html.epal-reference main :is(.evaluation-section-icon,.eval-icon){background:#dbeafe!important;color:#005bc0!important}
+html.epal-reference main .evaluation-section-arrow{color:#005bc0!important}
+html.epal-reference main :is(.evaluation-context-links,.evaluation-context-links a,.cr-page a){color:#005bc0!important}
+html.epal-reference main :is(.eval-avatar,.eval-chip,.radar-control,.eval-empty,.history-ages li,.history-age-track,.history-person-number,.plan-code,.plan-duration-badge){background:#eff6ff!important;color:#005bc0!important;border-color:#dce8f2!important}
+html.epal-reference main :is(.radar-control.active,.profile-comp.active){background:#ccfbf1!important;color:#0f766e!important}
+html.epal-reference main :is(.strength-item,.eval-status){background:#ecfdf5!important;color:#047857!important;border-color:#a7f3d0!important}
+html.epal-reference main :is(.gap-item,.plan-warning,.batch-review-note){background:#fffbeb!important;color:#92400e!important;border-color:#fde68a!important}
+html.epal-reference main :is(.cr-table,.batch-table,.history-nominal,.historical-ui,.historical-documents) :is(th,td){border-color:#e2e8f0!important;color:#334155!important}
+html.epal-reference main :is(.cr-table th,.batch-table th,.historical-ui th,.historical-documents th){background:#f6f9fc!important;color:#64748b!important}
+html.epal-reference main :is(.batch-table tbody tr:nth-child(even),.batch-grid td:first-child){background:#f8fafc!important}
+html.epal-reference main :is(.cr-page,.history-page,.historical-ui,.batch-content){color:#334155!important}
+html.epal-reference main .cr-page label{color:#334155!important}
+html.epal-reference main :is(.batch-error,.batch-grid .errorlist,.batch-content>.errorlist){background:#fef2f2!important;border-color:#fecaca!important;color:#991b1b!important}
+html.epal-reference main :is(.history-attendance,.history-attendance.unknown){background:#ecfdf5!important;color:#047857!important}
+html.epal-reference main .history-attendance.unknown{background:#f1f5f9!important;color:#64748b!important}
+html.epal-reference #viewAvaliacao :is(.eval-panel-head,.radar-control,.eval-chip){background:#f6f9fc!important;color:#334155!important}
+html.epal-reference #viewAvaliacao .bar{background:#e6eef7!important}
+html.epal-reference #viewAvaliacao :is(.profile-radar-ring,.profile-radar-axis){stroke:#cbd5e1!important}
+html.epal-reference #viewAvaliacao :is(.profile-radar-label,.radar-svg text){fill:#60748b!important}
+html.epal-reference main .historical-ui pre{background:#f6f9fc!important;color:#334155!important;border:1px solid #dce8f2;overflow:auto}
+html.epal-reference main .pmf-confirm-card :is(h2,h3){color:#002b5c!important}
+html.epal-reference main .evaluation-section:focus-visible{outline:2px solid #005bc0;outline-offset:3px}
+@media(max-width:900px){html.epal-reference main .evaluation-sections{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){html.epal-reference main .evaluation-sections{grid-template-columns:1fr}html.epal-reference main .evaluation-section{min-height:64px}html.epal-reference main :is(.evaluation-centre-heading,.cr-panel){padding:16px}}
+@media(prefers-reduced-motion:reduce){html.epal-reference main .evaluation-section{transition:none}}

@@ -1,0 +1,289 @@
+{
+  "title": "Manual de Utilização da PMFE",
+  "intro": "Guia da versão isolada em 8088. Os módulos e acções disponíveis dependem das permissões da sua conta. Os exemplos são de ensaio e não constituem registos de formação reais.",
+  "sections": [
+    {
+      "id": "inicio",
+      "title": "1. Entrar e orientar-se",
+      "steps": [
+        "Abra o endereço da versão que pretende utilizar e introduza as suas credenciais. A cópia isolada utiliza a porta 8088; a operacional continua em 8080.",
+        "Utilize o menu pela ordem: Dashboard Executivo, Gestão de Formações, Fichas Individuais, Histórico de Formações, Gerir Assistente e Administração e Definições. Entradas reservadas apenas aparecem a utilizadores autorizados.",
+        "Clique em Gestão de Formações para encontrar, dentro da página, Planeamento e Grupos, Avaliação, Certificados e Registo de actividade, conforme o seu perfil.",
+        "Num telemóvel, abra o menu através do botão de navegação. Para terminar a sessão, utilize Sair.",
+        "No Dashboard Executivo encontra Relatórios e Indicadores (KPIs). Em Gestão de Formações encontra Planeamento, Avaliação e Certificados; as ferramentas aparecem dentro da página, sem submenus na barra lateral. Administração e Definições reúne as ferramentas administrativas e o acesso a contas/manutenção conforme as permissões."
+      ],
+      "important": "A base limpa mantém os 1.510 funcionários e o catálogo de 73 formações. Não importe exemplos de ensaio como se fossem dados reais.",
+      "image": "menu.png",
+      "image_alt": "Menu principal reorganizado na cópia isolada"
+    },
+    {
+      "id": "paineis",
+      "title": "2. Painéis e acções rápidas",
+      "steps": [
+        "No Dashboard Executivo, clique em Consulta de formações e participação por Direcção. A consulta abre num painel sobre a página actual.",
+        "Utilize os filtros e as exportações da consulta. A página de origem mantém o seu estado em segundo plano.",
+        "Feche com o botão Fechar ou Escape. A página anterior recupera o foco e a posição. Quando existirem painéis encadeados, utilize Voltar.",
+        "Fichas Individuais e Histórico de Formações abrem em páginas completas, incluindo quando são seleccionados a partir da consulta ou da pesquisa.",
+        "Acções rápidas de grupo continuam disponíveis em painéis; depois de guardar, utilize Actualizar página de origem quando quiser actualizar os resultados de fundo."
+      ],
+      "important": "Os painéis não dispensam confirmações, permissões ou validações dos formulários.",
+      "image": "painel.png",
+      "image_alt": "Ficha individual aberta num painel sobre a página de origem"
+    },
+    {
+      "id": "pesquisa",
+      "title": "3. Pesquisar funcionários e formandos",
+      "steps": [
+        "Comece a escrever pelo menos uma letra do nome/apelido ou um número mecanográfico. As sugestões são apresentadas sem distinguir maiúsculas, minúsculas ou acentos.",
+        "Confira o nome, o número mecanográfico e a Direcção antes de seleccionar. A selecção usa o ID exacto da pessoa, não uma aproximação de texto.",
+        "Use seta para baixo/cima para percorrer a lista e Enter para seleccionar. Escape fecha as sugestões e Tab permite continuar a navegação.",
+        "Nos campos de pesquisa livre, seleccionar uma sugestão abre a ficha exacta em painel. Nos campos de selecção de funcionário, a sugestão preenche a opção exacta do formulário.",
+        "Se a lista não tiver a pessoa pretendida, acrescente letras ou o número. Em selecções restritas, só aparecem pessoas admitidas pelo próprio campo."
+      ],
+      "important": "Não crie um funcionário novo para resolver um nome escrito de outra forma. O mecanográfico é a identificação principal.",
+      "image": "pesquisa.png",
+      "image_alt": "Sugestões de funcionários com número mecanográfico e navegação por teclado"
+    },
+    {
+      "id": "dashboard",
+      "title": "4. Dashboard Executivo",
+      "steps": [
+        "Seleccione a periodicidade, o período, a Direcção, a área e a situação e aplique os filtros.",
+        "Consulte os KPI de pessoas, participações, horas, assiduidade, desempenho e certificados. Uma pessoa pode ter várias participações.",
+        "Abra os detalhes disponibilizados pelos gráficos para consultar os registos que sustentam os indicadores.",
+        "Compare as horas por área, a cobertura por Direcção, os estados das participações e os resultados disponíveis.",
+        "Use Relatório Executivo PDF ou o Dashboard Executivo → Relatórios para exportar e, quando autorizado, arquivar o documento.",
+        "No cartão Horas Realizadas encontra Homens-Dia de Formação (H/D), sem criar outro cartão. O indicador divide a soma das horas de presença verificadas importadas por 7. As horas são agregadas antes de arredondar o resultado para duas casas decimais.",
+        "Uma presença de 6 horas equivale a 0,86 H/D; uma presença de 7 horas equivale a 1,00 H/D. Duas presenças de 6 horas equivalem a 12/7 = 1,71 H/D. Os certificados, as horas previstas e as presenças por confirmar não geram H/D.",
+        "Dias de presença efectivos é um indicador diferente: conta pares distintos funcionário/data com P na importação. Dois dias de 6 horas contam como dois dias efectivos, embora correspondam a 1,71 H/D. Se a mesma pessoa tiver duas participações no mesmo dia, esse dia é contado uma vez neste indicador, preservando as horas legítimas de cada participação.",
+        "Os dias efectivos só aparecem quando as datas e as marcações diárias são suficientes para todas as participações importadas incluídas. Não se deduzem datas a partir de percentagens, horas ou certificados. Sem dados verificáveis aparece —; ausência integral confirmada pode produzir zero.",
+        "Utilize os filtros de periodicidade, Direcção, área, categoria profissional e género e aplique-os. O período conserva o critério existente de data de início da formação: inclui as presenças da participação seleccionada, sem repartir as horas pelos meses civis.",
+        "H/D utiliza exclusivamente evidência de assiduidade da importação, com confirmação de presenças e horas coerentes com essa evidência. Registos manuais sem importação e evidência discordante não são inferidos. Repetições comprovadas da mesma participação não se somam; edições distintas permanecem separadas.",
+        "No Centro de Relatórios pode exportar Excel, CSV e PDF com H/D e dias efectivos nos mesmos filtros. Os PDFs novos arquivados conservam estes valores e filtros; relatórios antigos não são reescritos. As exportações da consulta de Participação por Direcção também incluem os indicadores no resumo do universo nominal filtrado. Não some dias efectivos por participação sem retirar repetições do mesmo funcionário/data."
+      ],
+      "important": "Sem dados ou denominador válido, o painel apresenta “—”. Conclusão, aprovação, certificado obtido e certificado entregue são estados diferentes.",
+      "image": "dashboard.png",
+      "image_alt": "Dashboard Executivo com filtros, cartões e gráficos preservados"
+    },
+    {
+      "id": "catalogo",
+      "title": "5. Catálogo de formações",
+      "steps": [
+        "Entre em Gestão de Formações e abra Planeamento.",
+        "Pesquise e abra uma formação existente antes de tentar criar outra com o mesmo assunto.",
+        "Para uma formação nova, utilize Nova acção e preencha código, título, área, conteúdos e duração aplicáveis.",
+        "Confirme o estado de validação e a referência documental exigida antes de criar grupos.",
+        "Utilize Editar para correcções autorizadas. Formações importadas protegidas podem ter de ser arquivadas em vez de eliminadas."
+      ],
+      "important": "O código identifica a formação; cada realização em datas/grupos diferentes mantém a sua identidade.",
+      "image": "planeamento.png",
+      "image_alt": "Catálogo e grupos no Planeamento"
+    },
+    {
+      "id": "recursos",
+      "title": "6. Formadores, locais e salas",
+      "steps": [
+        "Aceda aos recursos a partir do Planeamento e aos formadores através das acções existentes.",
+        "Pesquise um formador já registado e confira a disponibilidade antes de o associar a um grupo.",
+        "Utilize os formulários autorizados para criar ou corrigir formadores, centros e salas.",
+        "Ao configurar uma sala, confira o centro associado, a capacidade e o estado de disponibilidade.",
+        "No grupo, escolha os recursos e horários reais. Conflitos confirmados devem ser resolvidos antes de confirmar a reserva."
+      ],
+      "important": "Uma reserva provisória não equivale a uma reserva confirmada. Não altere dados de recursos apenas para contornar um conflito."
+    },
+    {
+      "id": "grupos",
+      "title": "7. Criar grupos e utilizar o calendário",
+      "steps": [
+        "Abra a formação no catálogo e escolha a acção de criação de grupo.",
+        "Seleccione os dias efectivos no calendário, o formador, o local, a capacidade e o horário.",
+        "Confira as horas diárias e as pausas. O valor por defeito é 7 horas quando não existe configuração; pode usar 6 ou outra duração válida.",
+        "Guarde o grupo provisório ou confirme a reserva quando todos os elementos necessários estiverem disponíveis.",
+        "Se a plataforma detectar um grupo idêntico, abra o existente. Não crie outro grupo para reimportar a mesma lista."
+      ],
+      "important": "Os dias efectivos, as horas e o horário devem ser coerentes. O calendário fica condicionado pelo estado do grupo e pelas inscrições existentes."
+    },
+    {
+      "id": "inscricoes",
+      "title": "8. Inscrever e gerir formandos",
+      "steps": [
+        "Abra um grupo planeado e utilize Seleccionar formandos para a lista.",
+        "Pesquise por nome ou mecanográfico, consulte as sugestões e confira a ficha quando necessário.",
+        "Seleccione os funcionários pretendidos e reveja os avisos sobre histórico, capacidade, inscrição existente e eventual repetição.",
+        "Confirme a selecção apenas depois de conferir o grupo e as pessoas.",
+        "Para repetições ou reciclagens, utilize a acção específica quando estiver disponível e autorizada, com justificação e referência."
+      ],
+      "important": "Uma inscrição não comprova presença. Não transfira funcionários entre grupos sem rever as evidências e a confirmação exigida."
+    },
+    {
+      "id": "excel",
+      "title": "9. Modelo Excel e importação de assiduidade",
+      "steps": [
+        "No grupo correcto, escolha Modelo Excel de assiduidade. O ficheiro fica preenchido com a identificação e os dias do grupo.",
+        "Na folha Formação, confira título, código, grupo, horas diárias e referência da lista.",
+        "Na folha Assiduidade, indique o mecanográfico e preencha P para presença ou A para ausência em todos os dias. O nome é opcional; quando preenchido, deve corresponder ao número.",
+        "Indique Certificado obtido como Sim, Não ou em branco se desconhecido. Para Sim, forneça uma referência administrativa válida e resolva situações de ausência integral.",
+        "Em Importar assiduidade, envie o Excel, escolha Verificar Excel, confira os resultados, assinale a confirmação e escolha Confirmar importação.",
+        "Se enviar novamente o mesmo conteúdo, a plataforma informa que já foi importado e não cria participações repetidas."
+      ],
+      "important": "Só são aceites ficheiros .xlsx até 5 MB. Células de presença em falta não são tratadas como ausências. Ficheiros divergentes não substituem silenciosamente participações já gravadas.",
+      "image": "importacao.png",
+      "image_alt": "Pré-visualização real do Excel antes da confirmação de importação"
+    },
+    {
+      "id": "assiduidade",
+      "title": "10. Interpretar presenças, assiduidade e horas",
+      "steps": [
+        "Confira o número de presenças e faltas apurado a partir de P/A nos dias efectivos do grupo.",
+        "A assiduidade é calculada como presenças divididas pelos dias previstos, multiplicado por 100.",
+        "As horas frequentadas correspondem às presenças multiplicadas pelas horas diárias configuradas.",
+        "Exemplo de ensaio: em dois dias de 7 horas, P/P corresponde a 14 horas e 100%; P/A a 7 horas e 50%; A/A a zero horas e 0%.",
+        "A plataforma recalcula os resultados no servidor. Não usa alterações manuais às colunas de fórmulas como prova de presença."
+      ],
+      "important": "Horas de participantes não são a duração de sala do curso. Dados desconhecidos não são preenchidos com valores inventados."
+    },
+    {
+      "id": "certificados",
+      "title": "11. Certificados obtidos, documentos e entrega",
+      "steps": [
+        "Registe Certificado obtido no Excel de assiduidade pela indicação explícita Sim/Não. Sim não significa entrega ao formando.",
+        "Consulte Notas e certificados e o Arquivo de certificados pelos acessos existentes no Planeamento.",
+        "Para anexar um PDF, abra a ficha e a gestão de documentos, escolha a participação correcta e forneça os dados solicitados.",
+        "Para entregar um certificado, abra o grupo, escolha Registar entrega na participação correcta e confira funcionário, formação, grupo e período.",
+        "Preencha a data, o responsável, a referência e a fundamentação e confirme explicitamente. Uma evidência administrativa válida pode ser usada sem PDF.",
+        "Consulte as entregas existentes antes de gravar. O fluxo específico protege entregas já confirmadas contra repetição."
+      ],
+      "important": "Não confirme uma entrega fictícia para testar. Obtido/emitido, entregue e elegível não devem ser somados nem confundidos."
+    },
+    {
+      "id": "notas",
+      "title": "12. Notas, resultados e validação de grupos",
+      "steps": [
+        "Aceda a Notas e certificados no Planeamento para consultar e actualizar os registos autorizados.",
+        "Preencha apenas os valores e estados sustentados pelas evidências e reveja os dados antes de confirmar.",
+        "Utilize Validação de grupos quando tiver as permissões necessárias e confira o grupo/edição seleccionado.",
+        "Reveja conclusão, avaliação académica, assiduidade e certificação separadamente. Quando faltarem critérios ou notas, mantenha a situação por validar.",
+        "Se as evidências mudarem depois de uma decisão, consulte as situações a rever em vez de reutilizar uma validação desactualizada."
+      ],
+      "important": "A presença ou entrega de certificado não produz automaticamente uma aprovação académica. Não converta menções qualitativas em notas sem regra aprovada."
+    },
+    {
+      "id": "fichas",
+      "title": "13. Fichas Individuais e histórico pessoal",
+      "steps": [
+        "Abra Fichas Individuais e pesquise o funcionário. Confira o mecanográfico antes de abrir a ficha.",
+        "Consulte os quatro cartões: formações, horas, assiduidade e certificados.",
+        "A tabela recente mantém oito colunas. Abra a formação para chegar ao registo correspondente no histórico completo.",
+        "Consulte gráficos, avaliações e documentos disponíveis na ficha. Os registos sem dados ficam identificados, sem valores inventados.",
+        "Utilize as acções autorizadas de edição, documentos ou impressão quando necessário."
+      ],
+      "important": "Na nova base, o cartão Certificados conta obtidos/emitidos confirmados; a entrega é registada separadamente.",
+      "image": "ficha.png",
+      "image_alt": "Ficha individual com quatro cartões e oito colunas do histórico"
+    },
+    {
+      "id": "historico",
+      "title": "14. Histórico e consultas executivas",
+      "steps": [
+        "Abra Histórico para consultar as participações existentes e os seus grupos/edições.",
+        "No Dashboard, abra a consulta de formações e participação por Direcção. Escolha a formação e utilize Filtros para Direcções, período, ano, grupo, estado e pesquisa nominal; confirme em Aplicar filtros.",
+        "Pesquise uma Direcção na tabela. Clique em Direcção, Participaram ou Taxa no cabeçalho para ordenar; volte a clicar para inverter. A barra na Taxa representa a percentagem visível na mesma célula. Escolha 10, 20 ou 50 Direcções por página.",
+        "Clique numa Direcção ou num dos seus números para abrir a lista nominal correspondente sobre a tabela. As ligações Lista nominal, Participantes e Sem participação permitem consultar o universo filtrado. Clique em edição(ões) para abrir o detalhe de grupos, períodos, horas, assiduidade e notas numa segunda janela.",
+        "Feche os detalhes e as listas com × ou Escape para recuperar a tabela no mesmo estado. O botão i apresenta os critérios dos indicadores e as ressalvas do cadastro.",
+        "Abra a pessoa ou participação para consultar o registo exacto. Edicões legítimas diferentes permanecem separadas.",
+        "Exporte PDF ou Excel a partir da própria consulta, mantendo os filtros pretendidos."
+      ],
+      "important": "O denominador de cobertura é o cadastro das Direcções seleccionadas, não uma obrigação de frequência. Sem participação registada não significa ausência de formação fora da PMFE."
+    },
+    {
+      "id": "relatorios",
+      "title": "15. Relatórios, PDF e Excel",
+      "steps": [
+        "No Dashboard Executivo, abra Relatórios no menu principal e seleccione o período e os filtros.",
+        "Utilize a pré-visualização PDF para conferir o conteúdo antes de arquivar.",
+        "Quando autorizado, escolha a acção de gerar/arquivar o relatório para conservar a versão com os filtros usados.",
+        "Consulte os relatórios arquivados e descarregue o documento necessário.",
+        "Nas consultas, utilize as exportações Excel/PDF disponíveis. Confirme se o indicador se refere a pessoas, participações, certificados ou horas de participantes."
+      ],
+      "important": "As actividades datadas pela entrega/fim podem incluir formações iniciadas antes do período. Não compare universos temporais diferentes como se fossem iguais.",
+      "image": "relatorios.png",
+      "image_alt": "Página real de relatórios executivos e arquivo"
+    },
+    {
+      "id": "avaliacao",
+      "title": "16. Avaliação, reacção e provas",
+      "steps": [
+        "Em Gestão de Formações, abra Avaliação. Os acessos disponíveis variam conforme o perfil.",
+        "Escolha a participação e o tipo de avaliação existente, como aprendizagem ou reacção.",
+        "Preencha os campos solicitados e confirme apenas informações sustentadas pela formação avaliada.",
+        "Quando aplicável, utilize os formulários de provas, perguntas e tentativas para registar os elementos existentes.",
+        "Consulte os resultados na participação, nos indicadores ou na ficha, respeitando a escala original."
+      ],
+      "important": "Não registe respostas ou notas de ensaio na base que será activada. As avaliações de demonstração pertencem apenas às bases de teste."
+    },
+    {
+      "id": "competencias",
+      "title": "17. Competências, 360° e desenvolvimento",
+      "steps": [
+        "A partir dos acessos do módulo de Avaliação, consulte o catálogo de competências e os perfis funcionais.",
+        "Quando autorizado, configure as competências e os elementos de um ciclo de avaliação.",
+        "Associe os avaliadores e utilize os acessos de avaliação disponibilizados pela plataforma.",
+        "Os participantes consultam as tarefas disponíveis em Minhas avaliações, conforme o respectivo acesso.",
+        "Registe e acompanhe acções de desenvolvimento pelos formulários existentes e consulte os indicadores efectivamente disponíveis."
+      ],
+      "important": "A aplicação não envia automaticamente mensagens externas por estes passos. Resultados de formação não demonstram, por si só, impacto no trabalho."
+    },
+    {
+      "id": "notificacoes",
+      "title": "18. Centro de notificações",
+      "steps": [
+        "Abra a campainha para consultar pendências reais a que a sua conta tem acesso.",
+        "O contador indica situações pendentes, como grupos agendados, validações por efectuar, assiduidade por confirmar ou certificados emitidos por entregar.",
+        "Seleccione uma notificação para abrir directamente o grupo ou a participação correspondente.",
+        "Execute a acção autorizada e actualize o centro para consultar o estado corrente.",
+        "Quando não há situações reais, a lista apresenta Sem notificações pendentes. A mesma situação não é repetida no centro."
+      ],
+      "important": "Abrir uma notificação não resolve a pendência. A indicação desaparece quando os dados deixam de satisfazer a condição, não apenas por ter sido lida.",
+      "image": "notificacoes.png",
+      "image_alt": "Centro de notificações com pendências reais da base de ensaio"
+    },
+    {
+      "id": "assistente",
+      "title": "19. Gerir Assistente e consultar este manual",
+      "steps": [
+        "Abra Gerir Assistente para consultar os assuntos já publicados.",
+        "Para um novo assunto, preencha o título, palavras de pesquisa, página de destino e passos de orientação.",
+        "Reveja os passos, as restrições de administrador e o estado de publicação antes de guardar.",
+        "O botão de ajuda apresenta as orientações existentes; não é um serviço de geração de respostas por IA.",
+        "Use Manual de Utilização para consultar este guia e Descarregar PDF para o exportar."
+      ],
+      "important": "A configuração dos guias continua a exigir o acesso existente de gestão do assistente. Este manual descreve apenas funcionalidades implementadas."
+    },
+    {
+      "id": "administracao",
+      "title": "20. Administração, actividade e cópias de segurança",
+      "steps": [
+        "Utilizadores autorizados consultam a Área administrativa para os acessos existentes de validação, documentos e revisão.",
+        "Superutilizadores podem aceder à Administração para gerir os elementos permitidos pela aplicação.",
+        "Utilize o Registo de actividade para consultar a rastreabilidade das operações registadas.",
+        "A acção Cópia de segurança mantém a confirmação e o controlo de acesso existentes. Guarde os ficheiros em armazenamento autorizado.",
+        "Antes de uma alteração de base ou activação, confirme o procedimento próprio e preserve as cópias e configurações necessárias."
+      ],
+      "important": "A versão isolada não substitui a operacional. Não restaure uma base antiga por cima de gravações legítimas posteriores."
+    },
+    {
+      "id": "problemas",
+      "title": "21. Resolver problemas frequentes",
+      "steps": [
+        "Sem sugestões: confirme o acesso ao cadastro, acrescente caracteres ou use o mecanográfico completo. Numa selecção restrita, a pessoa pode não estar admitida pelo próprio campo.",
+        "Excel rejeitado: descarregue o modelo do grupo correcto e confira código, grupo, dias, P/A em todas as colunas e referências para certificados Sim.",
+        "Ficheiro já importado: consulte o grupo; não crie outro grupo para repetir a mesma importação.",
+        "Dados divergentes ou pré-visualização expirada: reveja os registos e faça nova pré-visualização. A importação não substitui silenciosamente presenças já gravadas.",
+        "Sem permissões: solicite análise ao responsável pelo acesso. Não utilize outra conta nem altere o ficheiro para contornar a restrição.",
+        "Painel demasiado pequeno: use Abrir página completa. Se a sessão expirar, volte a autenticar-se e repita a consulta.",
+        "Notificações vazias: isso é normal quando não há pendências reais. Actualize a lista se acabou de concluir uma operação."
+      ],
+      "important": "Se persistir um erro, registe a página, o grupo/mecanográfico e a mensagem apresentada. Não confirme operações fictícias para verificar se o sistema funciona."
+    }
+  ]
+}

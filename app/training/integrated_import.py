@@ -1,7 +1,6 @@
 """Reviewable, all-or-nothing historical import. Preview never writes model rows."""
 import json
 import sqlite3
-from .domains import normalize_area
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -14,6 +13,7 @@ from .excel_sources import (
     EMPLOYEE_FIELDS, TRAINING_FIELDS, digest, issue, normalized, read_sheet, text,
 )
 from .models import AuditEvent, Course, Employee, Training
+from .training_areas import normalize_area
 
 EMPLOYEE_SHEETS = ['FUNCIONARIOS', 'FUNCIONARIOS_EPAL', 'BASE_EPAL', 'FUNCIONÁRIOS_ EPAL']
 TRAINING_SHEETS = ['PARTICIPACOES', 'BASE_MESTRA_FORMACAO', 'Formandos']
@@ -66,7 +66,7 @@ def prepare_training(record, employee, report):
     v = dict(record['values'])
     number, pid = v.pop('number', ''), v.pop('participation_id', '')
     if not number or employee is None:
-        raise ValueError('Número mecanográfico sem cadastro reconciliado.')
+        raise ValueError('Número mecanográfico sem registo reconciliado.')
     key = 'pilar3b:' + pid if pid else record['legacy_key']
     v['source_key'] = key
     v['source_course_code'] = v.get('source_course_code', '').upper()
@@ -101,6 +101,7 @@ def prepare_training(record, employee, report):
         v['certificate_declaration_source'] = v.get('certificate_declaration_source') or f"{record['sheet']}, linha {record['row']}"
         v['certified'] = None
         add_issue(report, record, 'Entrega sem data conservada como declaração, não como entrega confirmada.', 'warning')
+    course = None
     code = v['source_course_code']
     if code:
         course = Course.objects.filter(code__iexact=code).first()
@@ -111,11 +112,9 @@ def prepare_training(record, employee, report):
             v['course_id'] = course.pk
         else:
             add_issue(report, record, 'Código sem correspondência no catálogo; participação conservada sem ligação.', 'warning', code=code)
-    if v.get('area') and normalized(v['area']) == normalized(v.get('trainer')):
-        add_issue(report, record, 'Categoria igual ao nome do formador; conservada apenas na origem.', 'warning')
-        v['area'] = ''
-    # Source categories are grouped into the four institutional domains.
-    v['area'] = normalize_area(v.get('area', ''))
+    v['area'] = normalize_area(v.get('area') or (course.area if course else ''), allow_blank=False)
+    if course and v['area'] != course.area:
+        raise ValueError('A área da participação difere da categoria principal do catálogo; reveja a formação antes de importar.')
     if v.get('provider', '').isdigit():
         add_issue(report, record, 'Entidade formadora numérica; conservada apenas na origem.', 'warning')
         v['provider'] = ''
@@ -169,7 +168,7 @@ def build_plan(workbook, source_sha256):
                 target.setdefault(identifier, []).append(record)
     report['ignored_sheets'] = [name for name in workbook.sheetnames if name not in used]
     if not employee_records:
-        issue(report, 'error', '', None, 'Nenhum cadastro de trabalhadores reconhecido.')
+        issue(report, 'error', '', None, 'Nenhum registo de trabalhadores reconhecido.')
     employees, objects = [], {}
     # Fill only missing profile information from participation rows, consistently across all rows.
     supplements = {}
@@ -192,13 +191,13 @@ def build_plan(workbook, source_sha256):
                     merged[field] = value
                 elif old != value:
                     severity = 'error' if field in ('name', 'identity_number', 'social_security_number') else 'warning'
-                    add_issue(report, other, 'Fontes de cadastro discordam; prioridade da fonte principal.', severity,
+                    add_issue(report, other, 'Fontes de registo discordam; prioridade da fonte principal.', severity,
                               identifier=number, field=field, selected=str(old), alternative=str(value))
         for field, values in supplements.get(number, {}).items():
             if not merged.get(field) and len(values) == 1:
                 merged[field] = next(iter(values))
             elif len(values) > 1 or (merged.get(field) and any(v != merged[field] for v in values)):
-                add_issue(report, primary, 'Dados de cadastro nas participações discordam; não substituem o cadastro principal.', 'warning', field=field, values=sorted(values))
+                add_issue(report, primary, 'Dados de registo nas participações discordam; não substituem o registo principal.', 'warning', field=field, values=sorted(values))
         old = Employee.objects.filter(number=number).first()
         obj = Employee.objects.get(pk=old.pk) if old else Employee(number=number)
         proposed = {}

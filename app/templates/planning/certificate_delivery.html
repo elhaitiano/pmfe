@@ -1,0 +1,8 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}<section class="plan-panel"><h2>Registar entrega de certificado</h2>
+<p>{{ training.employee.name }} · N.º {{ training.employee.number|unlocalize }} · {{ training.title }}</p>
+<p>{{ training.start|date:'d/m/Y' }} — {{ training.end|date:'d/m/Y' }} · TrainingID {{ training.pk|unlocalize }} · Grupo/edição {{ delivery_group }}</p>
+<p>Indique a evidência administrativa da entrega. Não é obrigatório anexar PDF. Esta confirmação não altera notas, presenças ou entregas históricas.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}{% if success %}<p role="status">Entrega confirmada com referência e auditoria.</p>{% endif %}
+{% if available %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}{% for field in form.visible_fields %}<div class="mt-4"><label for="{{ field.id_for_label }}">{{ field.label }}</label><div>{{ field }}</div>{{ field.errors }}</div>{% endfor %}<button class="gf-btn mt-5" type="submit">Confirmar entrega</button></form>{% endif %}
+<p class="mt-4"><a href="{% url 'employee_data' training.employee.pk %}">Ver ficha individual</a></p></section>{% endblock %}

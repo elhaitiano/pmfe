@@ -10,7 +10,7 @@
       {% if return_to %}<input type="hidden" name="return_to" value="files">{% endif %}
       <div class="gf-form-grid mt-4">
         {% for field in form %}
-        <label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}</span>
+        <label for="{{ field.id_for_label|unlocalize }}"><span class="gf-label">{{ field.label }}</span>
           {{ field }}{{ field.errors }}<small>{{ field.help_text }}</small>
         </label>
         {% endfor %}

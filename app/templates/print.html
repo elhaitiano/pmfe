@@ -1,6 +1,6 @@
-{% load static l10n %}
+{% load static %}
 <!doctype html>
-<html lang="pt">
+<html lang="pt" class="epal-reference">
   <head>
     {% include 'favicon_links.html' %}
     <meta charset="utf-8">
@@ -9,8 +9,12 @@
       Ficha individual do formando — PROÁGUA
     </title>
     <link rel="stylesheet" href="{% static 'pmf/print-original.css' %}"><link rel="stylesheet" href="{% static 'pmf/official-sheet.css' %}?v=reporting-integers-20261023">
+    <link rel="stylesheet" href="{% static 'pmf/epal-jakarta.css' %}">
+    <link rel="stylesheet" href="{% static 'pmf/epal-reference.css' %}?v=20261116-1">
+  <link rel="stylesheet" href="{% static 'pmf/epal-typography.css' %}?v=20261117-1">
+  <link rel="stylesheet" href="{% static 'pmf/epal-light-controls.css' %}?v=20261117-1">
   </head>
-  <body>{% include 'validation/notice.html' %}
+  <body class="epal-print">{% include 'validation/notice.html' %}
     <div class="toolbar">
       <button id="printButton" onclick="window.print()">
         Imprimir / PDF
@@ -73,10 +77,10 @@
               </div>
               <div class="card-half">
                 <div class="card-title">
-                  2. CERTIFICADOS
+                  2. CERTIFICADOS OBTIDOS
                 </div>
                 <div class="card-value">
-                  {{ stats.certificates_reported }}
+                  {% if stats.certificate_obtained_known %}{{ stats.certificates_obtained }}{% else %}Sem registo{% endif %}
                 </div>
 
               </div>
@@ -135,7 +139,7 @@
                   {{ t.start|date:'Y' }}
                 </td>
                 <td>
-                  {{ t.title }}
+                  {{ t.title }}<small class="block">{% include 'certificate_delivery_cell.html' with participation=t %}</small>
                 </td>
                 <td>
                   {{ t.trainer|default:'-' }}
@@ -150,7 +154,7 @@
                   {% include 'hours_cell.html' %}
                 </td>
                 <td>
-                  {% with attendance=t.verified_attendance_percent %}{% if attendance is not None %}{{ attendance|floatformat:-1 }}%{% else %}&mdash;{% endif %}{% endwith %}
+                  {% if t.attendance_percent is not None %}{{ t.attendance_percent|floatformat:-1 }}%{% else %}&mdash;{% endif %}
                 </td>
               </tr>
               {% empty %}
@@ -177,7 +181,7 @@
             EPAL | PROÁGUA
           </div>
           <div class="print">
-            Data: {{ today|date:'d/m/Y' }}
+            <span data-print-timestamp>Data: {% now "d/m/Y" %} | {% now "H:i" %}</span>
           </div>
           <div class="page-no">
             <span class="page-counter"></span>
@@ -187,6 +191,6 @@
     </div>
     {% if document_form %}<details class="document-panel no-print"><summary>Documentos do formando</summary>{% include 'employee_files.html' %}</details>{% endif %}
     {{ distribution|json_script:'distribution-data' }}
-    <script src="{% static 'pmf/print.js' %}" defer></script>
+    <script src="{% static 'pmf/print.js' %}?v=20261117-hora" defer></script>
   </body>
 </html>

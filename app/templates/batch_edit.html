@@ -2,7 +2,7 @@
 {% load static %}
 {% block heading %}
 {% if review %}
-REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block extra_styles %}
+REVER ALTERAÇÕES{% else %}ACTUALIZAR GRUPO{% endif %}{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 {% endblock %}
 {% block content %}
@@ -11,21 +11,21 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
     <div>
       <h2>
         {% if seed.group_id %}
-        {{ seed.group.code }} · {% endif %}{{ seed.title }}
+        {{ seed.group.code|unlocalize }} · {% endif %}{{ seed.title }}
       </h2>
       {% if seed.group_id %}
       <a class="gf-btn alt" href="{% url 'group_detail' seed.group_id %}">Voltar ao grupo</a>{% endif %}
       <p>
-        {{ seed.start|date:'d/m/Y' }} – {{ seed.end|date:'d/m/Y' }} · {{ seed.area|default:'Área por confirmar' }}
+        {{ seed.start|date:'d/m/Y' }} – {{ seed.end|date:'d/m/Y' }} · {{ seed.area|default:'Área não registada' }}
       </p>
       <p>
-        {{ seed.trainer|default:'Formador por confirmar' }} · {{ seed.provider|default:'Entidade por confirmar' }} · {{ seed.location|default:'Local por confirmar' }}
+        {{ seed.trainer|default:'Formador não registado' }} · {{ seed.provider|default:'Entidade não registada' }} · {{ seed.location|default:'Local não registado' }}
       </p>
     </div>
-    <a class="gf-btn alt" href="{% url 'batch_index' %}">Escolher outra turma</a>
+    <a class="gf-btn alt" href="{% url 'batch_index' %}">Escolher outro grupo</a>
   </div>
   <div class="batch-note">
-    {{ formset.total_form_count }} participações · {{ seed.days|default_if_none:'Por confirmar' }} dias · {{ seed.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia. Notas finais de 0 a 20; resultado validado pelo formador. O certificado só conta depois de confirmar a entrega efetiva e a data.
+    {{ formset.total_form_count }} registos de participação · {{ seed.days|default_if_none:'Sem registo' }} dias · {{ seed.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia. Notas finais de 0 a 20; resultado validado pelo formador. As entregas históricas comprovadas já estão confirmadas; a data permanece vazia quando desconhecida. Nas novas formações, registe a entrega efectiva.
   </div>
   {% if batch_error %}
   <div class="batch-error" role="alert">
@@ -35,7 +35,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
   {{ formset.non_form_errors }}
   <form method="post" id="batchForm">
     {% csrf_token %}
-    {{ formset.management_form }}{% if review %}<input type="hidden" name="review_token" value="{{ review_token }}">
+    {{ formset.management_form }}{% if review %}<input type="hidden" name="review_token" value="{{ review_token|unlocalize }}">
     <div class="batch-review-note">
       <strong>{{ modified_count }} participação(ões) com alterações.</strong> Confira os valores abaixo. Só serão gravados ao confirmar; se uma linha falhar, todo o lote será preservado sem alterações.
     </div>
@@ -44,11 +44,22 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
       {{ form.as_p }}{% endfor %}
     </div>
     {% endif %}
+    {% if not review %}
+    <fieldset class="batch-note"><legend>Preencher em conjunto</legend>
+      <p>Seleccione os trabalhadores e aplique apenas dados comprovados. As alterações serão revistas antes de guardar.</p>
+      <label>Campo <select id="bulk-field" class="gf-field"><option value="status">Situação</option><option value="attendance">Presenças verificadas</option><option value="delivery">Entrega ao trabalhador</option></select></label>
+      <label id="bulk-status-wrap">Situação <select id="bulk-status" class="gf-field"><option>Concluído</option><option>Em Curso</option><option>Desistência</option><option value="Por confirmar">Conclusão não documentada</option></select></label>
+      <label id="bulk-attendance-wrap" hidden>Presenças comprovadas <input id="bulk-attendance" class="gf-field" type="number" min="0" max="{{ seed.days|unlocalize }}"></label>
+      <label id="bulk-date-wrap" hidden>Data efectiva de entrega <input id="bulk-date" class="gf-field" type="date"></label>
+      <button type="button" class="gf-btn alt" id="bulk-apply">Aplicar aos seleccionados</button><p id="bulk-message" role="status" aria-live="polite"></p>
+    </fieldset>
+    {% endif %}
     <div class="batch-scroll">
       <table class="batch-table batch-grid">
         <thead>
           <tr>
             <th>
+              {% if not review %}<label><input type="checkbox" id="bulk-all"> Seleccionar todos</label>{% endif %}
               Formando / Nº Mec.
             </th>
             <th>
@@ -78,15 +89,16 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
           {% for form in formset %}
           <tr{% if form.errors %} class="batch-invalid"{% endif %}>
             <td>
+              {% if not review %}<input type="checkbox" class="bulk-person" aria-label="Seleccionar {{ form.display_employee.name }}">{% endif %}
               {% if form.display_employee %}
-              <a href="{% url 'employee_data' form.display_employee.pk %}">{{ form.display_employee.name }}</a><small>Nº Mec. {{ form.display_employee.number }} · Registo #{{ form.instance.pk }}</small>{% else %}Participação inválida — reabra a grelha.{% endif %}{% if review and form.is_modified %}<small class="batch-changed">Alterado</small>{% endif %}{% if not review %}{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}{% endif %}{{ form.non_field_errors }}
+              <a href="{% url 'employee_data' form.display_employee.pk %}">{{ form.display_employee.name }}</a><small>Nº Mec. {{ form.display_employee.number|unlocalize }} · Registo #{{ form.instance.pk|unlocalize }}</small>{% else %}Participação inválida — reabra a grelha.{% endif %}{% if review and form.is_modified %}<small class="batch-changed">Alterado</small>{% endif %}{% if not review %}{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}{% endif %}{{ form.non_field_errors }}
             </td>
             {% if review %}
             <td>
               {{ form.cleaned_data.status }}
             </td>
             <td>
-              {{ form.cleaned_data.attendance }} / {{ form.instance.days|default_if_none:'Por confirmar' }}<small>{% if form.cleaned_data.attendance_confirmed %}Verificadas{% else %}Por confirmar{% endif %}</small>
+              {{ form.cleaned_data.attendance }} / {{ form.instance.days|default_if_none:'Sem registo' }}<small>{% if form.cleaned_data.attendance_confirmed %}Verificadas{% else %}Sem registo{% endif %}</small>
             </td>
             <td>
               {{ form.cleaned_data.grade|default_if_none:'—' }}
@@ -96,7 +108,7 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
             </td>
             <td>
               {% if form.cleaned_data.certified is None %}
-              Por confirmar{% elif form.cleaned_data.certified %}Sim{% else %}Não{% endif %}
+              Sem registo{% elif form.cleaned_data.certified %}Sim{% else %}Não{% endif %}
             </td>
             <td>
               {{ form.cleaned_data.certificate_delivery_date|date:'d/m/Y'|default:'—' }}
@@ -109,20 +121,20 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
               {{ form.status }}{{ form.status.errors }}
             </td>
             <td>
-              {{ form.attendance }}<small>de {{ form.instance.days|default_if_none:'Por confirmar' }} dias</small>{{ form.attendance.errors }}
+              {{ form.attendance }}<small>de {{ form.instance.days|default_if_none:'Sem registo' }} dias</small>{{ form.attendance.errors }}
               <label>
                 {{ form.attendance_confirmed }} Verificadas
               </label>
               {{ form.attendance_confirmed.errors }}
             </td>
             <td>
-              {{ form.grade }}{{ form.grade.errors }}
+              {% include 'original_note_cell.html' with t=form.instance %}<details><summary>Editar registo original</summary>{{ form.grade }}{{ form.grade.errors }}</details>
             </td>
             <td>
-              {{ form.result }}{{ form.result.errors }}
+              {{ form.instance.presentation_result }}<details><summary>Editar registo original</summary>{{ form.result }}{{ form.result.errors }}</details>
             </td>
             <td>
-              {{ form.certified }}{{ form.certified.errors }}
+              {% include 'certificate_delivery_cell.html' with participation=form.instance %}<details><summary>Editar registo original</summary>{{ form.certified }}{{ form.certified.errors }}</details>
             </td>
             <td>
               {{ form.certificate_delivery_date }}{{ form.certificate_delivery_date.errors }}
@@ -154,3 +166,36 @@ REVER ALTERAÇÕES{% else %}ATUALIZAR TURMA{% endif %}{% endblock %}{% block ext
   </form>
 </section>
 {% endblock %}
+
+{% block extra_scripts %}{{ block.super }}
+{% if not review %}<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const field = document.getElementById('bulk-field');
+  if (!field) return;
+  function update() {
+    document.getElementById('bulk-status-wrap').hidden = field.value !== 'status';
+    document.getElementById('bulk-attendance-wrap').hidden = field.value !== 'attendance';
+    document.getElementById('bulk-date-wrap').hidden = field.value !== 'delivery';
+  }
+  field.addEventListener('change', update); update();
+  document.getElementById('bulk-all').addEventListener('change', function () {
+    document.querySelectorAll('.bulk-person').forEach(box => box.checked = this.checked);
+  });
+  document.getElementById('bulk-apply').addEventListener('click', function () {
+    const rows = Array.from(document.querySelectorAll('.bulk-person:checked')).map(box => box.closest('tr'));
+    const message = document.getElementById('bulk-message');
+    if (!rows.length) { message.textContent = 'Seleccione pelo menos um trabalhador.'; return; }
+    const attendance = document.getElementById('bulk-attendance');
+    const date = document.getElementById('bulk-date');
+    if (field.value === 'attendance' && (!attendance.value || !attendance.checkValidity())) { message.textContent = 'Indique um número válido de presenças comprovadas.'; return; }
+    if (field.value === 'delivery' && (!date.value || !date.checkValidity())) { message.textContent = 'Indique a data efectiva de entrega.'; return; }
+    rows.forEach(row => {
+      function input(suffix) { return row.querySelector('[name$="-' + suffix + '"]'); }
+      if (field.value === 'status') input('status').value = document.getElementById('bulk-status').value;
+      if (field.value === 'attendance') { input('attendance').value = attendance.value; input('attendance_confirmed').checked = true; }
+      if (field.value === 'delivery') { input('certified').value = 'true'; input('certificate_delivery_date').value = date.value; }
+    });
+    message.textContent = rows.length + ' linha(s) preenchida(s). Use «Rever alterações» para validar e guardar.';
+  });
+});
+</script>{% endif %}{% endblock %}

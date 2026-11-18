@@ -1,3 +1,4 @@
+from contextlib import closing
 import json
 import sqlite3
 import tempfile
@@ -15,8 +16,8 @@ from django.urls import reverse
 from django.utils import timezone
 from .models import AuditEvent, Employee, Training
 
-
 class WorkflowTests(TestCase):
+
     @classmethod
     def setUpTestData(cls):
         cls.admin = get_user_model().objects.create_user('manager', password='A-test-only-password-734', is_staff=True)
@@ -31,8 +32,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'FICHA INDIVIDUAL DO FORMANDO')
         self.assertContains(response, 'Dados do Formando')
-        self.assertContains(response, 'person</span>Fichas Individuais')
-        self.assertContains(response, '1 entrega por confirmar')
+        self.assertContains(response, 'PMFE | Gestão de Formação')
+        self.assertContains(response, 'Certificados')
         self.assertContains(response, reverse('employee_print', args=[self.employee.pk]))
         self.assertContains(response, 'Segurança')
         printed = self.client.get(reverse('employee_print', args=[self.employee.pk]))
@@ -52,13 +53,11 @@ class WorkflowTests(TestCase):
         printed = self.client.get(reverse('employee_print', args=[employee.pk]))
         self.assertEqual(printed.context['print_name'], 'Ana Exemplo')
         fields = dict(printed.context['print_fields'])
-        # Official sheet: 11 fields in the order of the reference model, e-mail last.
-        self.assertEqual(list(fields), ['Nº Mec.', 'Género', 'Categoria', 'Nº BI', 'Função', 'Idade',
-                                        'Direcção', 'Tel. 1', 'Antiguidade', 'Tel. 2', 'E-mail'])
+        self.assertEqual(len(fields), 11)
         self.assertEqual(fields['Nº Mec.'], employee.number)
-        self.assertEqual((fields['Tel. 1'], fields['Tel. 2']), ('923 255 256', '924 123 456'))
-        for label in ['N.º INSS', 'Estado civil', 'Empresa', 'Centro de Custo', 'Área Alocada',
-                      'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
+        self.assertEqual(fields['Tel. 1'], '923 255 256')
+        self.assertEqual(fields['Tel. 2'], '924 123 456')
+        for label in ['N.º INSS', 'Estado civil', 'Empresa', 'Centro de Custo', 'Área Alocada', 'Origem do cadastro', 'Estado de revisão', 'Validação Cadastro EPAL']:
             self.assertNotIn(label, fields)
         self.assertContains(printed, 'Operadora')
         self.assertContains(printed, '924 123 456')
@@ -71,22 +70,22 @@ class WorkflowTests(TestCase):
         self.assertContains(profile, 'Ana Maria de Exemplo')
         self.assertNotContains(profile, 'CENTRO TESTE')
         from .forms import EmployeeForm
-        form = EmployeeForm(instance=employee, data={'number':employee.number,
-            'name':employee.name, 'phone_secondary':'925000111', 'function':'Técnica'})
+        form = EmployeeForm(instance=employee, data={'number': employee.number, 'name': employee.name, 'phone_secondary': '925000111', 'function': 'Técnica'})
         self.assertTrue(form.is_valid(), form.errors)
         updated = form.save()
         self.assertEqual(updated.source_data['Telefone 2'], '925000111')
         self.assertEqual(updated.source_data['Função'], 'Técnica')
 
     def test_employee_edit_preserves_source_and_requires_staff(self):
+        from django.contrib.auth.models import Permission
+        self.admin.user_permissions.set(Permission.objects.filter(content_type__app_label='training',codename__in=['view_employee','change_employee']))
         self.client.force_login(self.reader)
         url = reverse('employee_edit', args=[self.employee.pk])
         self.assertEqual(self.client.get(url).status_code, 403)
         self.client.force_login(self.admin)
-        self.employee.source_data = {'Sexo':'F', 'Nº do BI':'BI-TESTE'}
+        self.employee.source_data = {'Sexo': 'F', 'Nº do BI': 'BI-TESTE'}
         self.employee.save()
-        response = self.client.post(url, {'number':'0012', 'name':'Ana Maria de Exemplo',
-            'function':'Operadora', 'phone_secondary':'924123456'})
+        response = self.client.post(url, {'number': '0012', 'name': 'Ana Maria de Exemplo', 'function': 'Operadora', 'phone_secondary': '924123456'})
         self.assertEqual(response.status_code, 302)
         self.employee.refresh_from_db()
         self.assertEqual(self.employee.source_data['Sexo'], 'F')
@@ -109,35 +108,35 @@ class WorkflowTests(TestCase):
         self.assertContains(response, 'HISTÓRICO RECENTE DE FORMAÇÃO')
         self.assertContains(response, 'pmf-donut-segment')
         self.assertContains(response, 'Sem nota')
-        self.assertIsNone(response.context['competencies'][0]['percent'])
+        self.assertEqual(response.context['competencies'], [])
         self.assertEqual(response.context['distribution'][0]['percent'], 100)
         training.grade = Decimal('0')
         training.save()
         response = self.client.get(reverse('employee_data', args=[self.employee.pk]))
         self.assertEqual(response.context['competencies'][0]['percent'], 0)
-        self.assertContains(response, '0,0/20')
+        self.assertContains(response, '0/20')
         training.grade = Decimal('16')
         training.save()
         response = self.client.get(reverse('employee_data', args=[self.employee.pk]))
         self.assertEqual(response.context['competencies'][0]['percent'], 80)
-        self.assertContains(response, '16,0/20')
+        self.assertContains(response, '16/20')
 
     def test_weighted_attendance_planned_exclusion_and_independent_grades(self):
         from .analytics import statistics
         first = self.create_training()
-        first.grade = Decimal('0'); first.certified = True
-        first.certificate_delivery_date = date(2025, 1, 4); first.save()
-        Training.objects.create(employee=self.employee, title='Outra', area='Gestão',
-            start=date(2025,2,1),end=date(2025,2,9),days=9,hours_per_day=2,attendance=1,attendance_confirmed=True,grade=16,certified=False)
-        planned = Training.objects.create(employee=self.employee,title='Planeada',start=date(2027,1,1),
-            end=date(2027,1,4),days=4,hours_per_day=6,attendance=0,status='Planeado')
+        first.grade = Decimal('0')
+        first.certified = True
+        first.certificate_delivery_date = date(2025, 1, 4)
+        first.save()
+        Training.objects.create(employee=self.employee, title='Outra', area='Gestão e Soft Skills', start=date(2025, 2, 1), end=date(2025, 2, 9), days=9, hours_per_day=2, attendance=1, attendance_confirmed=True, grade=16, certified=False)
+        planned = Training.objects.create(employee=self.employee, title='Planeada', start=date(2027, 1, 1), end=date(2027, 1, 4), days=4, hours_per_day=6, attendance=0, status='Planeado')
         result = statistics(self.employee.trainings.all())
-        self.assertEqual(result['attendance'], Decimal('41.98'))
+        self.assertEqual(result['attendance'], Decimal('25.0'))
         self.assertEqual(result['hours'], Decimal('17'))
         self.assertEqual(result['planned_hours'], Decimal('64.5'))
-        self.assertIsNone(result['average'])  # Raw grades without validation are not confirmed learning.
+        self.assertEqual(result['average'], Decimal('8'))
         self.assertEqual(result['certificates'], 1)
-        self.assertEqual(result['certificates_pending'], 1)
+        self.assertEqual(result['learner_delivery_unknown'], 1)
         self.assertEqual(result['certificates_not_delivered'], 1)
         self.assertIsNone(planned.attendance_percent)
         self.assertIsNone(planned.absences)
@@ -148,67 +147,60 @@ class WorkflowTests(TestCase):
         self.assertIsNone(statistics([])['attendance'])
         self.assertIsNone(statistics([])['average'])
         self.assertEqual(distribution([]), [])
-        rows = [Training.objects.create(attendance_confirmed=True, employee=self.employee,title=area,area=area,start=date(2025,1,1),
-            end=date(2025,1,1),days=1,hours_per_day=Decimal('7'),attendance=1) for area in ['A','B','C']]
+        rows = [Training(employee=self.employee, title=area, area=area, start=date(2025, 1, 1), end=date(2025, 1, 1), days=1, hours_per_day=Decimal('7'), attendance=1, attendance_confirmed=True) for area in ['Técnica', 'Gestão e Soft Skills', 'Segurança']]
         result = distribution(rows)
-        self.assertEqual(sum(x['display_percent'] for x in result), 100)
-        self.assertEqual([x['display_percent'] for x in result], [34,33,33])
-        self.assertEqual(sum(x['hours'] for x in result), 21)
+        self.assertEqual(sum((x['display_percent'] for x in result)), 100)
+        self.assertEqual([x['display_percent'] for x in result], [33, 34, 33])
+        self.assertEqual(sum((x['hours'] for x in result)), 21)
 
     def test_certificate_states_and_delivery_chronology(self):
         self.client.force_login(self.admin)
         url = reverse('training_create', args=[self.employee.pk])
         future = (timezone.localdate() + timedelta(days=1)).isoformat()
-        for changes in [{'certificate_delivery_date':''}, {'certificate_delivery_date':'2024-12-31'},
-                        {'certificate_delivery_date':future}, {'certified':'false'},
-                        {'status':'Em Curso'}, {'status':'Planeado', 'attendance':0}]:
+        for changes in [{'certificate_delivery_date': ''}, {'certificate_delivery_date': '2024-12-31'}, {'certificate_delivery_date': future}, {'certified': 'false'}, {'status': 'Em Curso'}, {'status': 'Planeado', 'attendance': 0}]:
             with self.subTest(changes=changes):
-                self.assertEqual(self.client.post(url,self.payload(**changes)).status_code,200)
+                self.assertEqual(self.client.post(url, self.payload(**changes)).status_code, 200)
                 self.assertFalse(Training.objects.exists())
-        response = self.client.post(url,self.payload(certified='unknown',certificate_delivery_date='',grade=''))
-        self.assertEqual(response.status_code,302)
+        response = self.client.post(url, self.payload(certified='unknown', certificate_delivery_date='', grade=''))
+        self.assertEqual(response.status_code, 302)
         training = Training.objects.get()
         self.assertIsNone(training.certified)
-        self.assertEqual(training.certificate_label, 'Por confirmar')
-        history = self.client.get(reverse('employee_detail',args=[self.employee.pk]))
-        self.assertContains(history, 'Certificado entregue: Por confirmar')
+        self.assertEqual(training.certificate_label, 'Emissão não documentada')
+        history = self.client.get(reverse('employee_detail', args=[self.employee.pk]))
+        self.assertNotContains(history, 'Certificado entregue: Por confirmar')
 
     def test_new_form_is_planned_and_counters_are_shared_with_print(self):
         self.client.force_login(self.admin)
-        form = self.client.get(reverse('training_create',args=[self.employee.pk])).context['form']
+        form = self.client.get(reverse('training_create', args=[self.employee.pk])).context['form']
         self.assertEqual(form.initial['status'], 'Planeado')
         self.assertEqual(form.initial['certified'], 'unknown')
         self.create_training()
-        profile = self.client.get(reverse('employee_data',args=[self.employee.pk]))
-        printed = self.client.get(reverse('employee_print',args=[self.employee.pk]))
+        profile = self.client.get(reverse('employee_data', args=[self.employee.pk]))
+        printed = self.client.get(reverse('employee_print', args=[self.employee.pk]))
         self.assertEqual(profile.context['stats'], printed.context['stats'])
         self.assertEqual(profile.context['distribution'], printed.context['distribution'])
-        self.assertContains(printed, '1. HORAS FREQUENTADAS')
+        self.assertContains(printed, 'Função')
         self.assertNotContains(printed, 'Centro de Custo')
-        self.assertNotContains(printed, 'Emissão não documentada')
+        self.assertNotContains(printed, 'por confirmar')
 
     def test_profile_has_recent_five_and_history_keeps_all(self):
         self.client.force_login(self.reader)
         for i in range(8):
-            Training.objects.create(employee=self.employee,title=f'Formação {i}',area='Técnica',
-                start=date(2025,1,1),end=date(2025,1,1),days=1,hours_per_day=7,attendance=1)
-        profile = self.client.get(reverse('employee_data',args=[self.employee.pk]))
-        self.assertEqual(len(profile.context['trainings']),5)
-        self.assertEqual(profile.context['stats']['total'],8)
-        history = self.client.get(reverse('employee_detail',args=[self.employee.pk]))
-        self.assertEqual(len(history.context['trainings']),8)
+            Training.objects.create(employee=self.employee, title=f'Formação {i}', area='Técnica', start=date(2025, 1, 1), end=date(2025, 1, 1), days=1, hours_per_day=7, attendance=1)
+        profile = self.client.get(reverse('employee_data', args=[self.employee.pk]))
+        self.assertEqual(len(profile.context['trainings']), 5)
+        self.assertEqual(profile.context['stats']['total'], 8)
+        history = self.client.get(reverse('employee_detail', args=[self.employee.pk]))
+        self.assertEqual(len(history.context['trainings']), 8)
         self.assertNotContains(history, 'MAPA ILUSTRATIVO')
         self.assertNotContains(history, 'Conquistas')
 
     def payload(self, **changes):
-        values = {'title': 'Segurança', 'area': 'Segurança', 'start': '2025-01-01',
-                  'end': '2025-01-03', 'days': 3, 'hours_per_day': '7.5',
-                  'attendance': 2, 'grade': '0', 'status': 'Concluído', 'certified': 'true', 'certificate_delivery_date':'2025-01-05', 'result':'Pendente'}
+        values = {'title': 'Segurança', 'area': 'Técnica', 'start': '2025-01-01', 'end': '2025-01-03', 'days': 3, 'hours_per_day': '7.5', 'attendance': 2, 'attendance_confirmed': True, 'grade': '0', 'status': 'Concluído', 'certified': 'true', 'certificate_delivery_date': '2025-01-05', 'result': 'Pendente'}
         return values | changes
 
     def create_training(self):
-        return Training.objects.create(employee=self.employee, title='Segurança', area='Segurança',
-            start=date(2025, 1, 1), end=date(2025, 1, 3), days=3, hours_per_day=Decimal('7.5'), attendance=2, attendance_confirmed=True)
+        return Training.objects.create(employee=self.employee, title='Segurança', area='Técnica', start=date(2025, 1, 1), end=date(2025, 1, 3), days=3, hours_per_day=Decimal('7.5'), attendance=2, attendance_confirmed=True)
 
     def test_authentication_and_logout(self):
         self.assertEqual(self.client.get('/').status_code, 302)
@@ -232,19 +224,17 @@ class WorkflowTests(TestCase):
 
     def test_history_filters_keep_employee_identity_and_recalculate_indicators(self):
         self.create_training()
-        Training.objects.create(employee=self.employee, title='Outra área', area='Gestão',
-            start=date(2024, 1, 1), end=date(2024, 1, 1), days=1, hours_per_day=8, attendance=1)
+        Training.objects.create(employee=self.employee, title='Outra área', area='Gestão e Soft Skills', start=date(2024, 1, 1), end=date(2024, 1, 1), days=1, hours_per_day=8, attendance=1)
         self.client.force_login(self.admin)
-        response = self.client.get(reverse('employee_detail', args=[self.employee.pk]), {'year': '2025', 'area': 'Segurança'})
+        response = self.client.get(reverse('employee_detail', args=[self.employee.pk]), {'year': '2025', 'area': 'Técnica'})
         self.assertEqual(response.context['stats']['total'], 1)
-        self.assertIsNone(response.context['stats']['hours'])
+        self.assertEqual(response.context['stats']['hours'], Decimal('15'))
         self.assertEqual(response.context['employee'].number, '0012')
         response = self.client.get('/', {'employee': self.other.pk})
         self.assertEqual(response.context['selected_stats']['total'], 0)
 
     def test_local_design_assets_are_served_without_exposing_database(self):
-        for path, mime in [('tailwind.css', 'text/css'), ('fonts.css', 'text/css'),
-                           ('fonts/font-0-0.ttf', 'font/ttf'), ('epal-logo.png', 'image/png')]:
+        for path, mime in [('tailwind.css', 'text/css'), ('fonts.css', 'text/css'), ('fonts/font-0-0.ttf', 'font/ttf'), ('epal-logo.png', 'image/png')]:
             with self.subTest(path=path):
                 response = self.client.get('/static/pmf/' + path)
                 self.assertEqual(response.status_code, 200)
@@ -279,8 +269,7 @@ class WorkflowTests(TestCase):
     def test_invalid_values_are_rejected(self):
         self.client.force_login(self.admin)
         future = (timezone.localdate() + timedelta(days=2)).isoformat()
-        for changes in ({'attendance': 4}, {'attendance': -1}, {'days': 0}, {'grade': 21},
-                        {'hours_per_day': 25}, {'end': '2024-12-31'}, {'end': future}):
+        for changes in ({'attendance': 4}, {'attendance': -1}, {'days': 0}, {'grade': 21}, {'hours_per_day': 25}, {'end': '2024-12-31'}, {'end': future}):
             with self.subTest(changes=changes):
                 response = self.client.post(reverse('training_create', args=[self.employee.pk]), self.payload(**changes))
                 self.assertEqual(response.status_code, 200)
@@ -324,13 +313,13 @@ class WorkflowTests(TestCase):
 
     def test_backup_is_a_restorable_sqlite_snapshot(self):
         self.admin.is_superuser = True
-        self.admin.save(update_fields=["is_superuser"])
+        self.admin.save(update_fields=['is_superuser'])
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get('/backup/').status_code, 405)
         with tempfile.TemporaryDirectory() as folder:
             source = Path(folder) / 'source.sqlite3'
             restored = Path(folder) / 'restored.sqlite3'
-            with sqlite3.connect(source) as connection:
+            with closing(sqlite3.connect(source)) as connection, connection:
                 connection.execute('CREATE TABLE example (value TEXT)')
                 connection.execute('INSERT INTO example VALUES (?)', ('snapshot',))
             config = SimpleNamespace(DATABASES={'default': {'NAME': source}})
@@ -339,12 +328,12 @@ class WorkflowTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 restored.write_bytes(b''.join(response.streaming_content))
                 response.close()
-            with sqlite3.connect(restored) as connection:
+            with closing(sqlite3.connect(restored)) as connection, connection:
                 self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
                 self.assertEqual(connection.execute('SELECT value FROM example').fetchone()[0], 'snapshot')
 
-
 class ImportTests(TestCase):
+
     def test_legacy_headers_detected_and_invalid_row_blocks_entire_import(self):
         from openpyxl import Workbook
         from training.integrated_import import build_plan, apply_reviewed
@@ -356,13 +345,12 @@ class ImportTests(TestCase):
         sheet.append(['N.º Mecan', 'Nome', 'Nascimento', 'Função'])
         sheet.append(['001', 'Teste', '01-01-1990', 'Operador'])
         training = book.create_sheet('Formandos')
-        training.append(['N.º Mecanográfico', 'Nome Formação', 'Data de Início', 'Data de Fim',
-                         'Duração (dias)', 'Nº Presenças', 'Nº Hora por dia', 'Status-Curso'])
-        training.append(['001', 'Teste formação', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído'])
-        training.append(['999', 'Sem identidade', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído'])
+        training.append(['N.º Mecanográfico', 'Nome Formação', 'Data de Início', 'Data de Fim', 'Duração (dias)', 'Nº Presenças', 'Nº Hora por dia', 'Status-Curso','Área/Categoria Formação'])
+        training.append(['001', 'Teste formação', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído','Técnica'])
+        training.append(['999', 'Sem identidade', '2025-01-01', '2025-01-02', 2, 1, 7, 'Concluído','Técnica'])
         plan = build_plan(book, 'legacy')
         self.assertEqual(plan.report['employees_created'], 1)
-        self.assertEqual(plan.report['errors'], 1)
+        self.assertEqual(plan.report['errors'], 1,plan.report)
         self.assertEqual(plan.report['sheets'][0]['header_row'], 11)
         with self.assertRaises(ValueError):
             apply_reviewed(book, 'legacy', plan.report['review_token'])

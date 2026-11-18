@@ -1,89 +1,61 @@
+from training import participation_executive
+from training import certificate_register
+from training import consolidation_views, consultation_views, historical_exception_views, historical_views
 from django.contrib.auth import views as auth
 from django.urls import path
 from training import views, batch, dashboard, executive_views, planning, assistant, documents, evaluations, competencies, indicators, evaluation_profile
-from training import admin_tools
-
 from training.admin import site as admin_site
-from training import session_views, outcome_views, import_views, trainers, participation_executive
+from training import import_views, trainers, planning_resources
+from training import group_validation_views
 
-urlpatterns = [
-    path('planeamento/grupos/<int:pk>/presencas/', session_views.attendance, name='group_attendance'),
-    path('planeamento/grupos/<int:pk>/sessoes/nova/', session_views.edit, name='session_create'),
-    path('planeamento/grupos/<int:pk>/sessoes/<int:session_pk>/', session_views.edit, name='session_edit'),
-    path('planeamento/grupos/<int:pk>/logistica/', outcome_views.logistics, name='group_logistics'),
-    path("dashboard/participacao/", participation_executive.index, name="participation_executive"),
-    path('formadores/', trainers.index, name='trainer_index'),
-    path('formadores/novo/', trainers.edit, name='trainer_create'),
-    path('formadores/<int:pk>/editar/', trainers.edit, name='trainer_edit'),
-    path('administracao/ferramentas/', admin_tools.tools, name='ux_administration'),
-    path('administracao/importacao/', import_views.preview, name='import_preview'),
-    path('admin/', admin_site.urls),
-    path('avaliacao/formandos/<int:pk>/360/', evaluation_profile.profile, name='evaluation_profile'),
-    path('competencias/', competencies.index, name='competency_index'),
-    path('competencias/catalogo/', competencies.catalog, name='competency_catalog'),
-    path('competencias/nova/', competencies.catalog_edit, {'kind':'competency'}, name='competency_create'),
-    path('competencias/<int:pk>/editar/', competencies.catalog_edit, {'kind':'competency'}, name='competency_edit'),
-    path('competencias/funcoes/nova/', competencies.catalog_edit, {'kind':'role'}, name='role_create'),
-    path('competencias/funcoes/<int:pk>/', competencies.catalog_edit, {'kind':'role'}, name='role_edit'),
-    path('competencias/ciclos/novo/', competencies.cycle_edit, name='cycle_create'),
-    path('competencias/ciclos/<int:pk>/', competencies.cycle_detail, name='cycle_detail'),
-    path('competencias/ciclos/<int:pk>/editar/', competencies.cycle_edit, name='cycle_edit'),
-    path('competencias/ciclos/<int:pk>/avaliadores/', competencies.raters_edit, name='cycle_raters'),
-    path('minhas-avaliacoes/', competencies.my_ratings, name='my_ratings'),
-    path('minhas-avaliacoes/<uuid:code>/', competencies.respond, name='cycle_respond'),
-    path('desenvolvimento/', competencies.development, name='development_index'),
-    path('desenvolvimento/lacunas/<int:item_pk>/nova/', competencies.action_edit, name='development_create'),
-    path('desenvolvimento/lacunas/<int:item_pk>/<int:pk>/', competencies.action_edit, name='development_edit'),
-    path('indicadores/', indicators.index, name='indicator_index'),
-    path('avaliacao/', evaluations.index, name='evaluation_index'),
-    path('avaliacao/<int:pk>/', evaluations.detail, name='evaluation_detail'),
-    path('avaliacao/<int:pk>/formacao/', evaluations.record_edit, {'kind': 'learning'}, name='evaluation_edit'),
-    path('avaliacao/<int:pk>/reaccao/', evaluations.record_edit, {'kind': 'reaction'}, name='reaction_edit'),
-    path('avaliacao/<int:pk>/provas/nova/', evaluations.exam_edit, name='exam_create'),
-    path('avaliacao/<int:pk>/provas/<int:exam_pk>/', evaluations.exam_edit, name='exam_edit'),
-    path('avaliacao/provas/<int:pk>/tentativas/nova/', evaluations.attempt_create, name='attempt_create'),
-    path('avaliacao/tentativas/<int:pk>/', evaluations.attempt_edit, name='attempt_edit'),
-    path('funcionarios/<int:pk>/documentos/', documents.index, name='employee_documents'),
-    path('documentos/<uuid:pk>/descarregar/', documents.download, name='document_download'),
-    path('documentos/<uuid:pk>/estado/', documents.archive, name='document_archive'),
-    path('formacoes/<int:pk>/certificado/', documents.certificate_edit, name='certificate_edit'),
-    path('assistente/guias/', assistant.guides, name='assistant_guides'),
-    path('assistente/administracao/', assistant.index, name='assistant_admin'),
-    path('assistente/administracao/novo/', assistant.edit, name='assistant_create'),
-    path('assistente/administracao/<int:pk>/', assistant.edit, name='assistant_edit'),
-    path('planeamento/grupos/<int:pk>/eliminar/', planning.group_delete, name='group_delete'),
-    path('planeamento/', planning.index, name='planning'),
-    path('planeamento/accoes/nova/', planning.course_edit, name='course_create'),
-    path('planeamento/accoes/<int:pk>/editar/', planning.course_edit, name='course_edit'),
-    path('planeamento/accoes/<int:pk>/eliminar/', planning.course_delete, name='course_delete'),
-    path('planeamento/accoes/<int:course_pk>/grupos/novo/', planning.group_edit, name='group_create'),
-    path('planeamento/grupos/<int:pk>/', planning.group_detail, name='group_detail'),
-    path('planeamento/grupos/<int:pk>/editar/', planning.group_edit, name='group_edit'),
-    path('planeamento/grupos/<int:pk>/inscrever/', planning.enrol, name='group_enrol'),
-    path('planeamento/grupos/<int:pk>/estado/', planning.transition, name='group_transition'),
-    path('planeamento/grupos/<int:pk>/inscricoes/<int:en_pk>/', planning.enrollment_edit, name='enrollment_edit'),
-    path('planeamento/grupos/<int:pk>/lista/', planning.attendance_pdf, name='attendance_pdf'),
-    path('planeamento/grupos/<int:pk>/lista-excel/', planning.attendance_excel, name='attendance_excel'),
-    path('dashboard/explorar/', executive_views.explore, name='executive_explore'),
-    path('dashboard/relatorios/', executive_views.reports, name='executive_reports'),
-    path('dashboard/relatorios/pdf/', executive_views.preview_pdf, name='executive_preview'),
-    path('dashboard/relatorios/gerar/', executive_views.create_report, name='executive_create'),
-    path('dashboard/relatorios/<uuid:pk>/', executive_views.download_report, name='executive_download'),
-    path('dashboard/', dashboard.dashboard, name='dashboard'),
-    path('formacoes/turmas/', batch.batch_index, name='batch_index'),
-    path('formacoes/turmas/<int:pk>/', batch.batch_edit, name='batch_edit'),
-    path('entrar/', views.LocalLoginView.as_view(), name='login'),
-    path('sair/', auth.LogoutView.as_view(), name='logout'),
-    path('', views.home, name='home'),
-    path('formandos/dados/', views.employee_data, name='employee_data_select'),
-    path('funcionarios/<int:pk>/dados/', views.employee_data, name='employee_data'),
-    path('funcionarios/novo/', views.employee_create, name='employee_create'),
-    path('funcionarios/<int:pk>/editar/', views.employee_edit, name='employee_edit'),
-    path('funcionarios/<int:pk>/', views.employee_detail, name='employee_detail'),
-    path('funcionarios/<int:pk>/formacao/', views.training_create, name='training_create'),
-    path('formacoes/<int:pk>/editar/', views.training_edit, name='training_edit'),
-    path('formacoes/<int:pk>/eliminar/', views.training_delete, name='training_delete'),
-    path('funcionarios/<int:pk>/ficha/', views.employee_print, name='employee_print'),
-    path('auditoria/', views.audit, name='audit'),
-    path('backup/', views.backup, name='backup'),
+urlpatterns = [path('planeamento/accoes/<int:pk>/grupos/', planning.course_groups, name='course_groups'), path('planeamento/validacao/', group_validation_views.review, name='group_validation'), path('certificados/conferencia/', certificate_register.folder_review, name='certificate_folder_review'), path('certificados/por-associar/<str:sha256>/', certificate_register.pending_source_pdf, name='certificate_pending_source_pdf'), path('certificados/fontes/<int:pk>/<str:sha256>/', certificate_register.source_pdf, name='certificate_source_pdf'), path('planeamento/recursos/', planning_resources.resources, name='planning_resources'), path('planeamento/centros/novo/', planning_resources.resource_edit, {'kind': 'centre'}, name='centre_create'), path('planeamento/centros/<int:pk>/', planning_resources.resource_edit, {'kind': 'centre'}, name='centre_edit'), path('planeamento/salas/nova/', planning_resources.resource_edit, {'kind': 'room'}, name='room_create'), path('planeamento/salas/<int:pk>/', planning_resources.resource_edit, {'kind': 'room'}, name='room_edit'), path('formadores/', trainers.index, name='trainer_index'), path('formadores/novo/', trainers.edit, name='trainer_create'), path('formadores/<int:pk>/editar/', trainers.edit, name='trainer_edit'), path('administracao/importacao/', import_views.preview, name='import_preview'), path('admin/', admin_site.urls), path('avaliacao/formandos/<int:pk>/360/', evaluation_profile.profile, name='evaluation_profile'), path('competencias/', competencies.index, name='competency_index'), path('competencias/catalogo/', competencies.catalog, name='competency_catalog'), path('competencias/nova/', competencies.catalog_edit, {'kind': 'competency'}, name='competency_create'), path('competencias/<int:pk>/editar/', competencies.catalog_edit, {'kind': 'competency'}, name='competency_edit'), path('competencias/funcoes/nova/', competencies.catalog_edit, {'kind': 'role'}, name='role_create'), path('competencias/funcoes/<int:pk>/', competencies.catalog_edit, {'kind': 'role'}, name='role_edit'), path('competencias/ciclos/novo/', competencies.cycle_edit, name='cycle_create'), path('competencias/ciclos/<int:pk>/', competencies.cycle_detail, name='cycle_detail'), path('competencias/ciclos/<int:pk>/editar/', competencies.cycle_edit, name='cycle_edit'), path('competencias/ciclos/<int:pk>/avaliadores/', competencies.raters_edit, name='cycle_raters'), path('minhas-avaliacoes/', competencies.my_ratings, name='my_ratings'), path('minhas-avaliacoes/<uuid:code>/', competencies.respond, name='cycle_respond'), path('desenvolvimento/', competencies.development, name='development_index'), path('desenvolvimento/lacunas/<int:item_pk>/nova/', competencies.action_edit, name='development_create'), path('desenvolvimento/lacunas/<int:item_pk>/<int:pk>/', competencies.action_edit, name='development_edit'), path('indicadores/', indicators.index, name='indicator_index'), path('avaliacao/', evaluations.index, name='evaluation_index'), path('avaliacao/<int:pk>/', evaluations.detail, name='evaluation_detail'), path('avaliacao/<int:pk>/formacao/', evaluations.record_edit, {'kind': 'learning'}, name='evaluation_edit'), path('avaliacao/<int:pk>/reaccao/', evaluations.record_edit, {'kind': 'reaction'}, name='reaction_edit'), path('avaliacao/<int:pk>/provas/nova/', evaluations.exam_edit, name='exam_create'), path('avaliacao/<int:pk>/provas/<int:exam_pk>/', evaluations.exam_edit, name='exam_edit'), path('avaliacao/provas/<int:pk>/tentativas/nova/', evaluations.attempt_create, name='attempt_create'), path('avaliacao/tentativas/<int:pk>/', evaluations.attempt_edit, name='attempt_edit'), path('funcionarios/<int:pk>/documentos/', documents.index, name='employee_documents'), path('documentos/<uuid:pk>/descarregar/', documents.download, name='document_download'), path('documentos/<uuid:pk>/estado/', documents.archive, name='document_archive'), path('certificados/', documents.certificate_archive, name='certificate_archive'), path('formacoes/<int:pk>/certificado/', documents.certificate_edit, name='certificate_edit'), path('assistente/guias/', assistant.guides, name='assistant_guides'), path('assistente/administracao/', assistant.index, name='assistant_admin'), path('assistente/administracao/novo/', assistant.edit, name='assistant_create'), path('assistente/administracao/<int:pk>/', assistant.edit, name='assistant_edit'), path('planeamento/grupos/<int:pk>/eliminar/', planning.group_delete, name='group_delete'), path('planeamento/', planning.index, name='planning'), path('planeamento/accoes/nova/', planning.course_edit, name='course_create'), path('planeamento/accoes/<int:pk>/editar/', planning.course_edit, name='course_edit'), path('planeamento/accoes/<int:pk>/eliminar/', planning.course_delete, name='course_delete'), path('planeamento/accoes/<int:course_pk>/grupos/novo/', planning.group_edit, name='group_create'), path('planeamento/grupos/<int:pk>/', planning.group_detail, name='group_detail'), path('planeamento/grupos/<int:pk>/editar/', planning.group_edit, name='group_edit'), path('planeamento/grupos/<int:pk>/inscrever/', planning.enrol, name='group_enrol'), path('planeamento/grupos/<int:pk>/estado/', planning.transition, name='group_transition'), path('planeamento/grupos/<int:pk>/inscricoes/<int:en_pk>/', planning.enrollment_edit, name='enrollment_edit'), path('planeamento/grupos/<int:pk>/lista/', planning.attendance_pdf, name='attendance_pdf'), path('planeamento/grupos/<int:pk>/lista-excel/', planning.attendance_excel, name='attendance_excel'), path('dashboard/explorar/', executive_views.explore, name='executive_explore'), path('dashboard/relatorios/', executive_views.reports, name='executive_reports'), path('dashboard/relatorios/pdf/', executive_views.preview_pdf, name='executive_preview'), path('dashboard/relatorios/gerar/', executive_views.create_report, name='executive_create'), path('dashboard/relatorios/<uuid:pk>/', executive_views.download_report, name='executive_download'), path('dashboard/', dashboard.dashboard, name='dashboard'), path('formacoes/turmas/', batch.batch_index, name='batch_index'), path('formacoes/turmas/<int:pk>/', batch.batch_edit, name='batch_edit'), path('entrar/', views.LocalLoginView.as_view(), name='login'), path('sair/', auth.LogoutView.as_view(), name='logout'), path('', views.home, name='home'), path('formandos/dados/', views.employee_data, name='employee_data_select'), path('funcionarios/<int:pk>/dados/', views.employee_data, name='employee_data'), path('funcionarios/novo/', views.employee_create, name='employee_create'), path('funcionarios/<int:pk>/editar/', views.employee_edit, name='employee_edit'), path('funcionarios/<int:pk>/', views.employee_detail, name='employee_detail'), path('funcionarios/<int:pk>/formacao/', views.training_create, name='training_create'), path('formacoes/<int:pk>/editar/', views.training_edit, name='training_edit'), path('formacoes/<int:pk>/eliminar/', views.training_delete, name='training_delete'), path('funcionarios/<int:pk>/ficha/', views.employee_print, name='employee_print'), path('auditoria/', views.audit, name='audit'), path('backup/', views.backup, name='backup'), path('consolidacao/conferencia.xlsx', consolidation_views.reconciliation_export, name='consolidated_reconciliation_export'), path('consolidacao/', consolidation_views.reconciliation, name='consolidated_reconciliation'), path('consolidacao/historicos/', consolidation_views.history, name='consolidated_history'), path('consolidacao/edicoes/<int:pk>/', consolidation_views.edition, name='consolidated_edition'), path('consolidacao/participacoes/<int:pk>/', consolidation_views.participation, name='consolidated_participation'), path('consolidacao/fontes/<str:sha256>/', consolidation_views.source, name='consolidated_source'), path('consolidacao/exportar/', consolidation_views.export, name='consolidated_export'), path('consolidacao/relatorio.pdf', consolidation_views.pdf, name='consolidated_pdf'), path('historico/fontes/certificados/<str:sha256>/', historical_exception_views.source_certificate, name='historical_review_source_pdf'), path('historico/fontes/<int:pk>/<int:index>/', historical_exception_views.source_document, name='historical_source_document'), path('historico/excecoes/', historical_exception_views.index, name='historical_exceptions'), path('historico/excecoes/<int:pk>/', historical_exception_views.detail, name='historical_exception_detail'), path('historico/certificados/<int:pk>/pdf/', historical_exception_views.pdf, name='historical_certificate_pdf'), path('historico/regularizacao/relatorio/', historical_exception_views.report, name='historical_regularization_report'), path('historico/regularizacao/listas/', historical_exception_views.review_workbook, name='historical_review_workbook'), path('historico/regularizacao/arquivo/', historical_exception_views.archive, name='historical_certificate_archive'), path('consultas/', consultation_views.index, name='consultations'), path('consultas/avaliacoes/<int:pk>/corrigir/', consultation_views.correct, name='evaluation_correct'), path('planeamento/historico/', historical_views.index, name='historical_index'), path('planeamento/historico/pdf/', historical_views.pdf, name='historical_pdf'), path('planeamento/historico/<str:edition_id>/', historical_views.detail, name='historical_detail')]
+
+from training import interface_groups
+urlpatterns += [path('consolidacao/edicoes/<int:pk>/lista.pdf',interface_groups.attendance,name='interface_historical_pdf'),path('consolidacao/edicoes/<int:pk>/lista.xlsx',interface_groups.attendance,{'kind':'xlsx'},name='interface_historical_excel')]
+
+from training import area_views
+urlpatterns += [path("planeamento/areas/", area_views.pending, name="training_area_issues")]
+
+# Restore existing reviewed correction services; permissions remain in the views.
+from training import correction_views
+urlpatterns += [
+    path('planeamento/accoes/<int:pk>/corrigir/', correction_views.correct, name='course_correct'),
+    path('planeamento/accoes/<int:pk>/correccoes/<int:event_pk>/', correction_views.result, name='course_correction_result'),
+    path('planeamento/accoes/<int:pk>/correccoes/<int:event_pk>/reverter/', correction_views.reverse, name='course_correction_reverse'),
 ]
+
+from training import draft_views, validation_views, document_views
+urlpatterns += [
+    path('planeamento/preparacoes/',draft_views.index,name='planning_drafts'),
+    path('planeamento/preparacoes/nova/',draft_views.create,name='planning_draft_create'),
+    path('planeamento/preparacoes/<uuid:pk>/',draft_views.edit,name='planning_draft_edit'),
+    path('planeamento/preparacoes/<uuid:pk>/formandos/',draft_views.participants,name='planning_draft_people'),
+    path('planeamento/preparacoes/<uuid:pk>/lista.xlsx',draft_views.excel,name='planning_draft_excel'),
+    path('planeamento/preparacoes/<uuid:draft_pk>/elegibilidade/<int:employee_pk>/',draft_views.decision,name='eligibility_draft_decision'),
+    path('planeamento/turmas/<int:group_pk>/elegibilidade/<int:employee_pk>/',draft_views.decision,name='eligibility_group_decision'),
+    path('validacao/',validation_views.index,name='validation_index'),
+    path('validacao/<str:kind>/<int:pk>/',validation_views.decision,name='validation_decision'),
+    path('funcionarios/<int:pk>/documentos/novo/',document_views.upload,name='document_upload'),
+    path('formacoes/<int:pk>/documentacao/',document_views.delivery,name='document_delivery'),
+    path('funcionarios/<int:pk>/corrigir-profissao/',document_views.professional,name='professional_correct'),
+]
+
+from training.ux_presentation import administration as ux_administration
+urlpatterns += [path('administracao/ferramentas/', ux_administration, name='ux_administration')]
+
+urlpatterns += [path('dashboard/participacao/', participation_executive.index, name='participation_executive')]
+
+from training import repeat_admission
+urlpatterns += [path('planeamento/grupos/<int:pk>/reciclagem/',repeat_admission.review,name='repeat_admission')]
+
+from training import planning_delivery
+urlpatterns += [path('planeamento/participacoes/<int:pk>/entrega/',planning_delivery.review,name='planning_certificate_delivery')]
+
+from training import attendance_import
+urlpatterns += [path('planeamento/assiduidade/',attendance_import.review,name='attendance_import_index'),path('planeamento/grupos/<int:pk>/assiduidade/',attendance_import.review,name='attendance_import'),path('planeamento/grupos/<int:pk>/assiduidade/modelo.xlsx',attendance_import.download,name='attendance_template')]
+
+from training import professional_ui
+urlpatterns += [path('aplicacao/funcionarios/sugestoes/',professional_ui.people,name='professional_people'),path('aplicacao/notificacoes/',professional_ui.notifications,name='professional_notifications'),path('assistente/manual/',professional_ui.manual,name='professional_manual'),path('assistente/manual/pdf/',professional_ui.manual_pdf,name='professional_manual_pdf'),path('assistente/manual/imagens/<str:name>/',professional_ui.manual_image,name='professional_manual_image')]
+
+from training import history_navigation
+urlpatterns += [path('historico/', history_navigation.index, name='history_index')]

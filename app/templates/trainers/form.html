@@ -9,7 +9,7 @@
         {{ form.non_field_errors }}
         <div class="gf-form-grid">
           {% for field in form %}
-          <label for="{{ field.id_for_label }}">
+          <label for="{{ field.id_for_label|unlocalize }}">
             <span class="gf-label">{{ field.label }}</span>
             {{ field }}{{ field.errors }}
           </label>

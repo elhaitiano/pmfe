@@ -1,0 +1,34 @@
+/* One continuous sidebar, matching the supplied menu and icons. */
+html.epal-reference #mainSidebar{display:flex!important;flex-direction:column;justify-content:flex-start;overflow-x:hidden!important;overflow-y:auto!important;height:100dvh!important;max-height:100dvh!important;padding:0!important}
+html.epal-reference #sidebarProfilePanel{flex:0 0 auto;min-height:0!important;padding:28px 24px 20px!important}
+html.epal-reference #sidebarProfilePanel>div{margin-top:12px!important;font-size:16px!important}
+html.epal-reference #sidebarProfilePanel h2{font-size:11px!important;line-height:1.35!important;margin-top:4px!important}
+html.epal-reference #sidebarProfilePanel .epal-sidebar-status{margin-top:12px;font-size:10px;padding:5px 12px;letter-spacing:0}
+html.epal-reference #mainSidebar .epal-primary-navigation{flex:1 0 auto!important;display:block!important;padding:18px 12px 12px!important;overflow:visible!important;max-height:none!important;height:auto!important;min-height:0!important;border:0!important}
+html.epal-reference #mainSidebar .epal-nav-label{display:block;padding:8px 16px 14px!important;line-height:15px;font-size:10px;font-weight:800;color:#90c1dab3;letter-spacing:.08em}
+html.epal-reference #mainSidebar .epal-admin-label{padding-top:22px!important;padding-bottom:10px!important}
+html.epal-reference #mainSidebar .pmfe-main-item{display:flex!important;align-items:center;gap:12px!important;padding:12px 16px!important;min-height:46px;margin:4px 0!important;flex-shrink:0;font-size:13px!important;line-height:1.45!important;border-radius:12px!important;transition:all .2s ease!important}
+html.epal-reference #mainSidebar .pmfe-main-item>.material-symbols-outlined:first-child{font-size:20px!important;width:20px;flex:0 0 20px;color:inherit;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20}
+html.epal-reference #mainSidebar .pmfe-main-item>span:not(.material-symbols-outlined){flex:1;min-width:0}
+html.epal-reference #mainSidebar .pmfe-main-item>.epal-nav-chevron{font-size:16px!important;color:#ffffff66;flex:0 0 12px;transition:transform .2s,color .2s}
+html.epal-reference #mainSidebar .pmfe-main-item:has(.epal-nav-main){gap:0!important;justify-content:space-between}
+.epal-nav-main{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.epal-nav-main>.material-symbols-outlined{font-size:20px!important;width:20px;flex:0 0 20px}
+html.epal-reference #mainSidebar .pmfe-main-item:not([aria-current=page]){border-left-width:0!important}
+html.epal-reference #mainSidebar .pmfe-main-item[aria-current=page] .epal-nav-main>.material-symbols-outlined{color:#41e4c0!important}
+html.epal-reference #mainSidebar .pmfe-main-item:hover>.epal-nav-chevron{transform:translateX(2px);color:#fff}
+html.epal-reference #mainSidebar .pmfe-main-item[aria-current=page]{background:linear-gradient(90deg,#41e4c02e,#2e6eae47)!important;border-left:4px solid #41e4c0!important;color:#fff!important;font-weight:700!important;box-shadow:0 4px 16px #0000001f!important}
+html.epal-reference #mainSidebar .pmfe-main-item[aria-current=page]>.material-symbols-outlined:first-child{color:#41e4c0!important}
+html.epal-reference #mainSidebar .epal-sidebar-footer{flex:0 0 auto!important;position:relative!important;z-index:1;margin-top:auto;padding:20px 24px 24px!important;border:0!important;background:transparent!important}
+html.epal-reference #mainSidebar .epal-manual-link{margin:0!important;padding:12px!important;gap:12px;border-radius:12px!important;background:#ffffff1a!important;border:1px solid #ffffff1a!important;box-shadow:none;min-height:58px;transition:background .2s}
+html.epal-reference #mainSidebar .epal-manual-link:hover{background:#ffffff26!important}
+html.epal-reference .epal-manual-link>.material-symbols-outlined{display:flex;align-items:center;justify-content:center;width:32px;height:32px;flex-shrink:0;border-radius:8px;background:#41e4c033;color:#41e4c0;font-size:19px}
+.epal-manual-link strong{display:block;color:white;font-size:12px;font-weight:700;line-height:1.4}.epal-manual-link small{display:block;color:#90c1da;font-size:10px;font-weight:500;line-height:1.4}
+/* Keep the reference waves transparent and double-width throughout their drift.
+   Legacy last-child and global SVG rules otherwise add a dark block and crop them. */
+html.epal-reference #mainSidebar .sidebar-wave-container{position:absolute!important;bottom:0;left:0;height:140px;width:100%;padding:0!important;pointer-events:none;z-index:0;background:transparent!important;border:0!important;box-shadow:none!important}
+html.epal-reference #mainSidebar .sidebar-wave-container .wave-svg{width:200%!important;max-width:none!important;height:100%;background:transparent!important}
+html.epal-reference .pmfe-embedded #mainSidebar{display:none!important}
+@media(max-height:820px){html.epal-reference #sidebarProfilePanel{padding:18px 24px 14px!important}html.epal-reference #sidebarProfilePanel img{height:72px!important;width:82px!important;padding:8px!important}html.epal-reference #sidebarProfilePanel>div{margin-top:10px!important}html.epal-reference #sidebarProfilePanel .epal-sidebar-status{margin-top:10px}html.epal-reference #mainSidebar .epal-primary-navigation{padding-top:10px!important;padding-bottom:4px!important}html.epal-reference #mainSidebar .pmfe-main-item{padding-top:9px!important;padding-bottom:9px!important;min-height:40px;margin:3px 0!important}html.epal-reference #mainSidebar .epal-nav-label{padding-top:6px!important;padding-bottom:8px!important}html.epal-reference #mainSidebar .epal-admin-label{padding-top:14px!important}html.epal-reference #mainSidebar .epal-sidebar-footer{padding:12px 24px 16px!important}}
+@media(max-height:680px){html.epal-reference #sidebarProfilePanel{padding-top:12px!important;padding-bottom:10px!important}html.epal-reference #sidebarProfilePanel img{height:62px!important;width:72px!important}html.epal-reference #sidebarProfilePanel h2{font-size:10px!important}html.epal-reference #mainSidebar .pmfe-main-item{font-size:12px!important;min-height:35px;padding-top:7px!important;padding-bottom:7px!important}html.epal-reference #sidebarProfilePanel .epal-sidebar-status{font-size:9px;margin-top:7px}html.epal-reference #mainSidebar .epal-sidebar-footer{padding-top:8px!important;padding-bottom:10px!important}}
+@media(prefers-reduced-motion:reduce){html.epal-reference #mainSidebar .pmfe-main-item,html.epal-reference #mainSidebar .epal-nav-chevron{transition:none!important}html.epal-reference #mainSidebar .pmfe-main-item:hover,html.epal-reference #mainSidebar .pmfe-main-item:hover>.epal-nav-chevron{transform:none!important}}

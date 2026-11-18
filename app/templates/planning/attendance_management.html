@@ -1,0 +1,11 @@
+<section class="plan-panel" aria-labelledby="manageAttendanceTitle">
+<h2 id="manageAttendanceTitle">Gerir Lista de Presença</h2>
+<div class="plan-actions">
+{% if user.is_staff and group.state == 'Planeada' %}
+{% if perms.training.add_enrollment %}<a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Editar participantes</a>{% endif %}
+{% if perms.training.change_traininggroup %}<a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Corrigir dados do grupo</a>{% endif %}
+{% endif %}
+{% if group.state != 'Cancelada' %}<a class="gf-btn alt" href="#attendance-day-list">Gerar Excel actualizado</a>{% endif %}
+</div>
+<p class="plan-note">Escolha o dia e gere novamente o Excel após guardar as correcções. O ficheiro é gerado dinamicamente; os exemplares já descarregados não são alterados. Presenças e certificados ficam preservados.</p>
+</section>

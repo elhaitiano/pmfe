@@ -15,7 +15,7 @@
           Assiduidade
         </th>
         <th>
-          Nota /20
+          Nota
         </th>
         <th>
           Resultado
@@ -32,28 +32,28 @@
     </thead>
     <tbody>
       {% for t in trainings %}
-      <tr>
+      <tr id="participation-{{ t.pk|unlocalize }}">
         <td>
-          {{ t.title }}<br><small>{{ t.location }} · {{ t.status }}</small>
+          {{ t.ux_title|default:t.title }}
         </td>
         <td>
           {{ t.start|date:'d/m/Y' }}<br>{{ t.end|date:'d/m/Y' }}
         </td>
         <td>
-          {{ t.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}
+          {% if t.ux_hours is not None %}{{ t.ux_hours|floatformat:'-2' }} h{% elif t.completed_hours is not None %}{{ t.completed_hours|floatformat:'-2' }} h{% else %}—{% endif %}
         </td>
         <td>
-          {% if t.verified_attendance_percent is not None %}
-          {{ t.verified_attendance_percent|floatformat:2 }}%{% else %}—{% endif %}
+          {% if t.attendance_percent is not None %}
+          {{ t.attendance_percent|floatformat:1 }}%{% else %}—{% endif %}
         </td>
         <td>
-          {{ t.grade|default_if_none:'—' }}
+          {{ t.ux_grade_label|default:'—' }}
         </td>
         <td>
-          {{ t.result }}
+          {{ t.presentation_result }}
         </td>
         <td>
-          {{ t.certificate_label }}{% if t.certificate_delivery_date %}<br>{{ t.certificate_delivery_date|date:'d/m/Y' }}{% endif %}
+          {% if ux_admin_visible %}<details><summary>{{ t.delivery_reported|yesno:'Entregue,Por confirmar' }}</summary>{% include 'certificate_delivery_cell.html' with participation=t %}</details>{% else %}{{ t.delivery_reported|yesno:'Entregue,Por confirmar' }}{% endif %}
         </td>
         {% if user.is_staff and not print_mode %}
         <td class="no-print">

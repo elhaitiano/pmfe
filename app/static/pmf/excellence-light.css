@@ -1,0 +1,23 @@
+/* Excellence panel follows the current light executive dashboard. */
+html.epal-reference #viewDashboard>.exec-excellence{margin:24px 0;background:#fff!important;border:1px solid #90c1da61!important;border-radius:20px!important;box-shadow:0 10px 30px -8px #00336612!important;padding:24px!important}
+html.epal-reference .exec-excellence .exec-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding-bottom:18px;margin-bottom:8px}
+html.epal-reference .exec-excellence .exec-excellence-eyebrow{color:#005bc0!important;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px}
+html.epal-reference .exec-excellence h3{color:#002b5c!important;font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
+html.epal-reference .exec-excellence .exec-gold-text{color:#c48a08!important}
+html.epal-reference .exec-excellence .exec-table-wrap{overflow-x:auto}
+html.epal-reference .exec-excellence table{width:100%;border-collapse:collapse;min-width:620px}
+html.epal-reference .exec-excellence th{background:#f6f9fc!important;color:#64748b!important;font-size:11px;text-transform:uppercase;padding:13px 16px;text-align:left}
+html.epal-reference .exec-excellence td{background:transparent!important;color:#334155!important;border-bottom:1px solid #edf2f7!important;padding:14px 16px;font-size:12px}
+html.epal-reference .exec-excellence tbody tr:hover{background:#f6faff!important}
+html.epal-reference .exec-excellence .exec-ranked-person{display:flex;align-items:center;gap:12px}
+html.epal-reference .exec-excellence .exec-ranked-person strong{display:block;color:#002b5c!important;font-size:13px}
+html.epal-reference .exec-excellence .exec-ranked-person small{display:block;margin-top:4px;color:#64748b!important}
+html.epal-reference .exec-excellence .exec-rank{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#dbeafe!important;color:#005bc0!important;font-weight:800}
+html.epal-reference .exec-excellence .exec-attendance-badge{background:#ecfdf5!important;border:1px solid #a7f3d0!important;color:#047857!important;border-radius:20px;padding:4px 9px;white-space:nowrap}
+html.epal-reference .exec-excellence .exec-attendance-low{background:#fffbeb!important;border-color:#fde68a!important;color:#92400e!important}
+html.epal-reference .exec-excellence .exec-ranking-grade{color:#005bc0!important;white-space:nowrap}
+html.epal-reference .exec-excellence .exec-profile-link{display:inline-flex;align-items:center;gap:6px;background:#eff6ff!important;border:1px solid #bfdbfe!important;color:#005bc0!important;border-radius:8px;padding:7px 10px;white-space:nowrap}
+html.epal-reference .exec-excellence .exec-profile-link .material-symbols-outlined{color:inherit!important;font-size:16px}
+@media(max-width:640px){html.epal-reference #viewDashboard>.exec-excellence{padding:16px!important}html.epal-reference .exec-excellence h3{font-size:16px}}
+/* Keep the existing excellence table inside its card on narrow screens. */
+@media(max-width:820px){html.epal-reference #viewDashboard>.exec-excellence{min-width:0!important;width:100%!important;max-width:100%!important}html.epal-reference .exec-excellence .exec-table-wrap{min-width:0!important;width:100%;max-width:100%;overflow-x:auto!important}}

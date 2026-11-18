@@ -1,0 +1,60 @@
+/* Plus Jakarta Sans and typographic values measured from the supplied HTML. */
+html.epal-reference body{font-family:'Plus Jakarta Sans',sans-serif!important}
+html.epal-reference body :is(h1,h2,h3,h4,h5,h6,p,div,section,article,main,aside,nav,header,footer,a,button,input,select,textarea,label,table,thead,tbody,tr,th,td,ul,ol,li,small,strong,b,summary,dt,dd):not(pre *,code *,kbd *,samp *){font-family:'Plus Jakarta Sans',sans-serif!important}
+html.epal-reference body span:not(.material-symbols-outlined):not(.material-icons):not(pre *,code *,kbd *,samp *){font-family:'Plus Jakarta Sans',sans-serif!important}
+html.epal-reference svg text{font-family:'Plus Jakarta Sans',sans-serif!important}
+html.epal-reference .material-symbols-outlined,html.epal-reference .material-icons{font-family:'Material Symbols Outlined'!important}
+html.epal-reference .executive.epal-exact{max-width:none!important}
+html.epal-reference .epal-strategic-table{width:100%!important;max-width:none!important;align-self:stretch;padding:24px!important;border-radius:20px!important;border:1px solid #90c1da61!important;background:#fff!important;box-shadow:0 10px 30px -8px #00336612,0 4px 12px #2e6eae0a!important}
+.epal-strategic-heading{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:24px}
+html.epal-reference .epal-strategic-table .epal-strategic-heading h2{font-size:16px!important;font-weight:800!important;color:#002b5c!important;line-height:24px!important;letter-spacing:normal}
+html.epal-reference .epal-strategic-table .epal-strategic-heading p{font-size:12px!important;font-weight:400!important;color:#64748b!important;line-height:16px!important;margin:0!important}
+.epal-unit-filters{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;flex-shrink:0}
+html.epal-reference .epal-unit-filters>span{font-size:12px;font-weight:700;color:#64748b!important}
+html.epal-reference .epal-unit-filter{font-size:12px;font-weight:600;line-height:16px;color:#475569;background:transparent;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;transition:background .2s,color .2s}
+html.epal-reference .epal-unit-filter:hover{background:#f1f5f9;color:#005bc0}
+html.epal-reference .epal-unit-filter[aria-pressed=true]{background:rgba(0,91,192,.1)!important;color:#005bc0!important;font-weight:700;box-shadow:none!important;border-color:transparent!important}
+html.epal-reference .epal-unit-filter span{color:inherit!important;font-weight:inherit}
+html.epal-reference .epal-strategic-table .epal-overview-scroll{width:100%;overflow-x:auto;outline-offset:4px;border-radius:9px}
+html.epal-reference .epal-strategic-table table{width:100%!important;min-width:1080px!important;table-layout:fixed;border-collapse:collapse;text-align:left;background:#fff!important;margin:0}
+.epal-col-direction{width:25%}.epal-col-workforce{width:11%}.epal-col-hours{width:14%}.epal-col-coverage{width:15%}.epal-col-average{width:14%}.epal-col-state{width:16%}.epal-col-action{width:5%}
+html.epal-reference .epal-strategic-table thead th{padding:12px 16px!important;font-size:11px!important;font-weight:700!important;color:#64748b!important;line-height:16.5px!important;letter-spacing:.55px!important;text-transform:uppercase!important;background:rgba(248,250,252,.75)!important;border:0!important;border-bottom:1px solid #e2e8f0!important;white-space:normal;vertical-align:middle}
+html.epal-reference .epal-strategic-table thead th:first-child{border-top-left-radius:8px}
+html.epal-reference .epal-strategic-table thead th:last-child{text-align:right;border-top-right-radius:8px}
+html.epal-reference .epal-strategic-table tbody tr{background:#fff!important;transition:background .2s}
+html.epal-reference .epal-strategic-table tbody tr:hover{background:#eff6ff66!important}
+html.epal-reference .epal-strategic-table tbody td{padding:16px!important;border:0!important;border-bottom:1px solid #f1f5f9!important;background:transparent!important;vertical-align:middle;font-size:12px!important;font-weight:500!important;color:#334155!important;line-height:16px!important;letter-spacing:normal;overflow-wrap:break-word}
+html.epal-reference .epal-strategic-table tbody tr:last-of-type td{border-bottom:0!important}
+html.epal-reference .epal-strategic-table .epal-unit-direction>a{display:flex;align-items:center;gap:12px;text-decoration:none}
+.epal-unit-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;flex:0 0 32px;border-radius:8px;font-size:18px;background:#dbeafe;color:#005bc0}
+.epal-unit-icon[data-tone=teal]{background:#ccfbf1;color:#0f766e}.epal-unit-icon[data-tone=indigo]{background:#e0e7ff;color:#35509a}.epal-unit-icon[data-tone=cyan]{background:#cffafe;color:#155e75}
+html.epal-reference .epal-strategic-table .epal-unit-icon{color:#005bc0!important}
+html.epal-reference .epal-strategic-table .epal-unit-icon[data-tone=teal]{color:#0f766e!important}
+html.epal-reference .epal-strategic-table .epal-unit-icon[data-tone=indigo]{color:#35509a!important}
+html.epal-reference .epal-strategic-table .epal-unit-icon[data-tone=cyan]{color:#155e75!important}
+.epal-unit-name{min-width:0}
+html.epal-reference .epal-strategic-table .epal-unit-name strong{display:block;font-size:12px!important;font-weight:700!important;color:#002b5c!important;line-height:16px!important;letter-spacing:normal}
+html.epal-reference .epal-strategic-table .epal-unit-name small{display:block;font-size:10px!important;font-weight:500!important;color:#64748b!important;line-height:15px!important;margin-top:2px}
+html.epal-reference .epal-strategic-table td.epal-unit-hours{font-size:12px!important;font-weight:800!important;color:#005bc0!important;line-height:16px!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+.epal-strategic-table .epal-table-progress{display:flex;align-items:center;gap:12px;min-width:0}
+.epal-strategic-table .epal-table-progress .progress-track{width:96px;max-width:96px;min-width:52px;flex:1;height:8px!important;background:#e6eef7!important;border-radius:999px;overflow:hidden}
+html.epal-reference .epal-strategic-table .epal-table-progress strong{font-size:12px!important;font-weight:800!important;color:#002b5c!important;line-height:16px!important;min-width:35px;font-variant-numeric:tabular-nums}
+html.epal-reference .epal-strategic-table .epal-unit-average strong{font-size:12px;font-weight:800;color:#002b5c!important;font-variant-numeric:tabular-nums}
+html.epal-reference .epal-strategic-table .epal-unit-average>span{font-size:10px;font-weight:400;color:#94a3b8}
+html.epal-reference .epal-strategic-table .epal-op-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid transparent;font-size:10px!important;font-weight:700!important;line-height:16px!important;max-width:100%;white-space:normal}
+.epal-op-badge i{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor}
+html.epal-reference .epal-strategic-table .epal-op-green{background:#ecfdf5;color:#047857!important;border-color:#a7f3d0}
+html.epal-reference .epal-strategic-table .epal-op-blue{background:#eff6ff;color:#005bc0!important;border-color:#bfdbfe}
+html.epal-reference .epal-strategic-table .epal-op-neutral{background:#f8fafc;color:#64748b!important;border-color:#e2e8f0}
+.epal-unit-action{text-align:right}.epal-unit-action a{display:inline-flex;align-items:center;justify-content:center;padding:4px;border-radius:8px;color:#94a3b8!important;transition:background .2s,color .2s}
+.epal-unit-action a:hover{background:#f1f5f9;color:#005bc0!important}.epal-unit-action .material-symbols-outlined{font-size:19px}
+.epal-unit-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:11px;color:#64748b}
+.epal-unit-pagination>div{display:flex;gap:8px}.epal-unit-pagination button{font-size:11px;font-weight:600;color:#002b5c;background:#fff;border:1px solid #dce8f2;border-radius:8px;padding:6px 10px;cursor:pointer}
+.epal-unit-pagination button:hover:not(:disabled){background:#eff6ff}
+.epal-unit-full-query{display:inline-block;margin-top:14px;font-size:11px;font-weight:600;color:#005bc0}
+.epal-strategic-table [hidden]{display:none!important}
+html.epal-reference .epal-strategic-table td.epal-unit-empty{padding:24px 16px!important;text-align:center;color:#64748b!important;font-weight:400!important}
+@media(min-width:1500px){html.epal-reference .epal-exact{padding-left:24px!important;padding-right:24px!important}}
+@media(max-width:1000px){.epal-strategic-heading{align-items:flex-start;flex-direction:column;gap:14px}.epal-unit-filters{justify-content:flex-start;flex-shrink:1}}
+@media(max-width:640px){html.epal-reference .epal-strategic-table{padding:16px!important}.epal-unit-filters{gap:5px}.epal-unit-filters>span{flex-basis:100%}.epal-unit-pagination{flex-wrap:wrap}}
+@media print{.epal-unit-filters,.epal-unit-pagination,.epal-unit-full-query{display:none!important}.epal-strategic-table [data-unit-matched=true][hidden]{display:table-row!important}.epal-strategic-table [data-unit-matched=false]{display:none!important}.epal-strategic-table table{min-width:0!important}.epal-strategic-table td,.epal-strategic-table th{font-size:9px!important;padding:6px!important}.epal-unit-icon{display:none}}

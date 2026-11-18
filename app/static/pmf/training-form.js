@@ -3,7 +3,7 @@
   if (!form?.querySelector('#id_days')) return;
   const get = id => form.querySelector('#id_' + id);
   const read = id => get(id).value.trim() === '' ? null : Number(get(id).value.replace(',', '.'));
-  const fmt = value => value === null ? '—' : value.toLocaleString('pt-PT', {maximumFractionDigits: 1});
+  const fmt = value => value === null ? '—' : value.toLocaleString('pt-PT', {useGrouping:'always', maximumFractionDigits: 1});
   const update = () => {
     const days = read('days'), hours = read('hours_per_day'), attended = read('attendance');
     const status = get('status').value;

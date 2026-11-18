@@ -6,7 +6,7 @@
     <div class="gf-body space-y-4">
       <h2 class="text-xl font-bold">Simulação dos primeiros dados</h2>
       <p>Seleccione o Excel para rever trabalhadores, participações e ligações ao catálogo. Esta página não grava dados.</p>
-      <p>As folhas repetidas são conciliadas. Valores vazios não apagam o cadastro existente. Divergências bloqueantes devem ser resolvidas antes da importação.</p>
+      <p>As folhas repetidas são conciliadas. Valores vazios não apagam o registo existente. Divergências bloqueantes devem ser resolvidas antes da importação.</p>
       <form method="post" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
         {{ form.as_p }}
@@ -20,7 +20,7 @@
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <h2 class="text-xl font-bold">Resultado da simulação</h2>
-      <p>{{ report.employees_created }} trabalhadores novos; {{ report.employees_updated }} cadastros a completar; {{ report.trainings_created }} participações novas; {{ report.trainings_existing }} participações já existentes.</p>
+      <p>{{ report.employees_created }} trabalhadores novos; {{ report.employees_updated }} registos a completar; {{ report.trainings_created }} participações novas; {{ report.trainings_existing }} participações já existentes.</p>
       <p>{{ report.errors }} erros bloqueantes; {{ report.warnings }} avisos; {{ report.duplicates_reconciled }} registos entre folhas conciliados.</p>
       {% if report.can_apply %}
       <p>Simulação sem erros bloqueantes. Reveja os avisos e as alterações antes de autorizar a gravação.</p>
@@ -71,7 +71,7 @@
       <h2 class="text-xl font-bold">Alterações propostas</h2>
       {% for change in report.changes %}
       <details>
-        <summary>{% if change.entity == 'employee' %}Trabalhador{% else %}Participação{% endif %} {{ change.identifier }} — {% if change.operation == 'create' %}Criar{% elif change.operation == 'update' %}Completar cadastro{% else %}Já existente{% endif %} — {{ change.source.sheet }}:{{ change.source.row }}</summary>
+        <summary>{% if change.entity == 'employee' %}Trabalhador{% else %}Participação{% endif %} {{ change.identifier }} — {% if change.operation == 'create' %}Criar{% elif change.operation == 'update' %}Completar registo{% else %}Já existente{% endif %} — {{ change.source.sheet }}:{{ change.source.row }}</summary>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead><tr><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead>

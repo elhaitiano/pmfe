@@ -56,3 +56,23 @@ class Command(BaseCommand):
         finally:
             if workbook:
                 workbook.close()
+
+from datetime import date, datetime
+def parse_date(value):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, (int, float)):
+        from openpyxl.utils.datetime import from_excel
+        converted = from_excel(value)
+        if isinstance(converted, datetime):
+            return converted.date()
+    for pattern in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S'):
+        try:
+            return datetime.strptime(str(value).strip(), pattern).date()
+        except ValueError:
+            pass
+    raise ValueError('Data inválida')

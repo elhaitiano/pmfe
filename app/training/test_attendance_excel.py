@@ -1,3 +1,4 @@
+from .scheduling_guard import reservation_transaction
 from unittest.mock import patch
 from datetime import date, time
 from decimal import Decimal
@@ -18,7 +19,7 @@ class AttendanceExcelTests(TestCase):
         clock = patch('training.planning.timezone.localdate', return_value=date(2026, 10, 1))
         clock.start()
         self.addCleanup(clock.stop)
-        self.course=Course.objects.create(title='Liderança e Gestão')
+        self.course=Course.objects.create(validation_status='validated', title='Liderança e Gestão')
         self.group=create_group(self.course,dict(dates=[date(2026,10,1)],trainer='Formador',provider='EPAL',location='Kikuxi',capacity=40,hours_per_day=Decimal('7'),break_hours=Decimal('1'),start_time=time(8),end_time=time(16)))
         self.user=get_user_model().objects.create_user('excel-reader')
         self.client.force_login(self.user)
@@ -80,5 +81,7 @@ class AttendanceExcelTests(TestCase):
         self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Gerar lista dos formandos em Excel')
         self.assertEqual(self.client.get(url,{'date':'2026-10-02'}).status_code,400)
         self.assertEqual(self.client.get(url,{'date':'invalid'}).status_code,400)
-        self.group.state='Cancelada';self.group.save();self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,400)
+        with reservation_transaction():
+            self.group.state='Cancelada';self.group.save()
+        self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,400)
         self.client.logout();self.assertEqual(self.client.get(url,{'date':'2026-10-01'}).status_code,302)

@@ -1,1 +1,1 @@
-{% with hours=t.verified_hours %}{% if hours is not None %}{{ hours|floatformat:'-2' }} h{% else %}&mdash;{% endif %}{% endwith %}
+{% if t.completed_hours is not None %}{{ t.completed_hours|floatformat:'-2' }} h frequentadas{% elif t.certified_hours is None %}Horas de presença sem registo{% endif %}{% if t.certified_hours is not None %}<small class="block">{{ t.certified_hours|floatformat:'-2' }} h certificadas</small>{% if t.completed_hours is None %}<small class="block">Horas de presença sem registo</small>{% endif %}{% endif %}

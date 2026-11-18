@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
-{% block heading %}CERTIFICADO E ENTREGAS{% endblock %}
+{% block heading %}ARQUIVO DE CERTIFICADOS{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6"><section class="gf-panel"><div class="gf-body">
   <h2 class="text-xl font-bold">{{ employee.name }} — {{ training.title }}</h2>
-  <p class="text-sm text-slate-400">Registe a declaração quando faltam documentos. Uma declaração não substitui a confirmação e a data efectiva de entrega.</p>
+  <p class="text-sm text-slate-400">Registe a declaração quando faltam documentos. As entregas históricas abrangidas pela confirmação do responsável permanecem confirmadas, sem exigir data exacta desconhecida.</p>
+  <p><strong>{{ training.certificate_archive_label }}</strong></p>
+  <a class="gf-btn" href="{% url 'employee_documents' employee.pk %}?training={{ training.pk|unlocalize }}">Arquivar certificado PDF</a>
   <form method="post">
     {% csrf_token %}{{ form.non_field_errors }}
     {% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
@@ -11,7 +13,7 @@
     <h3 class="mt-5 mb-2 text-secondary font-bold">{{ title }}</h3>
     <div class="gf-form-grid">
       {% for field in fields %}
-      <label for="{{ field.id_for_label }}"><span class="gf-label">{{ field.label }}</span>{{ field }}{{ field.errors }}<small>{{ field.help_text }}</small></label>
+      <label for="{{ field.id_for_label|unlocalize }}"><span class="gf-label">{{ field.label }}</span>{{ field }}{{ field.errors }}<small>{{ field.help_text }}</small></label>
       {% endfor %}
     </div>
     {% endfor %}
@@ -20,4 +22,4 @@
     <a class="gf-btn alt" href="{% url 'employee_detail' employee.pk %}">Cancelar</a>
   </form>
 </div></section></section>
-{% endblock %}
+{% include 'historical/existing_archive.html' %}{% endblock %}

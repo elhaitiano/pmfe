@@ -30,7 +30,7 @@ ACTUALIZAR ORIENTAÇÃO{% endblock %}{% block extra_styles %}
       {% for step in steps %}
       <fieldset class="help-step">
         <legend>
-          Passo {{ forloop.counter }}
+          Passo {{ forloop.counter|unlocalize }}
         </legend>
         {{ step.text.errors }}{{ step.text.label_tag }}{{ step.text }}<details><summary>Destaque de controlo — opcional</summary>{{ step.target.errors }}{{ step.target.label_tag }}{{ step.target }}<small class="helptext">{{ step.target.help_text }}</small></details>
         <label>

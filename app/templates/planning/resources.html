@@ -1,0 +1,6 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}<section class="plan-panel"><h2>Locais de formação</h2>
+<p>Ao criar um grupo, seleccione um local ou use «+ Novo local».</p>
+<h3>Locais do projecto PROÁGUA</h3><ul>{% for name in default_locations %}<li>{{ name }}</li>{% endfor %}</ul>
+<h3>Locais registados</h3><ul>{% for item in centres %}<li>{{ item.name }}{% if not item.active %} (indisponível){% endif %}</li>{% empty %}<li>Os novos locais ficam guardados ao criar o grupo.</li>{% endfor %}</ul>
+</section>{% endblock %}

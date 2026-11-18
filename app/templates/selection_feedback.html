@@ -1,0 +1,104 @@
+<style id="pmf-selection-feedback">
+/* Explicit states override generic form and table backgrounds, including sticky cells. */
+input[type="checkbox"], input[type="radio"] {
+  appearance:none!important; -webkit-appearance:none!important;
+  display:inline-block!important; width:22px!important; height:22px!important;
+  min-width:22px!important; max-width:22px!important; flex:0 0 22px;
+  padding:0!important; margin:0 7px 0 0; vertical-align:middle;
+  border:2px solid #a7c9de!important; border-radius:5px!important;
+  background-color:#092137!important; background-image:none!important;
+  background-position:center!important; background-repeat:no-repeat!important;
+  background-size:18px 18px!important; cursor:pointer; box-shadow:none!important;
+  color:#06273b!important; transition:background-color .12s,border-color .12s;
+}
+input[type="radio"] { border-radius:50%!important; }
+input[type="checkbox"]:checked, input[type="radio"]:checked {
+  border-color:#5ff4ce!important; background-color:#5ff4ce!important;
+  box-shadow:0 0 0 2px rgba(95,244,206,.18)!important;
+}
+input[type="checkbox"]:checked {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m4 10 4 4 8-9' fill='none' stroke='%2306273b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;
+}
+input[type="radio"]:checked {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='4' fill='%2306273b'/%3E%3C/svg%3E")!important;
+}
+input[type="checkbox"]:indeterminate {
+  border-color:#5ff4ce!important; background-color:#5ff4ce!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10h12' stroke='%2306273b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")!important;
+}
+input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible,
+select:focus-visible, [role="option"]:focus-visible {
+  outline:3px solid #f9dc75!important; outline-offset:4px!important;
+}
+input[type="checkbox"]:disabled, input[type="radio"]:disabled {
+  opacity:.5; cursor:not-allowed;
+}
+label:has(input[type="checkbox"]:checked), label:has(input[type="radio"]:checked) {
+  color:#e4fff7; background-color:rgba(65,228,192,.13); border-radius:5px;
+}
+tbody tr:has(input.bulk-person:checked)>td,
+tbody tr:has(input[data-person]:checked)>td,
+tbody tr:has(input.action-select:checked)>td {
+  background-color:#164952!important; color:#effffb!important;
+}
+tbody tr:has(input.bulk-person:checked)>td:first-child,
+tbody tr:has(input[data-person]:checked)>td:first-child,
+tbody tr:has(input.action-select:checked)>td:first-child {
+  box-shadow:inset 4px 0 #5ff4ce;
+}
+select.pmf-choice-set { border-color:#51cdb9!important; box-shadow:inset 3px 0 #51cdb9; }
+select option { background:#102b43; color:#f1f8ff; }
+[aria-pressed="true"], [role="option"][aria-selected="true"], [role="tab"][aria-selected="true"] {
+  background-color:#164952!important; color:#effffb!important;
+  box-shadow:inset 0 -3px #5ff4ce!important; border-color:#5ff4ce!important;
+}
+.pmf-selection-count { color:#b5fbe5; font-weight:700; padding:10px 0; }
+th label:has(#bulk-all) { display:flex; align-items:center; gap:5px; margin-bottom:6px; line-height:1.35; }
+html[data-theme="light"] label:has(input[type="checkbox"]:checked),
+html[data-theme="light"] label:has(input[type="radio"]:checked) { color:#073c34; background-color:#d9fff0; }
+@media (forced-colors:active) {
+  input[type="checkbox"], input[type="radio"] { appearance:auto!important; -webkit-appearance:auto!important; background-image:none!important; forced-color-adjust:auto; }
+  tbody tr:has(input.bulk-person:checked)>td, tbody tr:has(input[data-person]:checked)>td { outline:1px solid Highlight; }
+}
+</style>
+<script>
+(() => {
+  function initialize() {
+    function sync() {
+      document.querySelectorAll('select').forEach(select => {
+        select.classList.toggle('pmf-choice-set', Array.from(select.selectedOptions).some(option => option.value !== '' && option.value !== 'unknown'));
+      });
+      const bulk = document.getElementById('bulk-all');
+      if (bulk) {
+        const table = bulk.closest('table');
+        const boxes = Array.from(table.querySelectorAll('.bulk-person:not(:disabled)'));
+        const count = boxes.filter(box => box.checked).length;
+        bulk.indeterminate = count > 0 && count < boxes.length;
+        bulk.checked = boxes.length > 0 && count === boxes.length;
+        let counter = document.getElementById('pmf-bulk-selection-count');
+        if (!counter) {
+          counter = document.createElement('p'); counter.id = 'pmf-bulk-selection-count';
+          counter.className = 'pmf-selection-count'; counter.setAttribute('role','status');
+          counter.setAttribute('aria-live','polite');
+          (table.closest('.batch-scroll') || table).before(counter);
+        }
+        const text = count + ' de ' + boxes.length + ' formando(s) seleccionado(s)';
+        if (counter.textContent !== text) counter.textContent = text;
+      }
+    }
+    let pending = false;
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => { pending = false; sync(); });
+    }
+    document.addEventListener('change', schedule);
+    document.addEventListener('click', schedule);
+    document.addEventListener('reset', schedule);
+    new MutationObserver(schedule).observe(document.body, {childList:true, subtree:true});
+    sync();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize);
+  else initialize();
+})();
+</script>

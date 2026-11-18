@@ -1,30 +1,30 @@
-{% if user.is_staff %}
+{% if user.is_staff and document_archive_enabled %}
 <section id="arquivos" class="glass-panel rounded-2xl ficha-files no-print">
   <div class="ficha-files-heading">
     <h3 class="font-bold tracking-wide flex items-center gap-2 text-lg">
-      <span class="material-symbols-outlined text-primary">folder_open</span>Arquivos
+      <span class="material-symbols-outlined text-primary">folder_open</span>Documentos
     </h3>
-    <a class="ficha-files-manage" href="{% url 'employee_documents' employee.pk %}">Gerir arquivos</a>
+    <a class="ficha-files-manage" href="{% url 'employee_documents' employee.pk %}">Gerir documentos</a>
   </div>
-  <form method="post" action="{% url 'employee_documents' employee.pk %}" enctype="multipart/form-data" class="ficha-files-upload">
+  {% if can_upload_documents %}<form method="post" action="{% url 'employee_documents' employee.pk %}" enctype="multipart/form-data" class="ficha-files-upload">
     {% csrf_token %}
     <input type="hidden" name="return_to" value="files">
-    <label for="{{ document_form.kind.id_for_label }}">
+    <label for="{{ document_form.kind.id_for_label|unlocalize }}">
       <span class="gf-label">Tipo de documento</span>
       {{ document_form.kind }}
     </label>
-    <label for="{{ document_form.training.id_for_label }}">
+    <label for="{{ document_form.training.id_for_label|unlocalize }}">
       <span class="gf-label">Formação</span>
       {{ document_form.training }}
     </label>
-    <label for="{{ document_form.file.id_for_label }}">
+    <label for="{{ document_form.file.id_for_label|unlocalize }}">
       <span class="gf-label">Ficheiro PDF</span>
       {{ document_form.file }}
     </label>
     <button class="gf-btn ficha-files-save" type="submit">
       <span class="material-symbols-outlined">upload_file</span>Guardar
     </button>
-  </form>
+  </form>{% endif %}
   <div class="ficha-file-list">
     {% for document in private_documents %}
     <article class="ficha-file-item">
@@ -39,8 +39,10 @@
       <a class="ficha-files-manage" href="{% url 'document_download' document.pk %}">Descarregar</a>
     </article>
     {% empty %}
-    <p class="text-sm text-slate-400">Nenhum arquivo.</p>
+    <p class="text-sm text-slate-400">Nenhum documento.</p>
     {% endfor %}
   </div>
 </section>
 {% endif %}
+
+{% include 'historical/existing_archive.html' %}

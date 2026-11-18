@@ -4,7 +4,7 @@
 <section class="plan-panel">
   <div class="plan-heading">
     <h2>
-      {{ group.code }} · {{ group.title }}
+      {{ group.code|unlocalize }} · {{ group.title }}
     </h2>
     <p>
       Seleccione os formandos disponíveis para esta formação. Pessoas com histórico ou inscrição na mesma formação não aparecem nesta lista.
@@ -19,15 +19,15 @@
   {% if review %}
   <form method="post">
     {% csrf_token %}
-    <input type="hidden" name="action" value="confirm"><input type="hidden" name="review_token" value="{{ review_token }}">
+    <input type="hidden" name="action" value="confirm"><input type="hidden" name="review_token" value="{{ review_token|unlocalize }}">
     <div class="plan-warning">
       Quem já tem histórico ou inscrição noutro grupo da mesma formação não pode ser adicionado.
     </div>
     {% for item in review %}
     <article class="plan-review">
-      <input type="hidden" name="employees" value="{{ item.person.pk }}">
+      <input type="hidden" name="employees" value="{{ item.person.pk|unlocalize }}">
       <h3>
-        {{ item.person.name }} <small>· {{ item.person.number }}</small>
+        {{ item.person.name }} <small>· {{ item.person.number|unlocalize }}</small>
       </h3>
       {% if item.blocked %}
       <p class="plan-warning">
@@ -45,12 +45,12 @@
       {% endfor %}
       <label>
         Decisão
-        <select name="choice_{{ item.person.pk }}" class="gf-field">
+        <select name="choice_{{ item.person.pk|unlocalize }}" class="gf-field">
           <option value="skip"{% if item.choice == 'skip' %} selected{% endif %}>
             Não adicionar
           </option>
           {% if not item.blocked %}
-          
+
           <option value="add"{% if item.choice == 'add' or not item.choice %} selected{% endif %}>
             Adicionar ao grupo
           </option>
@@ -68,7 +68,7 @@
   </form>
   {% else %}
   <form method="get" class="plan-search">
-    <input class="gf-field" name="q" value="{{ q }}" placeholder="Nome ou número mecanográfico" aria-label="Pesquisar formando">
+    <input class="gf-field" name="q" value="{{ q|unlocalize }}" placeholder="Nome ou número mecanográfico" aria-label="Pesquisar formando">
     <select name="direction" class="gf-field" aria-label="Filtrar direcção">
       <option value="">
         Todas as direcções
@@ -83,7 +83,7 @@
       Pesquisar
     </button>
   </form>
-  <form method="post" id="planSelection" data-scope="{{ user.pk }}-{{ group.pk }}">
+  <form method="post" id="planSelection" data-scope="{{ user.pk|unlocalize }}-{{ group.pk|unlocalize }}">
     {% csrf_token %}
     <input type="hidden" name="action" value="review">
     <div class="plan-selection">
@@ -120,10 +120,10 @@
           {% for item in candidates %}
           <tr>
             <td>
-              <input type="checkbox" name="employees" value="{{ item.person.pk }}" data-person{% if item.blocked %} disabled{% endif %} aria-label="Seleccionar {{ item.person.name }}">
+              <input type="checkbox" name="employees" value="{{ item.person.pk|unlocalize }}" data-person{% if item.blocked %} disabled{% endif %} aria-label="Seleccionar {{ item.person.name }}">
             </td>
             <td>
-              {{ item.person.name }}<small>{{ item.person.number }}</small>
+              {{ item.person.name }}<small>{{ item.person.number|unlocalize }}</small>
             </td>
             <td>
               {{ item.person.direction|default:'—' }}<small>{{ item.person.source_data.Função|default:item.person.category }}</small>
@@ -153,7 +153,7 @@
   </form>
   <div class="pmf-pagination">
     {% if page.has_previous %}
-    <a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;direction={{ direction|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+    <a href="?q={{ q|urlencode|unlocalize }}&amp;direction={{ direction|urlencode|unlocalize }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>{{ page.number|unlocalize }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode|unlocalize }}&amp;direction={{ direction|urlencode|unlocalize }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
   </div>
   <p class="plan-note">
     A selecção acompanha a pesquisa nesta janela. A confirmação é sempre validada pelo servidor, incluindo capacidade, duplicados e alterações recentes.

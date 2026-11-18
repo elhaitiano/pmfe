@@ -76,3 +76,17 @@ app/static-collected/
 
 # Plateforme de testes de integração
 Plataforma/
+# Consolidated 8088: runtime/private and operational artefacts never belong in Git
+.runtime/
+**/base-limpa/
+**/preview/
+**/private/
+**/exports/
+**/reports/
+**/documents/
+*.backup*
+*.bak
+*.pdf
+app/catalogue-*.json
+app/PHASE*.json
+app/presentation-*.json

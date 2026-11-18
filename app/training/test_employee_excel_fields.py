@@ -5,8 +5,8 @@ from django.test import TransactionTestCase
 
 class EmployeeExcelMigrationTests(TransactionTestCase):
     def test_existing_profiles_survive_forward_and_reverse_migration(self):
-        before = [('training', '0012_employee_function')]
-        after = [('training', '0013_employee_excel_fields')]
+        before = [('training', '0027_uniform_training_areas')]
+        after = [('training', '0028_stabilization_compatibility')]
         executor = MigrationExecutor(connection)
         executor.migrate(before)
         try:
@@ -41,7 +41,7 @@ class EmployeeExcelMigrationTests(TransactionTestCase):
             executor.migrate(before)
             Employee = executor.loader.project_state(before).apps.get_model('training', 'Employee')
             restored = Employee.objects.get(number='EX01')
-            self.assertEqual(restored.source_data['Nº BI'], '000456LA045')
+            self.assertEqual(restored.identity_number, '000456LA045')
             self.assertEqual(restored.source_data['Outra coluna'], 'preservar')
         finally:
             executor = MigrationExecutor(connection)

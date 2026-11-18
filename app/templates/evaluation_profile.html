@@ -10,7 +10,7 @@
   <section class="eval-hero">
     <p class="text-xs text-secondary">PMF | Monitorização Pós-Formação</p>
     <h2 class="text-2xl font-black mt-2">CENTRO DE AVALIAÇÃO DE DESEMPENHO</h2>
-    <p class="mt-3">{{ employee.name }} · N.º {{ employee.number }} · {{ employee.function|default:'Função por confirmar' }}</p>
+    <p class="mt-3">{{ employee.name }} · N.º {{ employee.number|unlocalize }} · {{ employee.function|default:'Função por confirmar' }}</p>
     <p class="text-slate-400 mt-2">Acompanhar o percurso formativo, o perfil de competências e a evolução entre avaliações.</p>
   </section>
   <div class="eval-grid">
@@ -25,7 +25,7 @@
         <label for="profile-cycle"><span class="gf-label">Avaliação actual</span>
           <select class="gf-field" id="profile-cycle" name="cycle">
             {% for row in history %}
-            <option value="{{ row.cycle.pk }}" {% if row.cycle.pk == selected.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · {{ row.cycle.get_state_display }}</option>
+            <option value="{{ row.cycle.pk|unlocalize }}" {% if row.cycle.pk == selected.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk|unlocalize }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · {{ row.cycle.get_state_display }}</option>
             {% empty %}<option value="">Sem ciclos disponíveis</option>{% endfor %}
           </select>
         </label>
@@ -33,7 +33,7 @@
           <select class="gf-field" id="profile-previous" name="previous">
             <option value="none">Sem comparação</option>
             {% for row in previous_options %}
-            <option value="{{ row.cycle.pk }}" {% if row.cycle.pk == comparison.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }}</option>
+            <option value="{{ row.cycle.pk|unlocalize }}" {% if row.cycle.pk == comparison.cycle.pk %}selected{% endif %}>#{{ row.cycle.pk|unlocalize }} · {{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }}</option>
             {% endfor %}
           </select>
         </label>
@@ -59,16 +59,16 @@
           <svg class="radar-svg" viewBox="0 0 440 440" role="img" aria-labelledby="radar-title radar-description">
             <title id="radar-title">Mapa de competências de {{ employee.name }}</title>
             <desc id="radar-description">Escala 0 a 5. Eixos numerados pela lista. Verde: actual; azul: anterior; tracejado: nível esperado. Valores exactos na tabela abaixo.</desc>
-            {% for ring in radar.rings %}<polygon points="{{ ring }}" class="profile-radar-ring"/>{% endfor %}
+            {% for ring in radar.rings %}<polygon points="{{ ring|unlocalize }}" class="profile-radar-ring"/>{% endfor %}
             {% for axis in radar.axes %}
-            <line x1="220" y1="220" x2="{{ axis.x }}" y2="{{ axis.y }}" class="profile-radar-axis" data-axis="{{ axis.number }}"/>
-            <text x="{{ axis.lx }}" y="{{ axis.ly }}" text-anchor="middle" dominant-baseline="middle" class="profile-radar-label">{{ axis.number }}</text>
+            <line x1="220" y1="220" x2="{{ axis.x|unlocalize }}" y2="{{ axis.y|unlocalize }}" class="profile-radar-axis" data-axis="{{ axis.number|unlocalize }}"/>
+            <text x="{{ axis.lx|unlocalize }}" y="{{ axis.ly|unlocalize }}" text-anchor="middle" dominant-baseline="middle" class="profile-radar-label">{{ axis.number|unlocalize }}</text>
             {% endfor %}
-            <polygon points="{{ radar.target }}" class="profile-radar-target"/>
-            {% if radar.previous %}<polygon points="{{ radar.previous }}" class="profile-radar-previous"/>{% endif %}
-            {% if radar.current %}<polygon points="{{ radar.current }}" class="radar-area profile-radar-current"/>{% endif %}
+            <polygon points="{{ radar.target|unlocalize }}" class="profile-radar-target"/>
+            {% if radar.previous %}<polygon points="{{ radar.previous|unlocalize }}" class="profile-radar-previous"/>{% endif %}
+            {% if radar.current %}<polygon points="{{ radar.current|unlocalize }}" class="radar-area profile-radar-current"/>{% endif %}
             {% for axis in radar.axes %}
-            {% if axis.dx != None %}<circle cx="{{ axis.dx }}" cy="{{ axis.dy }}" r="4" class="profile-radar-dot" data-axis="{{ axis.number }}"><title>{{ axis.name }}</title></circle>{% endif %}
+            {% if axis.dx != None %}<circle cx="{{ axis.dx|unlocalize }}" cy="{{ axis.dy|unlocalize }}" r="4" class="profile-radar-dot" data-axis="{{ axis.number|unlocalize }}"><title>{{ axis.name }}</title></circle>{% endif %}
             {% endfor %}
           </svg>
           <p class="text-sm text-center">Verde: actual · Azul: anterior · Tracejado: meta /5</p>
@@ -80,8 +80,8 @@
         <div id="evalCompetencies" class="comp-list">
           <div id="compDetail" class="comp-detail" role="status">Seleccione uma competência ou active Visão 360° para percorrer as dimensões.</div>
           {% for item in items %}
-          <button type="button" class="comp-row profile-comp" data-competency="{{ forloop.counter }}" aria-pressed="false">
-            <span>{{ forloop.counter }}. {{ item.name }}</span><strong>{{ item.score|floatformat:2|default:'—' }} /5</strong>
+          <button type="button" class="comp-row profile-comp" data-competency="{{ forloop.counter|unlocalize }}" aria-pressed="false">
+            <span>{{ forloop.counter|unlocalize }}. {{ item.name }}</span><strong>{{ item.score|floatformat:2|default:'—' }} /5</strong>
             <span class="comp-meta">Meta {{ item.expected }} /5 · Anterior {{ item.previous|floatformat:2|default:'—' }}</span>
             <span class="profile-comp-description">{{ item.description }}</span>
           </button>
@@ -97,7 +97,7 @@
         {% for item in gaps %}<p class="gap-item">{{ item.name }} · Lacuna {{ item.gap|floatformat:2 }}</p><a class="text-secondary" href="{% url 'development_create' item.id %}">Planear desenvolvimento</a>{% empty %}<p class="eval-empty">Sem lacunas confirmadas disponíveis.</p>{% endfor %}
       </section>
       <section class="eval-panel eval-small"><h3 class="font-bold">Estado da Avaliação</h3>
-        {% if selected %}<p>Ciclo #{{ selected.cycle.pk }} · {{ selected.cycle.get_state_display }} · {{ selected.cycle.moment }}</p><a class="text-secondary" href="{% url 'cycle_detail' selected.cycle.pk %}">Consultar ciclo e evidências</a>{% else %}<p class="eval-empty">Sem ciclo sob a sua responsabilidade para este formando.</p>{% endif %}
+        {% if selected %}<p>Ciclo #{{ selected.cycle.pk|unlocalize }} · {{ selected.cycle.get_state_display }} · {{ selected.cycle.moment }}</p><a class="text-secondary" href="{% url 'cycle_detail' selected.cycle.pk %}">Consultar ciclo e evidências</a>{% else %}<p class="eval-empty">Sem ciclo sob a sua responsabilidade para este formando.</p>{% endif %}
       </section>
     </div>
   </div>
@@ -113,11 +113,11 @@
     {% for training in trainings %}
     <article class="border-b border-white/10 py-4">
       <a class="text-secondary" href="{% url 'evaluation_detail' training.pk %}">{{ training.start|date:'d/m/Y' }} — {{ training.title }}</a>
-      <p>{{ training.status }} · Nota registada {{ training.grade|default_if_none:'—' }}/20 · {{ training.result }}</p>
+      <p>{{ training.status_label }} · Nota registada {{ training.documented_grade_label }} · {{ training.presentation_result }}</p>
     </article>
     {% empty %}<p>Sem participações registadas.</p>{% endfor %}
     <h4 class="font-bold mt-4">Momentos de avaliação</h4>
-    {% for row in history %}<p><a class="text-secondary" href="?cycle={{ row.cycle.pk }}">{{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · #{{ row.cycle.pk }}</a> — {{ row.result.overall|floatformat:2|default:'Sem resultado divulgável' }}</p>{% empty %}<p>Sem ciclos disponíveis.</p>{% endfor %}
+    {% for row in history %}<p><a class="text-secondary" href="?cycle={{ row.cycle.pk|unlocalize }}">{{ row.cycle.start|date:'d/m/Y' }} · {{ row.cycle.moment }} · #{{ row.cycle.pk|unlocalize }}</a> — {{ row.presentation_result.overall|floatformat:2|default:'Sem resultado divulgável' }}</p>{% empty %}<p>Sem ciclos disponíveis.</p>{% endfor %}
   </section>
 </section>
 {% endblock %}

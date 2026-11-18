@@ -1,0 +1,6 @@
+/* Preserve Django administration design while improving essential targets. */
+#content :is(.object-tools a,.paginator a,.actions button,th a,td a){display:inline-flex;align-items:center;min-height:24px;padding-block:3px}
+#content :is(.help,.helptext){font-size:.8125rem;line-height:1.5}
+#content a:focus-visible{outline:2px solid var(--link-fg);outline-offset:2px}
+#content a[href]{display:inline-flex;align-items:center;min-height:24px;padding-block:3px}
+#user-tools a,#user-tools button{display:inline-flex;align-items:center;min-height:24px;padding-block:3px}

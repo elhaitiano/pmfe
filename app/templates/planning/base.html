@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block heading %}
-PLANEAMENTO E TURMAS{% endblock %}{% block extra_styles %}
+PLANEAMENTO E GRUPOS{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 <link rel="stylesheet" href="{% static 'pmf/planning.css' %}">
 {% endblock %}
@@ -12,17 +12,21 @@ PLANEAMENTO E TURMAS{% endblock %}{% block extra_styles %}
       <div class="plan-eyebrow">
         <span class="material-symbols-outlined">calendar_month</span>ORGANIZAÇÃO DA FORMAÇÃO
       </div>
-      <h1>
-        Planeamento e Turmas
-      </h1>
+      <h2>
+        Planeamento e Grupos
+      </h2>
       <p>
-        Catálogo, calendário, inscrições e listas de presença num único fluxo.
+        Crie grupos, importe presenças e consulte os resultados.
       </p>
     </div>
     <a class="gf-btn alt" href="{% url 'home' %}">Voltar à gestão</a>
   </header>
   <nav class="plan-nav">
+    {% if user.is_staff and perms.training.view_employee and perms.training.view_training and perms.training.add_training and perms.training.add_enrollment and perms.training.change_traininggroup %}<a href="{% url 'attendance_import_index' %}">Importar assiduidade</a>{% endif %}
+    {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}<a href="{% url 'group_validation' %}">Validação de grupos</a>{% endif %}
     <a href="{% url 'planning' %}"><span class="material-symbols-outlined">menu_book</span>Catálogo e grupos</a><a href="{% url 'batch_index' %}"><span class="material-symbols-outlined">fact_check</span>Notas e certificados</a>
+    {% if user.is_staff %}<a href="{% url 'certificate_archive' %}">Arquivo de certificados</a>{% endif %}
+    {% url 'training_area_issues' as area_issues_url %}{% if user.is_staff and area_issues_url %}<a href="{{ area_issues_url|unlocalize }}">Classificação das áreas</a>{% endif %}
   </nav>
   {% block plan_content %}
   {% endblock %}

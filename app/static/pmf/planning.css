@@ -24,7 +24,7 @@
   font-weight:800;
   letter-spacing:.15em
 }
-.plan-hero h1{
+.plan-hero :is(h1,h2){
   font-size:28px;
   font-weight:850;
   margin:15px 0 8px
@@ -261,7 +261,7 @@
   .plan-panel,.plan-hero{
     padding:20px
   }
-  .plan-hero h1{
+  .plan-hero :is(h1,h2){
     font-size:24px
   }
   .plan-search>input,.plan-search>select{
@@ -272,3 +272,37 @@
     flex-direction:column
   }
 }
+
+/* Catalogue fields use the established planning search/action layout. */
+.plan-catalogue-filters{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:20px 0}
+.plan-catalogue-filters>label{display:flex;flex:1 1 200px;flex-direction:column;gap:8px;min-width:0;font-size:11px;color:#99b5cc}
+.plan-catalogue-filters>label:first-child{flex-basis:300px}
+.plan-filter-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-course-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.plan-status,.plan-duration-badge{display:inline-flex;align-items:center;gap:5px;background:#41e4c014;border:1px solid #41e4c033;color:#41e4c0;border-radius:9px;padding:5px 9px;font-size:10px;line-height:1.4}
+.plan-course-badges .material-symbols-outlined{font-size:16px}
+.plan-compact-facts{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0;font-size:11px;color:#99b5cc}
+.plan-compact-facts>div{min-width:0}.plan-compact-facts dt{margin-bottom:5px}.plan-compact-facts dd{margin:0}
+.plan-compact-facts strong{color:#d5e6f8}.plan-compact-facts small{display:block;margin-top:4px}
+.plan-course-details{margin-top:14px}.plan-course-details>summary{display:flex;align-items:center;gap:8px;color:#41e4c0;font-size:11px;cursor:pointer}
+.plan-course-detail-body{padding-top:12px;font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+.plan-course-detail-body h4{font-weight:750;margin:14px 0 6px}.plan-course-detail-body dl{margin:10px 0}
+.plan-course-actions{margin-bottom:0}
+@media(max-width:640px){.plan-catalogue-filters>label{flex-basis:100%}.plan-filter-actions{width:100%}}
+.plan-course-original .plan-course-details{margin-top:12px;font-size:11px;line-height:1.7;color:#99b5cc}
+.plan-course-original .plan-course-details>summary{cursor:pointer;color:#41e4c0}
+.plan-course-original .plan-course-details h4{margin:12px 0 5px;font-weight:750}
+.plan-course-original .plan-course-details dl{margin:8px 0}
+
+/* Visible reasons supplement disabled controls for keyboard and touch users. */
+.plan-course-original .plan-action-reason {font-size:.75rem;line-height:1.5;color:var(--text-muted,#a9c0d4);margin:.35rem 0;overflow-wrap:anywhere;}
+
+/* Documentary identifiers and read-only preparation states, Design A palette. */
+.plan-course-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.plan-code-badge{font-weight:800;letter-spacing:.03em;border-color:rgba(53,220,192,.55)}
+.plan-code-badge.code-pending{font-weight:600;color:var(--text-muted,#a9c0d4)}
+.documentary-readiness{min-width:190px;max-width:300px;font-size:.8rem;line-height:1.5}
+.documentary-readiness details{margin-top:7px}
+.documentary-readiness summary{cursor:pointer;color:#41e4c0}
+.documentary-readiness ul{padding-left:18px;overflow-wrap:anywhere}
+.readiness-B,.readiness-C{border-color:rgba(235,183,64,.5)}

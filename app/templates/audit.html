@@ -5,8 +5,9 @@ HISTÓRICO DE ACTIVIDADE{% endblock %}{% block content %}
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       {% for event in page %}
-      <details class="glass rounded-xl p-4"><summary class="text-sm text-primary cursor-pointer">{{ event.created|date:'d/m/Y H:i' }} · {{ event.actor }} · {{ event.action }}</summary>
-      <pre class="whitespace-pre-wrap break-words text-xs text-slate-400 mt-4">{{ event.detail }}</pre>
+      <details class="glass rounded-xl p-4"><summary class="text-sm text-primary cursor-pointer">{{ event.created|date:'d/m/Y H:i' }} · {{ event.actor }} · {{ event.display_title }}</summary>
+      <pre class="whitespace-pre-wrap break-words text-xs text-slate-400 mt-4">{{ event.display_summary }}{% for label,value in event.display_rows %}
+{{ label }}: {{ value }}{% endfor %}</pre>
       </details>{% empty %}
       <p class="gf-empty">
         Sem actividade registada.

@@ -1,0 +1,12 @@
+{% if ux_admin_visible %}<details class="ux-admin-details"><summary>Detalhes administrativos</summary>{% if stats.simulated_graded_count or stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
+<details class="data-quality-details no-print" style="margin:0 24px 28px;padding:12px 16px;border:1px solid #304c68;border-radius:10px;background:#0b2239;color:#a9bfd5;font-size:12px;line-height:1.6;">
+  <summary style="cursor:pointer;font-weight:600;">Qualidade e validação dos dados</summary>
+  <ul style="margin:10px 0 0 18px;list-style:disc;">
+    {% if stats.simulated_graded_count %}<li>Notas de demonstração: {{ stats.simulated_graded_count }}. Não são resultados de provas validadas.</li>{% endif %}
+    {% if stats.unknown_duration_count %}<li>Duração incompleta: {{ stats.unknown_duration_count }} registo{{ stats.unknown_duration_count|pluralize:"s" }}.</li>{% endif %}
+    {% if stats.unconfirmed_attendance_count %}<li>Presenças por verificar: {{ stats.unconfirmed_attendance_count }} registo{{ stats.unconfirmed_attendance_count|pluralize:"s" }}. Não entram nos cálculos de horas realizadas e assiduidade confirmada.</li>{% endif %}
+  </ul>
+  <p style="margin-top:8px;">Estas pendências não alteram o total de formações ou de formandos registados.</p>
+</details>
+{% endif %}
+</details>{% endif %}

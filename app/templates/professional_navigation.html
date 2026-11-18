@@ -1,0 +1,8 @@
+{% load l10n %}
+<a class="pmfe-main-item" href="{% url 'dashboard' %}" id="navDashboard"><span class="material-symbols-outlined" aria-hidden="true">space_dashboard</span><span>Dashboard Executivo</span></a>
+<a class="pmfe-main-item" href="{% url 'home' %}" id="navGestao"><span class="material-symbols-outlined" aria-hidden="true">school</span><span>Gestão de Formações</span></a>
+<a class="pmfe-main-item" href="{% url 'employee_data_select' %}" id="navFicha"><span class="material-symbols-outlined" aria-hidden="true">badge</span><span>Fichas Individuais</span></a>
+<a class="pmfe-main-item" href="{% if employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'history_index' %}{% endif %}" id="navHistorico"><span class="material-symbols-outlined" aria-hidden="true">history_edu</span><span>Histórico de Formações</span></a>
+{% if user.is_staff or ux_admin_visible %}<span class="epal-nav-label epal-admin-label">Administração</span>{% endif %}
+{% if user.is_staff %}<a class="pmfe-main-item" href="{% url 'assistant_admin' %}" id="navAssistente"><span class="material-symbols-outlined" aria-hidden="true">tune</span><span>Gerir Assistente</span></a>{% endif %}
+{% if ux_admin_visible %}<a class="pmfe-main-item" href="{% url 'ux_administration' %}" id="navAdministracao"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Administração e Definições</span></a>{% endif %}

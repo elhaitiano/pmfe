@@ -29,7 +29,7 @@ def sample():
                       'Área alocada', 'Origem do cadastro', 'Estado de revisão', 'Linha fonte EPAL'])
     employees.append(['Técnica Teste', '001', '000123LA', '001234', 'Operadora', '29485', 'F',
                       'Solteira', '900000000', 'teste@example.com', '40857', 'Técnica', 'Direcção',
-                      'Área A', 'Cadastro', 'Apto', '20'])
+                      'Área A', 'Registo', 'Apto', '20'])
     secondary = book.create_sheet('FUNCIONARIOS_EPAL')
     secondary.append(['N.º Mecan', 'Nome', 'Função', 'Validação Cadastro EPAL'])
     secondary.append(['001', 'Técnica Teste', 'Operadora', 'Definitivo'])
@@ -38,7 +38,7 @@ def sample():
                           'Área/Categoria Formação', 'Data de Início', 'Data de Fim', 'Duração (Dias)',
                           'Horas/Dia', 'Presenças', 'Situação do Formando na Formação', 'Empresa',
                           'Centro de Custo', 'Estado certificado — declaração', 'Origem da confirmação'])
-    participation.append(['PF-001', '001', 'Segurança', 'SEG', 'Técnica', '45658', '45659', '2',
+    participation.append(['PF-001', '001', 'Segurança', 'SEG', 'Segurança', '45658', '45659', '2',
                           '7', '2', 'Concluída', 'EPAL', 'CC01', 'Emitido e entregue', 'Declaração do responsável'])
     copy = book.create_sheet('BASE_MESTRA_FORMACAO')
     for row in participation.values:
@@ -56,7 +56,7 @@ class ImportReviewTests(TestCase):
     def setUp(self):
         self.book = sample()
         self.sha = 'sample-sha'
-        self.course = Course.objects.create(code='SEG', title='Segurança')
+        self.course = Course.objects.create(code='SEG', title='Segurança', area='Segurança')
 
     def plan(self):
         return build_plan(self.book, self.sha)
@@ -78,7 +78,7 @@ class ImportReviewTests(TestCase):
                     'social_security_number': '001234', 'function': 'Operadora', 'gender': 'F',
                     'marital_status': 'Solteira', 'phone': '900000000', 'email': 'teste@example.com',
                     'category': 'Técnica', 'direction': 'Direcção', 'area': 'Área A',
-                    'registration_origin': 'Cadastro', 'review_status': 'Apto', 'source_row': 20,
+                    'registration_origin': 'Registo', 'review_status': 'Apto', 'source_row': 20,
                     'company': 'EPAL', 'cost_center': 'CC01', 'registration_validation': 'Definitivo'}
         for field, value in expected.items():
             self.assertEqual(getattr(obj, field), value)
@@ -131,7 +131,7 @@ class ImportReviewTests(TestCase):
 
     def test_changed_database_or_file_requires_new_review(self):
         token = self.plan().report['review_token']
-        self.course.area = 'Alterada'
+        self.course.contents = 'Conteúdo alterado'
         self.course.save()
         with self.assertRaisesMessage(ValueError, 'mudou'):
             apply_reviewed(self.book, self.sha, token)

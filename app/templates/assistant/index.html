@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block heading %}
-ADMINISTRAR ASSISTENTE{% endblock %}{% block extra_styles %}
+GERIR ASSISTENTE{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/planning.css' %}">
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 {% endblock %}
@@ -13,14 +13,11 @@ ADMINISTRAR ASSISTENTE{% endblock %}{% block extra_styles %}
         Conhecimento do Assistente EPAL
       </h2>
       <p>
-        Actualize as orientações quando os menus ou procedimentos mudarem. Esta área é exclusiva de administradores.
+        Guias e orientações da plataforma.
       </p>
     </div>
-    <p class="plan-note">
-      Os guias publicados ficam disponíveis na próxima abertura da ajuda. Os dados são guardados na base e incluídos na cópia de segurança; actualizar o código não substitui estes conteúdos.
-    </p>
     <div class="plan-actions">
-      <a class="gf-btn" href="{% url 'assistant_create' %}">Novo assunto</a><a class="gf-btn alt" href="{% url 'home' %}">Voltar à plataforma</a>
+      <a class="gf-btn" href="{% url 'assistant_create' %}">Novo assunto</a><a class="gf-btn alt" href="{% url 'professional_manual' %}">Manual de Utilização</a><a class="gf-btn alt" href="{% url 'home' %}">Voltar à plataforma</a>
     </div>
   </section>
   <section class="plan-panel">
@@ -55,7 +52,7 @@ ADMINISTRAR ASSISTENTE{% endblock %}{% block extra_styles %}
               Publicado{% else %}Desactivado{% endif %}{% if g.staff_only %}<small>Operação de administrador</small>{% endif %}
             </td>
             <td>
-              v{{ g.revision }}<small>{{ g.updated|date:'d/m/Y H:i' }}</small>
+              v{{ g.revision|unlocalize }}<small>{{ g.updated|date:'d/m/Y H:i' }}</small>
             </td>
             <td>
               {{ g.actor }}

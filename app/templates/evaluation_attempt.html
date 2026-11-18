@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block heading %}PROVA — TENTATIVA {{ attempt.number }}{% endblock %}
+{% block heading %}PROVA — TENTATIVA {{ attempt.number|unlocalize }}{% endblock %}
 {% block content %}
 <section class="content p-10 space-y-6">
   <section class="gf-panel">
@@ -13,7 +13,7 @@
       <p>Tentativa concluída e conservada. Para uma nova avaliação, autorize outra tentativa com motivo.</p>
       {% for answer in answers %}
       <article class="border-b border-white/10 py-4">
-        <h3>{{ answer.question.number }}. {{ answer.question.prompt|linebreaksbr }}</h3>
+        <h3>{{ answer.question.number|unlocalize }}. {{ answer.question.prompt|linebreaksbr }}</h3>
         <p>Critério: {{ answer.question.expected_answer|linebreaksbr }}</p>
         <p>Resposta: {{ answer.response|linebreaksbr }}</p>
         <p>{{ answer.awarded }} / {{ answer.question.points }} pontos</p>
@@ -24,10 +24,10 @@
       <form method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        {{ form.revision }}{{ form.revision.errors }}
+        {{ form.revision|unlocalize }}{{ form.revision.errors }}
         <div class="gf-form-grid">
           {% for field in form.metadata %}
-          <label for="{{ field.id_for_label }}">
+          <label for="{{ field.id_for_label|unlocalize }}">
             <span class="gf-label">{{ field.label }}</span>
             {{ field }}{{ field.errors }}
           </label>
@@ -35,12 +35,12 @@
         </div>
         {% for answer, fields in form.answer_rows %}
         <fieldset class="border-b border-white/10 py-4">
-          <legend>{{ answer.question.number }}. {{ answer.question.prompt }}</legend>
+          <legend>{{ answer.question.number|unlocalize }}. {{ answer.question.prompt }}</legend>
           <p>Critério: {{ answer.question.expected_answer|linebreaksbr }}</p>
           <p>Referência: {{ answer.question.reference }} · Cotação: {{ answer.question.points }}</p>
           <div class="gf-form-grid">
             {% for field in fields %}
-            <label for="{{ field.id_for_label }}">
+            <label for="{{ field.id_for_label|unlocalize }}">
               <span class="gf-label">{{ field.label }}</span>
               {{ field }}{{ field.errors }}
             </label>

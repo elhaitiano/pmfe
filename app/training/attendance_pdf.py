@@ -36,7 +36,7 @@ def draw_para(c,para,x,y,width):
     return height
 
 
-def build_attendance(group,day,enrollments):
+def build_attendance(group,day,enrollments,second_copy=False,historical_period=None):
     buffer=io.BytesIO();c=Canvas(buffer,pagesize=(W,H));c.setTitle(f'PROÁGUA - Lista de presenças - {group.code}');c.setAuthor('PROÁGUA / EPAL')
     title=p(f'Título: {group.title} — {group.code}',TITLE)
     _,th=title.wrap(WIDTH*.62-5*mm,H)
@@ -50,7 +50,7 @@ def build_attendance(group,day,enrollments):
         e=en.employee;source=e.source_data or {}
         values=[str(index),e.number,e.name,e.function or e.category,e.direction or e.area,format_phone(e.phone),e.email,'EPAL','','']
         cells=[p(v) for v in values];height=max(11*mm,max(cell.wrap(COLS[i]-3*mm,H)[1]+4*mm for i,cell in enumerate(cells)))
-        if height>available:raise ValueError('Um campo do cadastro é demasiado extenso para imprimir numa linha. Reveja o nome, função, direcção ou contacto.')
+        if height>available:raise ValueError('Um campo do registo é demasiado extenso para imprimir numa linha. Reveja o nome, função, direcção ou contacto.')
         prepared.append((cells,height))
     pages=[];current=[];used=0
     for row in prepared:
@@ -61,11 +61,15 @@ def build_attendance(group,day,enrollments):
         for file,x,width in [('attendance-suez.png',LEFT,30*mm),('attendance-proagua.png',LEFT+34*mm,23*mm)]:
             logo=settings.BASE_DIR/'static/pmf'/file
             if logo.exists():c.drawImage(str(logo),x,H-18*mm,width=width,height=10*mm,preserveAspectRatio=True,anchor='c',mask='auto')
-        c.setFillColor(BLUE);c.setFont('AttendanceBold',13);c.drawRightString(W-LEFT,H-13*mm,'PROÁGUA - LISTA DE PRESENÇAS - FORMAÇÃO')
+        c.setFillColor(BLUE);c.setFont('AttendanceBold',13);c.drawRightString(W-LEFT,H-13*mm,'PROÁGUA - LISTA HISTÓRICA DE FORMANDOS' if historical_period else 'PROÁGUA - LISTA DE PRESENÇAS - FORMAÇÃO')
         c.setStrokeColor(BLUE);c.line(LEFT,H-23*mm,W-LEFT,H-23*mm)
         y=H-28*mm
-        draw_para(c,p(f'Data: {day:%d/%m/%Y} | Horário: Início: {group.start_time:%H:%M} | Fim: {group.end_time:%H:%M}',META),LEFT,y,WIDTH*.38-4*mm)
-        draw_para(c,p(f'Duração do dia: Formação: {group.hours_per_day:.1f} horas | Pausas: {group.break_hours:.1f} horas'.replace('.',','),META),LEFT,y-13*mm,WIDTH*.38-4*mm)
+        if historical_period:
+            draw_para(c,p('Período histórico: '+historical_period,META),LEFT,y,WIDTH*.38-4*mm)
+            draw_para(c,p('Consulta do histórico; sem sessão diária confirmada.',META),LEFT,y-13*mm,WIDTH*.38-4*mm)
+        else:
+            draw_para(c,p(f'Data: {day:%d/%m/%Y} | Horário: Início: {group.start_time:%H:%M} | Fim: {group.end_time:%H:%M}',META),LEFT,y,WIDTH*.38-4*mm)
+            draw_para(c,p(f'Duração do dia: Formação: {group.hours_per_day:.1f} horas | Pausas: {group.break_hours:.1f} horas'.replace('.',','),META),LEFT,y-13*mm,WIDTH*.38-4*mm)
         draw_para(c,title,LEFT+WIDTH*.38,y,WIDTH*.62)
         draw_para(c,local,LEFT+WIDTH*.38,y-th-3*mm,WIDTH*.62)
         # Fixed headers and blank hand-signature columns. No confirmation notes are printed.
@@ -88,6 +92,8 @@ def build_attendance(group,day,enrollments):
         c.drawString(LEFT+15*mm,22*mm,'Formador(es)');c.drawString(W*.59,22*mm,'Responsável, se aplicável')
         c.setFont('Attendance',7);c.drawString(LEFT+15*mm,17*mm,group.trainer[:70])
         c.setStrokeColor(LINE);c.line(LEFT+15*mm,11*mm,W*.44,11*mm);c.line(W*.59,11*mm,W-18*mm,11*mm)
+        if second_copy:
+            c.setFont('AttendanceBold',7);c.drawString(LEFT,5*mm,'SEGUNDA VIA / CONSULTA - assinaturas em branco; nao comprova presencas.')
         c.setFont('Attendance',7);c.drawRightString(W-LEFT,5*mm,f'Pág. {page_num}/{len(pages)}')
         c.showPage()
     c.save();return buffer.getvalue()

@@ -1,5 +1,5 @@
 from django import forms
-from .domains import domain_choices
+from .ui_language import display_label
 from .models import Employee, Training
 from .widgets import numeric_text_widgets, date_widgets
 
@@ -10,6 +10,8 @@ class StyledModelForm(forms.ModelForm):
         numeric_text_widgets(self.fields)
         date_widgets(self.fields)
         for field in self.fields.values():
+            field.label = display_label(field.label)
+            field.help_text = display_label(field.help_text)
             if not isinstance(field.widget, forms.HiddenInput):
                 field.widget.attrs['class'] = 'gf-field' if not isinstance(field.widget, forms.CheckboxInput) else 'rounded bg-slate-900 border-slate-700 text-secondary'
 
@@ -44,7 +46,7 @@ class EmployeeForm(StyledModelForm):
             ('Contactos', ['phone', 'phone_secondary', 'email']),
             ('Dados profissionais', ['admission_date', 'company', 'direction',
                                     'function', 'category', 'area', 'cost_center']),
-            ('Cadastro e revisão', ['registration_origin', 'review_status',
+            ('Registo e revisão', ['registration_origin', 'review_status',
                                    'registration_validation', 'source_row']),
         ]]
 
@@ -62,31 +64,44 @@ class EmployeeForm(StyledModelForm):
 
 class TrainingForm(StyledModelForm):
     certified = forms.TypedChoiceField(label='Certificado entregue', required=False,
-        choices=[('unknown', 'Por confirmar'), ('true', 'Sim'), ('false', 'Não')],
+        choices=[('unknown', 'Nao registado'), ('true', 'Sim'), ('false', 'Não')],
         coerce=lambda value: {'unknown': None, 'true': True, 'false': False}[value], empty_value=None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if 'area' in self.fields: self.fields['area'].required = True
         self.initial['certified'] = 'true' if self.instance.certified is True else 'false' if self.instance.certified is False else 'unknown'
-        if 'area' in self.fields:
-            self.fields['area'] = forms.ChoiceField(label='Domínio de competências', required=False,
-                choices=domain_choices(self.instance.area))
         if not self.instance.pk:
             self.initial['status'] = 'Planeado'
         if self.instance.group_id:
             for name in ['course','title','area','trainer','provider','location','start','end','days','hours_per_day']:
                 if name in self.fields:self.fields[name].disabled=True
+        if self.instance.pk:
+            from .source_achievement import achievement
+            if achievement(self.instance):
+                for key in ('grade','result'):
+                    if key in self.fields:self.fields[key].disabled=True
+            if (self.instance.source_key or '').startswith('pilar3b:'):
+                for key in ('grade','result','certified','certificate_reference','certificate_delivery_date'):
+                    if key in self.fields:self.fields[key].disabled=True
         if 'attendance_confirmed' in self.fields:
             self.fields['attendance_confirmed'].help_text='Marque após verificar a lista assinada. Zero só representa ausência confirmada quando esta opção está marcada.'
-        self.fields['grade'].help_text = 'Nota final de 0 a 20. Não é calculada pela assiduidade.'
-        self.fields['result'].help_text = 'Decisão da avaliação final; não é inferida a partir da nota.'
+        if 'grade' in self.fields: self.fields['grade'].help_text = 'Nota final de 0 a 20. Não é calculada pela assiduidade.'
+        if 'result' in self.fields: self.fields['result'].help_text = 'Decisão da avaliação final; não é inferida a partir da nota.'
         if 'plan_status' in self.fields:
             self.fields['plan_status'].required = False
         if 'days' in self.fields:
-            self.fields['days'].help_text = 'Dias efectivos, que podem não ser consecutivos. No histórico sem turma, deixe vazio se desconhecido.'
+            self.fields['days'].help_text = 'Dias efectivos, que podem não ser consecutivos. No histórico sem grupo, deixe vazio se desconhecido.'
 
     def clean_plan_status(self):
         return self.cleaned_data.get('plan_status') or self.instance.plan_status or 'Por confirmar'
+
+    def clean(self):
+        values=super().clean()
+        course=values.get('course')
+        if course and values.get('area') and values['area']!=course.area:
+            self.add_error('area','A área deve coincidir com a categoria principal do catálogo. Classifique ou corrija primeiro a formação no catálogo.')
+        return values
 
     revision = forms.IntegerField(widget=forms.HiddenInput, required=False)
 

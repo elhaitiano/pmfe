@@ -1,0 +1,27 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel"><h2>Validar grupo</h2>
+<p>A validação confirma apenas as evidências existentes. Não atribui notas, não cria certificados e não transforma conclusão administrativa em aprovação académica.</p>
+{% if error %}<p role="alert">{{ error }}</p><p><a class="gf-btn alt" href="{% url 'group_validation' %}">Voltar a pré-visualizar</a></p>{% endif %}
+{% if not groups %}
+<form method="get"><label for="group-search">Pesquisar formação ou grupo</label><input class="gf-field" id="group-search" name="q" value="{{ q }}" maxlength="150"><button class="gf-btn alt">Pesquisar</button></form>
+<form method="get"><fieldset><legend>Seleccionar até {{ selection_limit }} grupos para pré-visualização</legend>
+<p>Apresentam-se até 100 grupos de cada tipo. Utilize a pesquisa para limitar a lista. Grupos históricos e operacionais sobrepostos devem ser validados separadamente.</p>
+{% for e in editions %}<p><label><input type="checkbox" name="group" value="edition:{{ e.pk|unlocalize }}"> {{ e.course.code }} · {{ e.title }} · Grupo {{ e.group_label|default:'não indicado' }} · {{ e.start|date:'d/m/Y' }} · {{ e.member_count }} participações</label></p>{% endfor %}
+{% for g in native_groups %}<p><label><input type="checkbox" name="group" value="group:{{ g.pk|unlocalize }}"> {{ g.course.code }} · {{ g.code }} · {{ g.title }} · {{ g.start|date:'d/m/Y' }}</label></p>{% endfor %}
+</fieldset><button class="gf-btn">Pré-visualizar selecção</button></form>
+{% endif %}</section>
+{% for g in groups %}
+<section class="plan-panel"><h2>{{ g.course.code }} · {{ g.group.title }} · {% if g.kind == 'edition' %}Grupo {{ g.group.group_label|default:'não indicado' }}{% else %}{{ g.group.code }}{% endif %}</h2>
+<p>{{ g.group.start|date:'d/m/Y' }} — {{ g.group.end|date:'d/m/Y' }}</p>
+<dl><dt>Inscritos / pessoas associadas</dt><dd>{{ g.total_enrolled }}</dd><dt>Participações com conclusão comprovada</dt><dd>{{ g.completed }}</dd><dt>Elegíveis para validação administrativa</dt><dd>{{ g.eligible }}</dd><dt>Já validadas</dt><dd>{{ g.validated }}</dd><dt>Excluídas</dt><dd>{{ g.excluded }}</dd><dt>Com inconsistências</dt><dd>{{ g.inconsistent }}</dd></dl>
+<div class="batch-scroll" tabindex="0" role="region" aria-label="Participações e alterações de {{ g.group.title }}"><table class="batch-table"><thead><tr><th scope="col">Formando</th><th scope="col">Situação</th><th scope="col">Alterações exactas</th><th scope="col">Excepções / pendências</th><th scope="col">Acção</th></tr></thead><tbody>
+{% for r in g.rows %}<tr><td>{{ r.name }}<small>{{ r.number }}</small></td><td>{% if r.existing %}Já validada{% elif r.eligible %}Elegível administrativamente{% else %}Excluída{% endif %}</td>
+<td>{% if r.eligible %}Acrescentar decisão de validação:<br>Conclusão: {{ r.changes.completion }}<br>Académico: {{ r.changes.academic }}<br>Documental: {{ r.changes.documentary }}<br>Revisão {{ r.version }} → {{ r.version|add:'1' }}.<br>Registar utilizador, data, evidências e valores no histórico de auditoria.{% else %}Nenhuma alteração.{% endif %}<small>Notas, presenças, resultados originais, datas e certificados mantêm-se.</small></td>
+<td>{% for reason in r.reasons %}<p>{{ reason }}</p>{% empty %}Sem pendências nos critérios aplicáveis.{% endfor %}</td><td>{% if r.reasons and can_correct %}<a class="gf-btn alt" href="{{ r.correction_url }}">Corrigir</a>{% else %}<a class="gf-btn alt" href="{% url 'employee_data' r.employee_id %}">Ver ficha</a>{% endif %}</td></tr>{% endfor %}
+{% for r in g.pending %}<tr><td>{{ r.name }}</td><td>Excluída</td><td>Nenhuma alteração.</td><td>{{ r.reason }}</td><td><a class="gf-btn alt" href="{{ r.correction_url }}">{% if can_correct %}Corrigir{% else %}Consultar{% endif %}</a></td></tr>{% endfor %}
+</tbody></table></div></section>{% endfor %}
+{% if groups %}<section class="plan-panel"><h2>Confirmar alterações</h2><p>{{ eligible }} participação(ões) elegíveis na selecção. As restantes não serão modificadas. A confirmação expira em 15 minutos e será recusada se os dados mudarem.</p>
+{% if eligible %}<form method="post">{% csrf_token %}<input type="hidden" name="token" value="{{ token }}"><input type="hidden" name="action" value="confirm"><p><label><input type="checkbox" name="confirm" value="yes" required> Confirmo expressamente as alterações apresentadas, preservando notas e certificados.</label></p><button class="gf-btn">Confirmar validação colectiva</button></form>{% else %}<p>Nenhuma alteração a aplicar. Corrija as excepções e volte a pré-visualizar.</p>{% endif %}
+</section>{% endif %}
+{% endblock %}

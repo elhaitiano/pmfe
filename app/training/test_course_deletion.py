@@ -1,3 +1,4 @@
+from .scheduling_guard import reservation_transaction
 from datetime import date, time
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -10,7 +11,7 @@ class CourseDeletionTests(TestCase):
     def setUp(self):
         self.admin = get_user_model().objects.create_user('catalogue-admin', is_staff=True)
         self.reader = get_user_model().objects.create_user('catalogue-reader')
-        self.course = Course.objects.create(title='Sécurité des installations')
+        self.course = Course.objects.create(validation_status='validated', title='Sécurité des installations')
         self.employee = Employee.objects.create(number='001', name='Technicien test')
         self.url = reverse('course_delete', args=[self.course.pk])
         self.client.force_login(self.admin)
@@ -43,7 +44,7 @@ class CourseDeletionTests(TestCase):
         self.assertFalse(AuditEvent.objects.filter(action='COURSE_DELETE').exists())
 
     def test_unused_course_deleted_with_audit_and_other_data_preserved(self):
-        other = Course.objects.create(title='Autre formation')
+        other = Course.objects.create(validation_status='validated', title='Autre formation')
         training = self.history(other.title)
         response = self.client.post(self.url, self.payload())
         self.assertRedirects(response, reverse('planning'))
@@ -61,7 +62,8 @@ class CourseDeletionTests(TestCase):
             hours_per_day=7, break_hours=1, start_time=time(8), end_time=time(16)))
         for state in ['Planeada', 'Cancelada', 'Em Curso', 'Concluída']:
             group.state = state
-            group.save(update_fields=['state'])
+            with reservation_transaction():
+                group.save(update_fields=['state'])
             self.client.post(self.url, self.payload())
             self.assertTrue(Course.objects.filter(pk=self.course.pk).exists())
             self.assertTrue(group.sessions.exists())

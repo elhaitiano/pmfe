@@ -1,5 +1,5 @@
 {% load static %}
-<div id="epalEntry" role="status" aria-live="polite" aria-label="A iniciar sessão" data-page="{{ entry_page }}">
+<div id="epalEntry" role="status" aria-live="polite" aria-label="A iniciar sessão" data-page="{{ entry_page|unlocalize }}">
   <div class="epal-entry-card">
     <div class="epal-entry-art" aria-hidden="true">
       <img class="epal-entry-fallback" src="{% static 'pmf/epal-entry.png' %}" alt=""><canvas id="epalWaterCanvas" width="700" height="350" data-logo="{% static 'pmf/epal-entry.png' %}"></canvas>

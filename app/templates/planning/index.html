@@ -1,118 +1,29 @@
-{% extends 'planning/base.html' %}
+﻿{% extends 'planning/base.html' %}
+{% load static l10n %}
 {% block plan_content %}
-<form method="get" class="plan-search">
-  <input name="q" value="{{ q }}" class="gf-field" placeholder="Pesquisar código, acção, área, formador ou local" aria-label="Pesquisar catálogo e grupos">
-  <button class="gf-btn">
-    Pesquisar
-  </button>
-  {% if user.is_staff %}
-  <a class="gf-btn alt" href="{% url 'trainer_index' %}">Formadores</a>
-  <a class="gf-btn" href="{% url 'course_create' %}"><span class="material-symbols-outlined">add</span>Nova acção de formação</a>{% endif %}
+{% if user.is_staff %}<div class="plan-actions"><a class="gf-btn" href="{% url 'course_create' %}">Nova acção formativa</a><a class="gf-btn alt" href="{% url 'planning_resources' %}">Locais</a><a class="gf-btn alt" href="{% url 'trainer_index' %}">Formadores</a></div>{% endif %}
+<form method="get" class="plan-catalogue-filters" role="search" aria-label="Pesquisar catálogo">
+<label for="catalogue-search">Pesquisar<input id="catalogue-search" name="q" class="gf-field" value="{{ q }}" placeholder="Nome, código ou área"></label>
+<label for="catalogue-availability">Disponibilidade<select id="catalogue-availability" name="availability" class="gf-field"><option value="">Todas</option><option value="active"{% if request.GET.availability == 'active' %} selected{% endif %}>Disponíveis</option><option value="archived"{% if request.GET.availability == 'archived' %} selected{% endif %}>Arquivadas</option></select></label>
+<label for="catalogue-area">Área<select id="catalogue-area" name="area" class="gf-field"><option value="">Todas as áreas</option><option value="__undefined__"{% if area == '__undefined__' %} selected{% endif %}>Por definir</option>{% for value in areas %}<option value="{{ value }}"{% if area == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+<div class="plan-filter-actions"><button class="gf-btn" type="submit">Pesquisar</button><a class="gf-btn alt" href="{% url 'planning' %}">Limpar</a></div>
 </form>
-<section class="plan-panel">
-  <div class="plan-heading">
-    <h2>
-      <span class="material-symbols-outlined">menu_book</span>Catálogo de formações
-    </h2>
-    <p>
-      Registe a acção uma vez. Cada edição recebe o seu próprio grupo.
-    </p>
-  </div>
-  <div class="plan-courses">
-    {% for course in courses %}
-    <article class="plan-course">
-      <span class="plan-pill">{{ course.area|default:'Área por definir' }}</span>
-      <h3>
-        {% if course.code %}{{ course.code }} · {% endif %}{{ course.title }}
-      </h3>
-      <p>
-        {{ course.default_days|default_if_none:'Por confirmar' }} dia(s) previstos · {{ course.default_hours|floatformat:1|default_if_none:'—'|default:'—' }} h/dia · {{ course.group_count }} grupo(s)
-      </p>
-      <small>{{ course.validation_status }} · {% if course.active %}Disponível{% else %}Arquivada no catálogo{% endif %}</small>
-      <div class="plan-actions">
-        <a class="gf-btn alt" href="{% url 'planning' %}?course={{ course.pk }}#grupos">Ver grupos ({{ course.group_count }})</a>
-        {% if user.is_staff %}
-        {% if course.active %}
-        <a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group }}</a>{% endif %}<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Editar acção</a><a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}
-      </div>
-    </article>
-    {% empty %}
-    <p class="plan-empty">
-      Ainda não existem acções no catálogo. Crie a primeira acção para preparar o seu G1. Os registos anteriores continuam no histórico.
-    </p>
-    {% endfor %}
-  </div>
-</section>
-<section class="plan-panel" id="grupos">
-  <div class="plan-heading">
-    {% if selected_course %}
-    <p>{{ selected_course.code }} · {{ selected_course.title }} — <a href="{% url 'planning' %}#grupos">Todos os grupos</a></p>
-    {% endif %}
-    <h2>
-      <span class="material-symbols-outlined">groups</span>Grupos e calendário
-    </h2>
-    <p>
-      G1, G2… por acção; os códigos cancelados não são reutilizados.
-    </p>
-  </div>
-  <div class="batch-scroll">
-    <table class="batch-table">
-      <thead>
-        <tr>
-          <th>
-            Grupo / Acção
-          </th>
-          <th>
-            Período
-          </th>
-          <th>
-            Local / Formador
-          </th>
-          <th>
-            Inscritos
-          </th>
-          <th>
-            Estado
-          </th>
-          <th>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for group in page %}
-        <tr>
-          <td>
-            <strong>{% if group.course.code %}{{ group.course.code }} · {% endif %}{{ group.code }} · {{ group.title }}</strong><small>{{ group.area|default:'—' }}</small>
-          </td>
-          <td>
-            {{ group.start|date:'d/m/Y' }} — {{ group.end|date:'d/m/Y' }}<small>{{ group.days|default_if_none:'Por confirmar' }} dias efectivos</small>
-          </td>
-          <td>
-            {{ group.location }}<small>{{ group.trainer }}</small>
-          </td>
-          <td>
-            {{ group.active_count }} / {{ group.capacity }}
-          </td>
-          <td>
-            <span class="plan-pill">{{ group.state }}</span>
-          </td>
-          <td>
-            <a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Ver formandos</a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="6">
-            Nenhum grupo encontrado.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="pmf-pagination">
-    {% if page.has_previous %}
-    <a href="?q={{ q|urlencode }}&amp;course={{ selected_course.pk|default:'' }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;course={{ selected_course.pk|default:'' }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
-  </div>
+<section class="plan-panel"><div class="plan-heading"><h2><span class="material-symbols-outlined" aria-hidden="true">menu_book</span>Catálogo de formações</h2></div>
+<div class="plan-courses">
+{% for course in courses %}
+<article class="plan-course plan-course-original" aria-labelledby="course-title-{{ course.pk|unlocalize }}">
+<div class="plan-course-tags">{% if course.code %}<span class="plan-pill">{{ course.code }}</span>{% endif %}<span class="plan-pill">{{ course.area|default:'Área por definir' }}</span>{% if not course.active %}<span class="plan-pill">Arquivada</span>{% endif %}</div>
+<h3 id="course-title-{{ course.pk|unlocalize }}">{{ course.title }}</h3>
+<p>{% if course.default_days is not None %}{{ course.default_days|floatformat:'-2' }} dias{% else %}Dias por definir{% endif %} · {% if course.default_hours is not None %}{{ course.default_hours|floatformat:'-2' }} h/dia{% else %}Horas por definir{% endif %}{% if course.total_hours is not None %} · {{ course.total_hours|floatformat:'-2' }} h previstas{% endif %}</p>
+<div class="plan-actions">
+{% if user.is_staff %}{% if not course.create_block_reason %}<a class="gf-btn" href="{% url 'group_create' course.pk %}">Criar G{{ course.next_group_preview }}</a>{% else %}<button class="gf-btn" type="button" disabled aria-describedby="create-reason-{{ course.pk|unlocalize }}">Criar grupo</button>{% endif %}{% endif %}
+<a class="gf-btn alt" href="{% url 'course_groups' course.pk %}">Ver grupos ({{ course.group_count }})</a>
+{% if user.is_staff %}<a class="gf-btn alt" href="{% url 'course_edit' course.pk %}">Editar</a><a class="gf-btn alt" href="{% url 'course_delete' course.pk %}">Eliminar formação</a>{% endif %}
+</div>
+{% if user.is_staff and course.create_block_reason %}<p class="plan-action-reason" id="create-reason-{{ course.pk|unlocalize }}">{{ course.create_block_reason }}</p>{% endif %}
+</article>
+{% empty %}<p class="plan-empty">Sem formações para estes filtros.</p>{% endfor %}
+</div>
+<nav aria-label="Paginação das formações">{% if course_page.has_previous %}<a href="?{{ catalogue_query }}&amp;course_page={{ course_page.previous_page_number|unlocalize }}">Anterior</a>{% endif %} {{ course_page.number }} / {{ course_page.paginator.num_pages }} {% if course_page.has_next %}<a href="?{{ catalogue_query }}&amp;course_page={{ course_page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}</nav>
 </section>
 {% endblock %}

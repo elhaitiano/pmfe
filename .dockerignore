@@ -13,3 +13,12 @@ app/**/*.sqlite3
 app/**/data/
 
 app/static-collected/
+
+app/**/.runtime/
+app/**/base-limpa/
+app/**/preview/
+app/**/private/
+app/**/reports/
+app/**/documents/
+app/**/*.backup*
+app/**/*.bak

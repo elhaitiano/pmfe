@@ -1,12 +1,11 @@
 <section class="exec-detail">
-
   <h3>
     {{ detail_title }}
   </h3>
   <p class="exec-scope">
-    {{ period_label }} · {{ detail_count }} participações · {{ detail_stats.hours|floatformat:2|default:'Sem dados' }} horas de participantes · Assiduidade: {% if detail_stats.attendance is None %}—{% else %}{{ detail_stats.attendance|floatformat:2 }}%{% endif %}
+    {{ period_label }} · {{ detail_count }} participações · {{ detail_stats.hours|floatformat:1 }} horas de participantes · Assiduidade: {% if detail_stats.attendance is None %}—{% else %}{{ detail_stats.attendance|floatformat:1 }}%{% endif %}
   </p>
-  <a href="{% url 'executive_explore' %}?{{ detail_query }}" class="exec-reset no-print">Abrir análise completa</a>
+  <a href="{% url 'executive_explore' %}?{{ detail_query|unlocalize }}" class="exec-reset no-print">Abrir análise completa</a>
   <div class="exec-table-wrap">
     <table>
       <thead>
@@ -38,29 +37,26 @@
         {% for row in page %}
         <tr>
           <td>
-            <a href="{% url 'employee_data' row.employee_id %}">{{ row.employee.name }}</a><small>{{ row.employee.number }} · {{ row.employee.direction|default:'Por confirmar' }}</small>
+            <a href="{% url 'employee_data' row.employee_id %}">{{ row.employee.name }}</a><small>{{ row.employee.number|unlocalize }} · {{ row.employee.direction|default:'Sem registo' }}</small>
           </td>
           <td>
-            {{ row.title }}<small>{{ row.trainer|default:'Formador por confirmar' }} · {{ row.status }}</small>
+            {{ row.title }}<small>{{ row.trainer|default:'Formador não registado' }} · {{ row.status }}</small>
           </td>
           <td>
             {{ row.start|date:'d/m/Y' }}<br>{{ row.end|date:'d/m/Y' }}
           </td>
           <td>
-            {{ row.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}
+            {{ row.completed_hours|floatformat:0|default_if_none:'—'|default:'—' }}
           </td>
           <td>
-            {% if row.verified_attendance_percent is None %}
-            —{% else %}{{ row.verified_attendance_percent|floatformat:2 }}%{% endif %}
+            {% if row.attendance_percent is None %}
+            —{% else %}{{ row.attendance_percent|floatformat:1 }}%{% endif %}
           </td>
           <td>
-            {{ row.grade|default_if_none:'—' }}/20<small>{{ row.result }}</small>
+            {{ row.presentation_grade|floatformat:'-2'|default_if_none:"—" }}<small>{{ row.presentation_result }}</small>
           </td>
           <td>
-            Participante: {{ row.certificate_label }}
-            <small>Emissão: {{ row.certificate_issue_label }} · RH: {{ row.certificate_hr_label }}</small>
-            {% if row.certificate_declaration %}<small>Declaração registada (não equivale a entrega confirmada)</small>{% endif %}
-            <small>{{ row.certificate_delivery_date|date:'d/m/Y' }} {{ row.certificate_reference }}</small>
+            {% include 'certificate_delivery_cell.html' with participation=row %}
           </td>
         </tr>
         {% empty %}
@@ -75,6 +71,6 @@
   </div>
   <nav class="exec-pagination">
     {% if page.has_previous %}
-    <a data-detail-page href="{% url 'executive_explore' %}?{{ detail_query }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page.number }}/{{ page.paginator.num_pages }}</span>{% if page.has_next %}<a data-detail-page href="{% url 'executive_explore' %}?{{ detail_query }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+    <a data-detail-page href="{% url 'executive_explore' %}?{{ detail_query|unlocalize }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>Página {{ page.number|unlocalize }}/{{ page.paginator.num_pages }}</span>{% if page.has_next %}<a data-detail-page href="{% url 'executive_explore' %}?{{ detail_query|unlocalize }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
   </nav>
 </section>

@@ -1,0 +1,16 @@
+{% extends 'planning/base.html' %}
+{% block plan_content %}
+<section class="plan-panel"><h2>Importar assiduidade</h2>
+{% if not group %}<p>Escolha um grupo. Descarregue o modelo, preencha as presenças e importe o Excel.</p><p><a class="gf-btn" href="{% url 'planning' %}">Abrir catálogo e criar grupo</a></p>
+<div class="mt-4">{% for item in groups %}<p><a href="{% url 'attendance_import' item.pk %}">{{ item.course.title }} — {{ item.code }} · {{ item.start|date:'d/m/Y' }}</a></p>{% empty %}<p>Ainda não existem grupos. Crie um grupo no catálogo para começar.</p>{% endfor %}</div>
+{% else %}<p><strong>{{ group.course.title }} · {{ group.code }}</strong></p><p>{{ group.start|date:'d/m/Y' }} — {{ group.end|date:'d/m/Y' }} · {{ group.hours_per_day|floatformat:'-2' }} horas por dia</p>
+<p>Use P para presença e A para ausência. O número mecanográfico identifica o funcionário; o nome é opcional. «Certificado obtido» é indicado por Sim/Não e não confirma a entrega.</p>
+<div class="plan-actions"><a class="gf-btn alt" href="{% url 'attendance_template' group.pk %}">Descarregar modelo Excel</a><a class="gf-btn alt" href="{% url 'group_detail' group.pk %}">Voltar ao grupo</a></div>
+{% if error %}<p role="alert" class="mt-4">{{ error }}</p>{% endif %}
+{% if success %}<p role="status" class="mt-4">{% if success.already_applied %}Este ficheiro já foi importado. Não foram criados registos repetidos.{% else %}Importação concluída: {{ success.created }} participações criadas; {{ success.unchanged }} já existentes, sem alterações.{% endif %}</p>{% endif %}
+<form method="post" enctype="multipart/form-data" class="mt-4">{% csrf_token %}<input type="hidden" name="action" value="preview">{{ form.non_field_errors }}<label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label><div>{{ form.file }}</div>{{ form.file.errors }}<button class="gf-btn mt-4" type="submit">Verificar Excel</button></form>
+{% if proposal %}<h3 class="mt-5 font-bold">Confira antes de importar</h3><p>{{ proposal.new }} novas participações · {{ proposal.unchanged }} já existentes · {{ proposal.hours }} horas por dia · {{ proposal.certificates }} certificados obtidos.</p>
+<div class="overflow-x-auto"><table class="w-full mt-4"><thead><tr><th>N.º mecanográfico</th><th>Funcionário</th><th>Presenças</th><th>Faltas</th><th>Assiduidade</th><th>Horas frequentadas</th><th>Certificado obtido</th></tr></thead><tbody>{% for item in proposal.items %}<tr><td>{{ item.number }}</td><td>{{ item.name }}</td><td>{{ item.presences }}</td><td>{{ item.absences }}</td><td>{{ item.attendance }}%</td><td>{{ item.hours }}</td><td>{{ item.certificate_obtained|yesno:'Sim,Não,Por confirmar' }}</td></tr>{% endfor %}</tbody></table></div>
+<form method="post" class="mt-5">{% csrf_token %}<input type="hidden" name="action" value="confirm"><input type="hidden" name="token" value="{{ proposal.token }}"><label><input type="checkbox" name="confirm" required> Confirmo os funcionários, as presenças e os certificados indicados.</label><div><button class="gf-btn mt-4" type="submit">Confirmar importação</button></div></form>{% endif %}
+{% endif %}</section>
+{% endblock %}

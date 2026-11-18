@@ -14,7 +14,7 @@
         {% endfor %}
         <div class="gf-form-grid mt-4">
           {% for field in form.visible_fields %}
-          <label for="{{ field.id_for_label }}">
+          <label for="{{ field.id_for_label|unlocalize }}">
             <span class="gf-label">{{ field.label }}</span>
             {{ field }}{{ field.errors }}
             <small>{{ field.help_text }}</small>
@@ -28,14 +28,14 @@
         {{ questions.non_form_errors }}
         {% for question in questions %}
         <fieldset class="border-b border-white/10 py-4">
-          <legend>Questão {{ forloop.counter }}</legend>
+          <legend>Questão {{ forloop.counter|unlocalize }}</legend>
           {{ question.non_field_errors }}
           {% for hidden in question.hidden_fields %}
           {{ hidden }}{{ hidden.errors }}
           {% endfor %}
           <div class="gf-form-grid">
             {% for field in question.visible_fields %}
-            <label for="{{ field.id_for_label }}">
+            <label for="{{ field.id_for_label|unlocalize }}">
               <span class="gf-label">{{ field.label }}</span>
               {{ field }}{{ field.errors }}
             </label>

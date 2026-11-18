@@ -6,9 +6,7 @@ ANÁLISE EXECUTIVA{% endblock %}{% block extra_styles %}
 {% endblock %}
 {% block content %}
 <p class="text-xs text-slate-500 mt-2">Certificados: {{ stats.certificates_issued }} emitidos confirmados · {{ stats.certificate_declarations }} declarações registadas · {{ stats.certificates }} entregues ao participante · {{ stats.certificates_hr }} entregues aos RH. Uma declaração não conta como entrega confirmada.</p>
-{% if stats.unknown_duration_count or stats.unconfirmed_attendance_count %}
-<p class="text-xs text-slate-500 mt-2">Totais provisórios: {{ stats.unknown_duration_count }} participação(ões) com duração incompleta e {{ stats.unconfirmed_attendance_count }} com presenças por verificar. Valores desconhecidos ficam fora dos cálculos que exigem esses dados.</p>
-{% endif %}
+
 
 <div class="executive">
   <div class="exec-hero">
@@ -19,7 +17,7 @@ ANÁLISE EXECUTIVA{% endblock %}{% block extra_styles %}
       Consulte os registos que sustentam os gráficos e indicadores.
     </p>
     <div class="exec-actions">
-      <a class="exec-button" href="{% url 'dashboard' %}?{{ query }}">Voltar ao Dashboard</a><a class="exec-button primary" href="{% url 'executive_reports' %}?{{ query }}">Centro de Relatórios</a>
+      <a class="exec-button" href="{% url 'dashboard' %}?{{ query|unlocalize }}">Voltar ao Dashboard</a><a class="exec-button primary" href="{% url 'executive_reports' %}?{{ query|unlocalize }}">Centro de Relatórios</a>
     </div>
   </div>
   {% include 'executive_filters.html' %}
@@ -27,6 +25,7 @@ ANÁLISE EXECUTIVA{% endblock %}{% block extra_styles %}
     {% include 'executive_detail_fragment.html' %}
   </article>
 </div>
+{% include 'data_quality_details.html' %}
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static 'pmf/dashboard.js' %}" defer></script>

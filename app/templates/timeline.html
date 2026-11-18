@@ -1,5 +1,5 @@
 {% for t in trainings %}
-<div class="timeline-item relative w-full mb-10 flex {% cycle 'justify-end' 'justify-start' %}">
+<div id="participation-{{ t.pk|unlocalize }}" tabindex="-1" style="scroll-margin-top:7rem" class="timeline-item relative w-full mb-10 flex {% cycle 'justify-end' 'justify-start' %}">
   <div class="node {% if t.status == 'Em Curso' %}blue{% endif %}">
   </div>
   <article class="timeline-card card w-5/12 glass{% if t.status == 'Concluído' %} glass-accent{% endif %} rounded-xl p-5 relative border-secondary/20">
@@ -12,15 +12,15 @@
       {{ t.title }}
     </h3>
     <div class="flex flex-wrap gap-4 text-sm text-slate-400">
-      <span><span class="material-symbols-outlined text-[16px] align-middle">schedule</span> {{ t.verified_hours|floatformat:2|default_if_none:'—'|default:'—' }}h</span><span class="text-primary"><span class="material-symbols-outlined text-[16px] align-middle">grade</span> Nota: {{ t.grade|default_if_none:'—' }}/20</span><span>{{ t.status }}</span><span>Assiduidade: {% if t.verified_attendance_percent is not None %}{{ t.verified_attendance_percent|floatformat:2 }}%{% else %}—{% endif %}</span>
+      <span><span class="material-symbols-outlined text-[16px] align-middle">schedule</span> {% include 'hours_cell.html' %}</span><span class="text-primary"><span class="material-symbols-outlined text-[16px] align-middle">grade</span> Nota: {{ t.presentation_grade|floatformat:'-2'|default_if_none:"—" }}{% if t.original_assessment_label %} &middot; Original: {{ t.original_assessment_label }}{% endif %}</span><span>{% if t.operational %}Conclusão: {{ t.operational.completion }} · Histórico: {{ t.status_label }}{% else %}{{ t.status_label }}{% endif %}</span>{% if t.operational.review %}<span class="text-amber-300">Em conferência documental — registos preservados</span>{% endif %}<span>Assiduidade: {% if t.attendance_percent is not None %}{{ t.attendance_percent|floatformat:1 }}%{% else %}—{% endif %}</span>
     </div>
     <div class="mt-3 text-xs text-slate-500 flex flex-wrap gap-3">
-      <span>{{ t.provider }}</span><span>{{ t.trainer }}</span><span>{{ t.location }}</span><span>Resultado: {{ t.result }}</span><span>Certificado entregue: {{ t.certificate_label }}{% if t.certificate_delivery_date %} · {{ t.certificate_delivery_date|date:'d/m/Y' }}{% endif %}</span>{% if t.certificate_reference %}<span>Ref.: {{ t.certificate_reference }}</span>{% endif %}
+      <span>{{ t.provider }}</span><span>{{ t.trainer }}</span><span>{{ t.location }}</span><span>Resultado: {{ t.presentation_result }}</span><span>Certificado: {% include 'certificate_delivery_cell.html' with participation=t %}</span>{% if t.certificate_reference %}<span>Ref.: {{ t.certificate_reference }}</span>{% endif %}
     </div>
     <div class="mt-3 text-xs text-slate-500">
-      Plano: {{ t.plan_status }} · Presenças: {{ t.attendance_label }}
-      {% if t.course %} · Catálogo: {{ t.course.code|default:t.course.title }}{% endif %}
-      {% if t.participation_id %} · ID de origem: {{ t.participation_id }}{% endif %}
+      Plano: {{ t.plan_status_label }} · Presenças: {{ t.attendance_label }}
+      {% if t.course %} · Catálogo: {{ t.course.code|default:t.course.title|unlocalize }}{% endif %}
+      {% if t.participation_id %} · ID de origem: {{ t.participation_id|unlocalize }}{% endif %}
     </div>
     {% if t.historical_name or t.identity_quality or t.matching_method or t.source_row or t.source_course_code %}
     <details class="mt-3 text-xs text-slate-400">
@@ -28,18 +28,18 @@
       <p>Nome histórico: {{ t.historical_name|default:'—' }}</p>
       <p>Qualidade da identidade: {{ t.identity_quality|default:'—' }}</p>
       <p>Correspondência: {{ t.matching_method|default:'—' }}</p>
-      <p>Linha de origem: {{ t.source_row|default_if_none:'—' }} · Código de origem: {{ t.source_course_code|default:'—' }}</p>
+      <p>Linha de origem: {{ t.source_row|default_if_none:'—'|unlocalize }} · Código de origem: {{ t.source_course_code|default:'—' }}</p>
     </details>
     {% endif %}
     <div class="mt-3 text-xs text-slate-400">
       Emissão: {{ t.certificate_issue_label }}{% if t.certificate_issue_date %} · {{ t.certificate_issue_date|date:'d/m/Y' }}{% endif %}
-      · Entrega aos RH: {{ t.certificate_hr_label }}{% if t.certificate_hr_delivery_date %} · {{ t.certificate_hr_delivery_date|date:'d/m/Y' }}{% endif %}
+      · Arquivo de certificados: {{ t.certificate_archive_label }}
     </div>
     {% if t.certificate_declaration %}
     <details class="mt-3 text-xs text-slate-400">
       <summary>Declaração registada — não equivale a entrega documentada</summary>
       <p>{{ t.certificate_declaration }}</p>
-      <p>Responsável: {{ t.certificate_declared_by|default:'Por identificar' }} · Data da declaração: {{ t.certificate_declaration_date|date:'d/m/Y'|default:'Por confirmar' }}</p>
+      <p>Responsável: {{ t.certificate_declared_by|default:'Por identificar' }} · Data da declaração: {{ t.certificate_declaration_date|date:'d/m/Y'|default:'—' }}</p>
       <p>Origem: {{ t.certificate_declaration_source|default:'Por identificar' }}</p>
     </details>
     {% endif %}
@@ -50,15 +50,15 @@
     </p>
     </details>{% endif %}{% if user.is_staff %}
     <div class="mt-4 flex flex-wrap gap-3 text-xs no-print">
-      <a class="text-primary hover:text-white" href="{% url 'certificate_edit' t.pk %}">Certificado e entregas</a>
+      <a class="text-primary hover:text-white" href="{% url 'certificate_edit' t.pk %}">Arquivo e entrega ao trabalhador</a>
       <a class="text-primary hover:text-white" href="{% url 'evaluation_detail' t.pk %}">Avaliação e provas</a>
-      <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Atualizar turma</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
+      <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Actualizar grupo</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
     </div>
     {% endif %}
   </article>
 </div>
 {% empty %}
 <div class="h-full flex items-center justify-center text-slate-400">
-  Sem registos para os filtros selecionados.
+  Sem registos para os filtros seleccionados.
 </div>
 {% endfor %}

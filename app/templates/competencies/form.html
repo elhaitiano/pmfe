@@ -16,7 +16,7 @@
         {% endfor %}
         <div class="gf-form-grid mt-4">
           {% for field in form.visible_fields %}
-          <label for="{{ field.id_for_label }}">
+          <label for="{{ field.id_for_label|unlocalize }}">
             <span class="gf-label">{{ field.label }}</span>
             {{ field }}{{ field.errors }}
             <small>{{ field.help_text }}</small>
@@ -29,14 +29,14 @@
         {{ formset.non_form_errors }}
         {% for subform in formset %}
         <fieldset class="border-b border-white/10 py-4">
-          <legend>Registo {{ forloop.counter }}</legend>
+          <legend>Registo {{ forloop.counter|unlocalize }}</legend>
           {{ subform.non_field_errors }}
           {% for field in subform.hidden_fields %}
           {{ field }}{{ field.errors }}
           {% endfor %}
           <div class="gf-form-grid">
             {% for field in subform.visible_fields %}
-            <label for="{{ field.id_for_label }}">
+            <label for="{{ field.id_for_label|unlocalize }}">
               <span class="gf-label">{{ field.label }}</span>
               {{ field }}{{ field.errors }}
               <small>{{ field.help_text }}</small>

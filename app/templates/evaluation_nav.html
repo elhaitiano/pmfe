@@ -9,7 +9,7 @@
   {% if user.is_staff %}
   <a class="evaluation-section" href="{% url 'indicator_index' %}" {% if request.resolver_match.url_name == 'indicator_index' %}aria-current="page"{% endif %}>
     <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">query_stats</span>
-    <span>Indicadores</span>
+    <span>Indicadores confirmados e 360°</span>
     <span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span>
   </a>
   {% endif %}

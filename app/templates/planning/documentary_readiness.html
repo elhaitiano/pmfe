@@ -1,0 +1,11 @@
+<div class="documentary-readiness">
+  <span class="plan-pill readiness-{{ readiness.category }}">{{ readiness.label }}</span>
+  <small>{{ readiness.eligible }} elegível(is) · {{ readiness.pending|default_if_none:'Por rever' }} pendente(s) · {{ readiness.protected }} decisão(ões) preservada(s)</small>
+  {% if readiness.review_existing %}<small>{{ readiness.review_existing }} decisão(ões) anterior(es) requer(em) revisão; não serão substituídas.</small>{% endif %}
+  <details><summary>Consultar preparação e pendências</summary>
+    <p>Classificação administrativa pelas regras existentes. Não atribui notas nem aprovação académica. A pré-visualização e a confirmação autorizada continuam obrigatórias.</p>
+    {% if readiness.reasons %}<ul>{% for reason,count in readiness.reasons %}<li>{{ reason }} ({{ count }})</li>{% endfor %}</ul>{% endif %}
+    {% if readiness.pending_rows %}<ul>{% for row in readiness.pending_rows|slice:':8' %}<li><a href="{{ row.documentary_url }}">{{ row.name }}</a></li>{% endfor %}</ul>{% endif %}
+    <a href="{{ readiness.preview_url }}">Consultar todos na pré-visualização existente</a>
+  </details>
+</div>

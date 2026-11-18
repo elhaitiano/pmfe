@@ -1,4 +1,5 @@
-"""Restore only into a new directory; never overwrite an active database."""
+from contextlib import closing
+'Restore only into a new directory; never overwrite an active database.'
 import hashlib
 import os
 import re
@@ -10,16 +11,13 @@ import uuid
 import zipfile
 from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
-
-
-ALLOWED = re.compile(r'(?:pmf\.sqlite3|secret\.key|REPOR_COPIA\.txt|(?:reports|documents)/[0-9a-fA-F-]{36}\.pdf)\Z')
-
+ALLOWED = re.compile('(?:pmf\\.sqlite3|secret\\.key|REPOR_COPIA\\.txt|(?:reports|documents)/[0-9a-fA-F-]{36}\\.pdf)\\Z')
 
 def validate_snapshot(folder):
     database = folder / 'pmf.sqlite3'
     if not database.is_file():
         raise ValueError('A cópia não contém pmf.sqlite3.')
-    with sqlite3.connect(database.as_uri() + '?mode=ro', uri=True) as db:
+    with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db, db:
         if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok' or db.execute('PRAGMA foreign_key_check').fetchone():
             raise ValueError('A base de dados falhou a verificação de integridade.')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -36,16 +34,15 @@ def validate_snapshot(folder):
                 if not path.is_file() or path.stat().st_size != size or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                     raise ValueError('Documento privado ausente ou alterado: ' + str(ident))
 
-
 def restore(source, destination):
-    source, destination = Path(source).resolve(), Path(destination).absolute()
+    source, destination = (Path(source).resolve(), Path(destination).absolute())
     if destination.exists() or destination.is_symlink():
         raise ValueError('A pasta de destino já existe. Escolha uma pasta nova.')
     if not destination.parent.is_dir():
         raise ValueError('A pasta principal do destino não existe.')
     with tempfile.TemporaryDirectory(prefix='.pmfe-restore-', dir=destination.parent) as temp:
         folder = Path(temp) / 'data'
-        folder.mkdir(mode=0o700)
+        folder.mkdir(mode=448)
         if zipfile.is_zipfile(source):
             with zipfile.ZipFile(source) as archive:
                 names = set()
@@ -55,19 +52,18 @@ def restore(source, destination):
                         raise ValueError('Entrada inválida ou duplicada na cópia.')
                     names.add(info.filename)
                     total += info.file_size
-                    if total > 5 * 1024**3 or info.file_size > 1024**3:
+                    if total > 5 * 1024 ** 3 or info.file_size > 1024 ** 3:
                         raise ValueError('A cópia ultrapassa o limite de recuperação de 5 GB (1 GB por ficheiro).')
                     target = folder / info.filename
-                    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    target.parent.mkdir(parents=True, exist_ok=True, mode=448)
                     with archive.open(info) as src, target.open('xb') as dst:
                         shutil.copyfileobj(src, dst)
-                    target.chmod(0o600)
+                    target.chmod(384)
         else:
             shutil.copyfile(source, folder / 'pmf.sqlite3')
-            (folder / 'pmf.sqlite3').chmod(0o600)
+            (folder / 'pmf.sqlite3').chmod(384)
         validate_snapshot(folder)
-        # Destination creation is exclusive; a concurrent request cannot be overwritten.
-        destination.mkdir(mode=0o700)
+        destination.mkdir(mode=448)
         try:
             for item in folder.iterdir():
                 shutil.move(str(item), destination / item.name)
@@ -75,7 +71,6 @@ def restore(source, destination):
             shutil.rmtree(destination)
             raise
     return destination
-
 
 class Command(BaseCommand):
     help = 'Recuperar cópia PMFE para uma pasta nova, validando base, relatórios e documentos.'

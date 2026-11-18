@@ -2,6 +2,7 @@
 import os
 import shutil
 import sqlite3
+from contextlib import closing
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,7 +14,7 @@ if database.exists():
     # Only one backend is supported; no writer is active yet at startup.
     snapshot = data / 'backups' / datetime.now(timezone.utc).strftime('startup-%Y%m%d-%H%M%S-%f')
     snapshot.mkdir(parents=True)
-    with sqlite3.connect(database) as source, sqlite3.connect(snapshot / 'pmf.sqlite3') as destination:
+    with closing(sqlite3.connect(database)) as source, closing(sqlite3.connect(snapshot / 'pmf.sqlite3')) as destination:
         source.backup(destination)
     if (data / 'reports').exists():
         shutil.copytree(data / 'reports', snapshot / 'reports')

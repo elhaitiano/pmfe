@@ -1,0 +1,22 @@
+<section aria-labelledby="nominal-title" class="history-nominal">
+<h4 id="nominal-title">Lista Nominal</h4>
+<div class="history-table"><table>
+<caption class="history-sr-only">Formandos na ordem da lista. A numeração não representa classificação de mérito.</caption>
+<thead><tr><th scope="col">#</th><th scope="col">Formando</th><th scope="col">Assiduidade</th><th scope="col">Detalhes</th></tr></thead>
+<tbody>{% for row in historical_rows %}<tr>
+<td><span class="history-person-number">{% if historical_rows.paginator %}{{ historical_rows.start_index|add:forloop.counter0 }}{% else %}{{ forloop.counter|unlocalize }}{% endif %}</span></td>
+<td><strong class="history-person-name">{{ row.training.employee.name }}</strong><small>{{ row.training.employee.number|unlocalize }}</small></td>
+<td>{% if row.training.attendance_confirmed %}<span class="history-attendance">{{ row.training.attendance_percent }}%</span>{% elif user.is_staff and perms.training.change_training %}<a class="history-attendance unknown" href="{% url 'training_edit' row.training.pk %}#id_attendance_confirmed" title="Rever as presenças documentadas antes de confirmar" aria-label="Rever e confirmar presenças de {{ row.training.employee.name }}">Sem registo</a>{% else %}<span class="history-attendance unknown">Sem registo</span>{% endif %}</td>
+<td><a class="history-profile-link" href="{% url 'employee_detail' row.training.employee_id %}">Ver histórico<span class="history-sr-only"> de {{ row.training.employee.name }}</span></a></td></tr>
+<tr class="history-nominal-details-row"><td colspan="4"><details class="history-person-details"><summary>Ver detalhes<span class="history-sr-only"> de {{ row.training.employee.name }}</span></summary>
+<dl class="history-person-data">
+<div><dt>Período</dt><dd>{{ row.training.start|date:'d/m/Y' }} — {{ row.training.end|date:'d/m/Y' }}</dd></div>
+<div><dt>Horas previstas</dt><dd>{{ row.training.planned_hours|floatformat:'-2' }} H</dd></div>
+<div><dt>Nota / aproveitamento</dt><dd>{% include 'evaluation_value.html' with t=row.training %}{% if row.achievement %}<small>Aproveitamento na fonte: {% if row.achievement.percentage is not None %}{{ row.achievement.percentage|floatformat:'-2' }}%{% elif row.achievement.qualitative %}{{ row.achievement.raw }} (avaliação qualitativa){% else %}{{ row.achievement.raw }} (escala não documentada){% endif %}</small>{% endif %}</dd></div>
+<div><dt>Emissão do certificado</dt><dd>{% if row.state.issued is True %}Declarada na fonte{% elif row.state.issued is False %}Não{% else %}Sem registo{% endif %}</dd></div>
+<div><dt>Entrega ao formando</dt><dd>{% if row.learner_delivery is True %}Sim{% elif row.learner_delivery is False %}Não{% else %}Sem registo{% endif %}</dd></div>
+<div><dt>Entrega aos RH</dt><dd>{% if row.state.hr_delivered is True %}Sim{% elif row.state.hr_delivered is False %}Não{% else %}Sem registo{% endif %}</dd></div>
+<div><dt>Verificação</dt><dd>{% if row.level == 'confirmed' %}Confirmada{% else %}Provável{% endif %}</dd></div>
+</dl>
+</details></td></tr>{% empty %}<tr><td colspan="4">Sem participações neste filtro.</td></tr>{% endfor %}</tbody>
+</table></div></section>

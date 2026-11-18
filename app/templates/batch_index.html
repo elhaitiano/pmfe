@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block heading %}
-ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
+ACTUALIZAR GRUPO{% endblock %}{% block extra_styles %}
 <link rel="stylesheet" href="{% static 'pmf/batch.css' %}">
 {% endblock %}
 {% block content %}
@@ -12,13 +12,13 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
         Notas, resultados e certificados
       </h2>
       <p>
-        Escolha uma edição da formação para atualizar as participações numa única grelha.
+        Escolha uma edição da formação para actualizar as participações numa única grelha.
       </p>
     </div>
     <a class="gf-btn alt" href="{% url 'home' %}">Voltar à gestão</a>
   </div>
   <form method="get" class="batch-search">
-    <input class="gf-field" name="q" value="{{ q }}" placeholder="Pesquisar formação, formador, entidade ou local" aria-label="Pesquisar turma">
+    <input class="gf-field" name="q" value="{{ q|unlocalize }}" placeholder="Pesquisar formação, formador, entidade ou local" aria-label="Pesquisar grupo">
     <button class="gf-btn">
       Pesquisar
     </button>
@@ -53,7 +53,7 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
         {% for edition in page %}
         <tr>
           <td>
-            <strong>{% if edition.group_id %}G{{ edition.group__number }} · {% endif %}{{ edition.title }}</strong><small>{{ edition.area|default:'Área por confirmar' }}</small>
+            <strong>{% if edition.group_id %}G{{ edition.group__number }} · {% endif %}{{ edition.title }}</strong><small>{{ edition.area|default:'Área não registada' }}</small>
           </td>
           <td>
             {{ edition.start|date:'d/m/Y' }} – {{ edition.end|date:'d/m/Y' }}
@@ -62,7 +62,7 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
             {{ edition.trainer|default:'—' }}<small>{{ edition.provider|default:'—' }}</small>
           </td>
           <td>
-            {{ edition.location|default:'—' }}<small>{{ edition.days|default_if_none:'Por confirmar' }} dias · {{ edition.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia</small>
+            {{ edition.location|default:'—' }}<small>{{ edition.days|default_if_none:'Sem registo' }} dias · {{ edition.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia</small>
           </td>
           <td>
             {{ edition.participants }}
@@ -83,7 +83,7 @@ ATUALIZAR TURMA{% endblock %}{% block extra_styles %}
   </div>
   <div class="pmf-pagination">
     {% if page.has_previous %}
-    <a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>{% endif %}
+    <a href="?q={{ q|urlencode|unlocalize }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>{% endif %}<span>{{ page.number|unlocalize }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode|unlocalize }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>{% endif %}
   </div>
 </section>
 {% endblock %}

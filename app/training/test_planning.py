@@ -9,6 +9,8 @@ from django.urls import reverse
 from .models import Course, TrainingGroup, Enrollment, Employee, Training, Trainer
 from .planning import create_group, history_rows, enrol_reviewed, GroupForm
 from .batch import edition_queryset
+from .scheduling_guard import reservation_transaction
+from .f6_test_helpers import confirm_fixture
 from .dashboard import executive_data
 
 
@@ -20,7 +22,7 @@ class PlanningTests(TestCase):
         self.staff=get_user_model().objects.create_user('planning-admin',password='qa',is_staff=True)
         self.reader=get_user_model().objects.create_user('planning-reader',password='qa')
         self.client.force_login(self.staff)
-        self.course=Course.objects.create(title='Liderança e Gestão',default_days=2)
+        self.course=Course.objects.create(validation_status='validated', title='Liderança e Gestão',default_days=2)
         self.people=[Employee.objects.create(number=str(100+i),name=f'Formando {i}',direction='Direcção A',email=f'a{i}@example.org') for i in range(3)]
         self.values=dict(dates=[date(2026,1,1),date(2026,1,3)],trainer='Formador A',provider='Entidade',location='Kikuxi',capacity=30,hours_per_day=Decimal('7'),break_hours=Decimal('1'),start_time=time(8),end_time=time(16))
         self.group=create_group(self.course,self.values)
@@ -31,6 +33,7 @@ class PlanningTests(TestCase):
         return enrol_reviewed(group,people,{str(p.pk):(choice,reason) for p in people},keys,group.revision)
 
     def start(self,group):
+        confirm_fixture(group)
         group.refresh_from_db()
         return self.client.post(reverse('group_transition',args=[group.pk]),{'revision':group.revision,'action':'start'})
 
@@ -41,7 +44,7 @@ class PlanningTests(TestCase):
     def test_group_numbers_are_per_course_and_cancelled_not_reused(self):
         self.client.post(reverse('group_transition',args=[self.group.pk]),{'revision':1,'action':'cancel','reason':'Adiada'})
         self.assertEqual(create_group(self.course,self.values).code,'G2')
-        other=Course.objects.create(title='Outra formação')
+        other=Course.objects.create(validation_status='validated', title='Outra formação')
         self.assertEqual(create_group(other,self.values).code,'G1')
         self.assertEqual(self.group.sessions.count(),2)
         response=self.client.post(reverse('course_create'),dict(title='  LIDERANÇA   e Gestão ',area='',contents='',default_days=1,default_hours=7,active='on'))
@@ -65,7 +68,7 @@ class PlanningTests(TestCase):
         before=Training.objects.count();self.start(self.group);self.assertEqual(Training.objects.count(),before)
 
     def test_history_distinguishes_presence_confirmed_absence_and_unknown(self):
-        self.prior(self.people[0],attendance=1)
+        self.prior(self.people[0],attendance=1,attendance_confirmed=True)
         self.prior(self.people[1],attendance_confirmed=True)
         self.prior(self.people[2])
         entries=history_rows(self.group,self.people)
@@ -77,7 +80,7 @@ class PlanningTests(TestCase):
         self.assertEqual(Training.objects.count(),3)
 
     def test_transfer_multiple_people_preserves_origin_and_versions(self):
-        self.add(self.group,self.people[:2]);target=create_group(self.course,self.values)
+        self.add(self.group,self.people[:2]);target=create_group(self.course,dict(self.values,dates=[date(2026,1,4),date(2026,1,5)]))
         with self.assertRaises(ValidationError):self.add(target,self.people[:2],choice='transfer',reason='Alteração de disponibilidade')
         self.assertEqual(self.group.enrollments.filter(state='Activa').count(),2)
         self.assertEqual(target.enrollments.filter(state='Activa').count(),0)
@@ -93,7 +96,9 @@ class PlanningTests(TestCase):
         self.assertEqual(Training.objects.count(),1)
 
     def test_capacity_and_stale_review_rollback_entire_selection(self):
-        TrainingGroup.objects.filter(pk=self.group.pk).update(capacity=1);self.group.refresh_from_db()
+        with reservation_transaction():
+            TrainingGroup.objects.filter(pk=self.group.pk).update(capacity=1)
+        self.group.refresh_from_db()
         rev=self.group.revision
         with self.assertRaises(ValidationError):self.add(self.group,self.people[:2])
         self.group.refresh_from_db();self.assertEqual(self.group.revision,rev);self.assertFalse(Enrollment.objects.exists())
@@ -103,9 +108,9 @@ class PlanningTests(TestCase):
         self.assertFalse(Enrollment.objects.exists())
 
     def test_signed_review_requires_exact_selection_and_reason(self):
-        self.prior(self.people[0],attendance=1);url=reverse('group_enrol',args=[self.group.pk])
+        self.prior(self.people[0],attendance=1,attendance_confirmed=True);url=reverse('group_enrol',args=[self.group.pk])
         review=self.client.post(url,{'action':'review','employees':[self.people[0].pk]})
-        self.assertContains(review,'Já participou');self.assertFalse(Enrollment.objects.exists())
+        self.assertContains(review,'Este formando já participou nesta formação.');self.assertFalse(Enrollment.objects.exists())
         data={'action':'confirm','employees':[self.people[0].pk],'review_token':review.context['review_token'],f'choice_{self.people[0].pk}':'repeat',f'reason_{self.people[0].pk}':'Reciclagem'}
         result=self.client.post(url,data);self.assertEqual(result.status_code,200);self.assertEqual(Enrollment.objects.count(),0)
         self.assertEqual(self.client.post(url,data).status_code,200);self.assertEqual(Enrollment.objects.count(),0)
@@ -118,7 +123,7 @@ class PlanningTests(TestCase):
         with self.assertRaises(ValidationError):
             self.add(self.group, self.people[:2])
         self.assertFalse(self.group.enrollments.exists())
-        other = Course.objects.create(title='Outra formação', code='OTHER')
+        other = Course.objects.create(validation_status='validated', title='Outra formação', code='OTHER')
         target = create_group(other, self.values)
         self.add(target, self.people[:1])
         self.assertEqual(target.enrollments.count(), 1)
@@ -150,6 +155,50 @@ class PlanningTests(TestCase):
         self.assertIn('Formando 0',text);self.assertIn('Hora chegada',' '.join(text.split()));self.assertIn('Rubrica',text);self.assertIn('Pág. 1/1',text);self.assertNotIn('CONTACT_NOTE_PRIVATE',text)
         self.assertEqual(self.client.get(url,{'date':'2026-01-02'}).status_code,400)
 
+    def test_past_group_prints_second_copy_without_writes(self):
+        self.add(self.group,self.people)
+        with patch('training.planning.timezone.localdate',return_value=date(2026,2,1)):
+            response=self.client.get(reverse('attendance_pdf',args=[self.group.pk]),{'date':'2026-01-01'})
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(response['Content-Disposition'].startswith('inline'))
+        self.assertTrue(b''.join(response.streaming_content).startswith(b'%PDF'))
+        self.assertEqual(Training.objects.count(),0)
+        self.assertEqual(Enrollment.objects.filter(state='Activa').count(),3)
+
+    def test_list_shortcut_is_visible(self):
+        self.assertContains(self.client.get(reverse('planning')),reverse('course_groups',args=[self.course.pk]))
+        self.assertContains(self.client.get(reverse('course_groups',args=[self.course.pk])),'#lista-presenca')
+        self.assertContains(self.client.get(reverse('group_detail',args=[self.group.pk])),'Abrir PDF para imprimir')
+
+    def test_cancelled_group_cannot_print(self):
+        self.add(self.group,self.people)
+        self.client.post(reverse('group_transition',args=[self.group.pk]),{'revision':self.group.revision,'action':'cancel','reason':'Teste de bloqueio'})
+        self.assertEqual(self.client.get(reverse('attendance_pdf',args=[self.group.pk]),{'date':'2026-01-01'}).status_code,400)
+
+    def test_historical_excel_without_sessions_or_enrollments(self):
+        from types import SimpleNamespace
+        from zipfile import ZipFile
+        historical=[SimpleNamespace(employee=self.people[0],employee_id=self.people[0].pk,start=date(2025,1,1),end=date(2025,1,2))]*2
+        with patch('training.planning.historical_group_trainings',return_value=historical):
+            response=self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'})
+        self.assertEqual(response.status_code,200)
+        binary=b''.join(response.streaming_content)
+        with ZipFile(io.BytesIO(binary)) as archive:
+            text=archive.read('xl/worksheets/sheet1.xml').decode()
+            self.assertIn('01/01/2025 - 02/01/2025',text)
+            self.assertIn('SEGUNDA VIA',text)
+            self.assertEqual(text.count('Formando 0'),1)
+        self.assertEqual(Enrollment.objects.count(),0)
+        self.assertEqual(Training.objects.count(),0)
+
+    def test_historical_excel_rejects_unmapped_group(self):
+        response=self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'})
+        self.assertEqual(response.status_code,400)
+
+    def test_historical_excel_requires_login(self):
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse('attendance_excel',args=[self.group.pk]),{'source':'historical'}).status_code,302)
+
     def test_permissions_csrf_and_read_only_gets(self):
         self.client.force_login(self.reader)
         self.assertEqual(self.client.get(reverse('planning')).status_code,200)
@@ -165,7 +214,7 @@ class GroupDeletionTests(TestCase):
 
     def deletion(self, **kw):
         self.group.refresh_from_db()
-        data={'revision':self.group.revision,'confirm':'ELIMINAR','reason':'Turma de teste'}
+        data={'revision':self.group.revision,'confirm':'ELIMINAR','reason':'Grupo de teste'}
         data.update(kw)
         return self.client.post(reverse('group_delete',args=[self.group.pk]),data)
 
@@ -180,7 +229,7 @@ class GroupDeletionTests(TestCase):
     def test_delete_preparatory_enrollments_and_sessions_only(self):
         from .models import GroupSession, AuditEvent
         self.add(self.group,self.people)
-        other=create_group(self.course,self.values)
+        other=create_group(self.course,dict(self.values,dates=[date(2026,1,4),date(2026,1,5)]))
         self.deletion()
         self.assertEqual(Enrollment.objects.count(),0)
         self.assertEqual(GroupSession.objects.filter(group=other).count(),2)

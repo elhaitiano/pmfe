@@ -8,11 +8,9 @@
       <p>Prepare o catálogo e as regras RH, crie um ciclo, autorize as contas dos avaliadores e confirme a abertura. Apenas o responsável ou um superutilizador gere o ciclo e consulta os seus resultados agregados.</p>
       <a class="gf-btn" href="{% url 'competency_catalog' %}">Catálogo e funções</a>
       <a class="gf-btn" href="{% url 'cycle_create' %}">Novo ciclo</a>
-      <a class="gf-btn alt" href="{% url 'development_index' %}">Plano de desenvolvimento</a>
-      <a class="gf-btn alt" href="{% url 'indicator_index' %}">Indicadores confirmados</a>
       <form method="get">
         <label for="cycle-search" class="gf-label">Pesquisar trabalhador</label>
-        <input class="gf-field" id="cycle-search" name="q" value="{{ q }}">
+        <input class="gf-field" id="cycle-search" name="q" value="{{ q|unlocalize }}">
         <button class="gf-btn mt-4">Pesquisar</button>
       </form>
       {% for cycle in page %}
@@ -25,11 +23,11 @@
       {% endfor %}
       <nav>
         {% if page.has_previous %}
-        <a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">Anterior</a>
+        <a href="?q={{ q|urlencode|unlocalize }}&amp;page={{ page.previous_page_number|unlocalize }}">Anterior</a>
         {% endif %}
-        <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        <span>{{ page.number|unlocalize }} / {{ page.paginator.num_pages }}</span>
         {% if page.has_next %}
-        <a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Seguinte</a>
+        <a href="?q={{ q|urlencode|unlocalize }}&amp;page={{ page.next_page_number|unlocalize }}">Seguinte</a>
         {% endif %}
       </nav>
     </div>

@@ -1,0 +1,516 @@
+{
+  "policy": "training-areas-20261105-v1",
+  "courses": [
+    {
+      "course_id_at_review": 1,
+      "title": "Apresentação em público: como comunicar com impacto e confiança - para gestores de topo",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 2,
+      "title": "Assistência Técnica/ Formação em Procurement e Logística",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 3,
+      "title": "Assistencia Técnica/Formação em Gestão Integrada de recursos Humanos",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 4,
+      "title": "AT/ Formação em Comunicação e Marketing - Programa 1: Comunicação Digital e Gestão de Redes Sociais para Empresas Públicas",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 5,
+      "title": "AT/ Formação em Comunicação e Marketing - Programa 2: Comunicação Institucional, Imagem e Cooperação Estratégica",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 6,
+      "title": "Ciclo de água para todos",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 7,
+      "title": "Combate ao incêndio",
+      "previous_area": "Técnica",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 8,
+      "title": "Comunicação Assertiva e Relações Interpessoais no Contexto Organizacional",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 9,
+      "title": "Comunicação Interna e Cultura Organizacional",
+      "previous_area": "Soft skills",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 10,
+      "title": "Contagem e Leitura Manual de Contadores",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 11,
+      "title": "Controlo de qualidade interno e externo & Manuseamento de equipamentos de Laboratório",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 12,
+      "title": "Elaboração e Gestão de plano de formação (identificação das necessidades, análise e reporte) - continuação & Formação em métodos pedagógicos",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 13,
+      "title": "Equipa de Resposta a Emergências - Cloro Gasoso",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 14,
+      "title": "Espaços Confinados - Entrada Regulamentada",
+      "previous_area": "Técnica",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 15,
+      "title": "Excel intermédio (Formador internon EPAL) - 30h, 5 dias",
+      "previous_area": "",
+      "area": "Tecnologias de Informação",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 16,
+      "title": "Faturação, cobrança e recuperação de dívidas",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 17,
+      "title": "Formação Citytaps registo de Pagamento",
+      "previous_area": "",
+      "area": "",
+      "reason": "Confirmar se o objectivo é utilização da aplicação Citytaps ou processo administrativo de pagamentos."
+    },
+    {
+      "course_id_at_review": 18,
+      "title": "Formação Específica Pilar 3A: Funcionamento e instalação de contadores inteligentes (modulo 1)",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 19,
+      "title": "Formação Específica Pilar 3A: Módulo 3 CITYTAPS + Módulo 4 NETMORE",
+      "previous_area": "",
+      "area": "",
+      "reason": "Os números dos módulos CITYTAPS/NETMORE não comprovam se o objectivo predominante é técnico ou utilização de sistemas."
+    },
+    {
+      "course_id_at_review": 20,
+      "title": "Gestão de Centros de distribuição (Balanço Hídrico, gestão de reservatórios, operação & manutenção dos CD)",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 21,
+      "title": "Gestão de conflitos e trabalho em equipa",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 22,
+      "title": "Gestão de detecção de fugas e diagnóstico de redes",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 23,
+      "title": "Gestão de manutenção assistida pelo computador",
+      "previous_area": "",
+      "area": "",
+      "reason": "Confirmar se é utilização de Sparkoper/CMMS (TI) ou planeamento e gestão técnica da manutenção (Técnica)."
+    },
+    {
+      "course_id_at_review": 24,
+      "title": "Gestão de perdas comerciais/ consumos ilegais",
+      "previous_area": "",
+      "area": "",
+      "reason": "Confirmar se o foco é detecção/intervenção técnica em consumos ilegais ou gestão comercial/administrativa de perdas."
+    },
+    {
+      "course_id_at_review": 25,
+      "title": "Gestão de reclamação - UKUENDA",
+      "previous_area": "Técnica",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo relacional/atendimento e categoria histórica Cliente/Social comprovada nos snapshots anteriores."
+    },
+    {
+      "course_id_at_review": 26,
+      "title": "Gestão de reclamações - Saber Estar",
+      "previous_area": "Técnica",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 27,
+      "title": "Gestão de reclamações: Atendimento de excelência",
+      "previous_area": "Técnica",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 28,
+      "title": "Gestão do tempo e planeamento eficaz",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 29,
+      "title": "Gestão e operação de rede intermitente",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 30,
+      "title": "Gestão geral do laboratório (dados, stock, armazenamento de reagentes respeitando incompatibilidades químicas, orçamento, higiene segurança e gestão de resíduos, incluindo o processo de comunicação de resultados, não- conformidades)",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 31,
+      "title": "Instrumentação - Analisadores em Linha",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 32,
+      "title": "Instrumentação - Sensores de níveis",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 33,
+      "title": "Inteligência Emocional e Autorresponsabilidade",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 34,
+      "title": "Liderança e Gestão do Desempenho e das Equipas",
+      "previous_area": "Técnica",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 35,
+      "title": "Liderança em Segurança, Higiene e Saúde no Trabalho (SHST)",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 36,
+      "title": "Manuseamento de Produtos Químicos",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 37,
+      "title": "Manutenção de Bombas/ Manutenção de sistemas de bombagem",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 38,
+      "title": "Manutenção de Equipamentos Hidráulicos",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 39,
+      "title": "Manutenção de Geradores",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 40,
+      "title": "Microsoft Office (Word, Excel e PowerPoint) 60 horas",
+      "previous_area": "",
+      "area": "Tecnologias de Informação",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 41,
+      "title": "Operação e Manutenção Segura do Cloro - Manuseamento e Segurança",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 42,
+      "title": "Primeiros socorros e suporte básico de vida (SBV)",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 43,
+      "title": "Primeiros Socorros no Local de Trabalho - básico",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 44,
+      "title": "Procedimento LOTO - Lockout/Tagout (Hidráulico, Mecânico, Elétrico e Pneumático)",
+      "previous_area": "Técnica",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 45,
+      "title": "Secretariado geral para as direcções",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 46,
+      "title": "Segurança, Higiene e Saúde no Trabalho (SHST) sobre EPI, EPC, delimitação das áreas de trabalho",
+      "previous_area": "Técnica",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 47,
+      "title": "Sistema de Electricidade, incluindo conceitos de proteção de equipamentos electricos e electrónicos",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 48,
+      "title": "Trabalho em altura",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 49,
+      "title": "Trabaçho com as Direcções e Departamentos para a implementação das soluções seleccionadas durante o Workshop em Facturaçã, Cobrança e recuperação de dívidas",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 50,
+      "title": "Tratamento de Água para Consumo Humano: Operação Prática da ETA e Controlo de Parâmetros Operacionais e de Qualidade",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 51,
+      "title": "Workshop \"Ser feliz no trabalho\"",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo relacional/atendimento e categoria histórica Cliente/Social comprovada nos snapshots anteriores."
+    },
+    {
+      "course_id_at_review": 52,
+      "title": "Workshop débriefing sobre as formações Operação e Manutenção Segura do Cloro – Manuseamento e Segurança, e em Espaços Confinados, entrada regulamentada",
+      "previous_area": "",
+      "area": "Segurança",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 53,
+      "title": "Workshop em Faturação, Cobrança e Recuperação de Dívidas",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 54,
+      "title": "Workshop sobre Gestão de manutenção assistida pelo computador",
+      "previous_area": "",
+      "area": "",
+      "reason": "Confirmar se o workshop é sobre utilização de Sparkoper/CMMS ou planeamento técnico da manutenção."
+    },
+    {
+      "course_id_at_review": 55,
+      "title": "Reparação de fugas e trabalhos de escavações",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 56,
+      "title": "RDSC — formação histórica sem designação",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Categoria Técnica já declarada no catálogo; preservada sem deduzir o significado da sigla RDSC."
+    },
+    {
+      "course_id_at_review": 57,
+      "title": "Fundamentos de Hidráulica e Desempenho de Redes",
+      "previous_area": "Técnica",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 58,
+      "title": "Formação Específica Pilar 3A: Módulo 3 CITYAPS+ Módulo 4",
+      "previous_area": "",
+      "area": "",
+      "reason": "O título CITYAPS/módulo 4 não descreve o objectivo predominante."
+    },
+    {
+      "course_id_at_review": 59,
+      "title": "Gestão do Conflito e Planeamento Eficaz",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 60,
+      "title": "Elaboração e Gestão de Plano de Formação",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 61,
+      "title": "Microsoft Office(Word,Excel e PowerPoint)",
+      "previous_area": "",
+      "area": "Tecnologias de Informação",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 62,
+      "title": "Whorkshop Ser Feliz no Trabalho",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo relacional/atendimento e categoria histórica Cliente/Social comprovada nos snapshots anteriores."
+    },
+    {
+      "course_id_at_review": 63,
+      "title": "Gestão Geral do Laboratório",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 64,
+      "title": "Secretariado geral para as direções",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 65,
+      "title": "Apresentações em público, como comunicar com impacto e confiança",
+      "previous_area": "",
+      "area": "Gestão e Soft Skills",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 66,
+      "title": "Operação e Gestão Operacional de Redes Secundárias",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 67,
+      "title": "Operação e Gestão Operacional de Adutoras",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 68,
+      "title": "Introdução à Certificação de Técnicos de Amostragem de Água para Consumo Humano",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 69,
+      "title": "Planos de Monitorização da Qualidade da Água (PCQA) + PCO",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 70,
+      "title": "Planos de Monitorização da Qualidade da Água (PCQA) + PCO- Prática",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 71,
+      "title": "Introdução à certificação de técnicas de Amostragem para o consumo humano",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 72,
+      "title": "Redes Secundárias",
+      "previous_area": "",
+      "area": "Técnica",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    },
+    {
+      "course_id_at_review": 73,
+      "title": "Excel inicial - nível básico",
+      "previous_area": "",
+      "area": "Tecnologias de Informação",
+      "reason": "Objectivo explícito no título, enquadrado nas regras de classificação do responsável; categorias históricas preservadas como evidência."
+    }
+  ]
+}

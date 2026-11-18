@@ -1,0 +1,7 @@
+{% if group_validation_metrics.validated or group_validation_metrics.review %}
+<section class="exec-glass-box reference-a-validation" aria-labelledby="group-validation-title"><h2 class="reference-a-section-title" id="group-validation-title">Validação de grupos — mesmos filtros do dashboard</h2>
+<p>{{ group_validation_metrics.numeric_final }} participações com nota final numérica na escala original · {{ stats.certificates_reported }} certificados entregues, de {{ stats.certificate_holders }} titulares. Nota registada não equivale a aprovação académica.</p>
+<p>{{ group_validation_metrics.completed }} conclusões administrativamente validadas · {{ group_validation_metrics.approved }} aprovações académicas · {{ group_validation_metrics.rejected }} reprovações académicas.</p>
+<p>{{ group_validation_metrics.pending }} pendentes de avaliação · {{ group_validation_metrics.undefined }} com critérios por validar · {{ group_validation_metrics.not_applicable }} sem avaliação aplicável · {{ group_validation_metrics.review }} decisões a rever após alteração das evidências · {{ group_validation_metrics.unvalidated }} participações ainda sem validação colectiva.</p>
+<p>As notas válidas e os certificados entregues mantêm os indicadores documentais existentes. Universo com resultado académico determinado: {{ group_validation_metrics.academic_denominator }}. Conclusão administrativa e entrega não produzem aprovação.</p>
+</section>{% endif %}

@@ -1,0 +1,23 @@
+{% load l10n %}
+<section class="exec-glass-box epal-directions-overview epal-strategic-table" aria-labelledby="strategic-directions-title">
+  <header class="epal-strategic-heading"><div><h2 id="strategic-directions-title">Participação Estratégica por Direcção</h2><p>Acompanhamento da cobertura e das horas frequentadas por Direcção e unidade</p></div>
+    <div class="epal-unit-filters" role="group" aria-label="Filtrar unidades da tabela"><span>Filtrar Unidades:</span><button type="button" class="epal-unit-filter" data-unit-filter="all" aria-pressed="true">Todas (<span data-unit-total>{{ directions_table|length }}</span>)</button><button type="button" class="epal-unit-filter" data-unit-filter="eta" aria-pressed="false" title="Unidades cuja designação contém ETA">ETAs</button><button type="button" class="epal-unit-filter" data-unit-filter="network" aria-pressed="false" title="Unidades cuja designação contém Rede ou Redes">Redes</button></div>
+  </header>
+  <div class="epal-overview-scroll" tabindex="0" role="region" aria-label="Tabela de participação estratégica por Direcção">
+    <table><colgroup><col class="epal-col-direction"><col class="epal-col-workforce"><col class="epal-col-hours"><col class="epal-col-coverage"><col class="epal-col-average"><col class="epal-col-state"><col class="epal-col-action"></colgroup>
+      <thead><tr><th scope="col">Direcção e unidade</th><th scope="col">Efectivo</th><th scope="col">Horas frequentadas</th><th scope="col">Adesão e cobertura</th><th scope="col">Aproveitamento médio</th><th scope="col">Estado operacional</th><th scope="col">Acção</th></tr></thead>
+      <tbody>{% for row in directions_table %}
+        <tr data-strategic-unit data-unit-label="{{ row.label }}"><td class="epal-unit-direction"><a href="{{ row.href|unlocalize }}" data-drill><span class="epal-unit-icon material-symbols-outlined" aria-hidden="true">corporate_fare</span><span class="epal-unit-name"><strong>{{ row.label }}</strong><small>{{ row.present }} com participação registada</small></span></a></td>
+          <td>{{ row.total }} técnico{{ row.total|pluralize }}</td><td class="epal-unit-hours">{{ row.hours|floatformat:1 }} h</td>
+          <td><div class="epal-table-progress"><div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ row.coverage|unlocalize }}" aria-label="Cobertura de {{ row.label }}"><div class="progress-bar-epal" style="width:{{ row.coverage|unlocalize }}%"></div></div><strong>{{ row.coverage|floatformat:1 }}%</strong></div></td>
+          <td class="epal-unit-average">{% if row.average is None %}—{% else %}<strong>{{ row.average|floatformat:1 }}</strong><span> /20</span>{% endif %}</td>
+          <td>{% if row.certificates %}<span class="epal-op-badge epal-op-green"><i aria-hidden="true"></i>{{ row.certificates }} entregue{{ row.certificates|pluralize }}</span>{% elif row.present %}<span class="epal-op-badge epal-op-blue"><i aria-hidden="true"></i>Participação registada</span>{% else %}<span class="epal-op-badge epal-op-neutral"><i aria-hidden="true"></i>Sem participação</span>{% endif %}</td>
+          <td class="epal-unit-action"><a href="{{ row.href|unlocalize }}" data-drill aria-label="Consultar {{ row.label }}"><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></a></td></tr>
+      {% empty %}<tr><td colspan="7" class="epal-unit-empty">Sem Direcções nos filtros seleccionados.</td></tr>{% endfor %}
+      <tr data-unit-empty hidden><td colspan="7" class="epal-unit-empty">Sem unidades identificadas para este filtro.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer class="epal-unit-pagination" hidden><span data-unit-range role="status" aria-live="polite"></span><div><button type="button" data-unit-page="previous" aria-label="Página anterior de Direcções">Anterior</button><button type="button" data-unit-page="next" aria-label="Página seguinte de Direcções">Seguinte</button></div></footer>
+  {% if perms.training.view_employee and perms.training.view_training %}<a class="epal-unit-full-query" href="{% url 'participation_executive' %}">Consulta completa por Direcção <span aria-hidden="true">→</span></a>{% endif %}
+</section>

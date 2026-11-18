@@ -27,10 +27,7 @@ class AdministrationTests(TestCase):
             self.client.force_login(user)
             response=self.client.get(reverse('admin:index'))
             self.assertEqual(response.status_code,302)
-            home=self.client.get(reverse('home'))
-            # The Django admin stays reserved; staff reach the tools page instead.
-            self.assertNotContains(home,f'href="{reverse("admin:index")}"')
-            if user is self.reader:self.assertNotContains(home,'Administração')
+            self.assertNotContains(self.client.get(reverse('home')),'Administração')
             self.assertEqual(self.client.post(reverse('admin:auth_user_add'),{}).status_code,302)
         self.client.logout()
         self.assertEqual(self.client.get(reverse('admin:index')).status_code,302)

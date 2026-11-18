@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block heading %}REVER EVIDÊNCIA{% endblock %}{% block content %}<section class="glass rounded-xl p-6 m-6">
+<h2>{{ record }}</h2><p>A decisão não altera os dados originais, não confirma automaticamente outras dimensões e não aprova a formação.</p>{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+{% if token %}<dl><dt>Informação</dt><dd>{{ dimension_label }}</dd><dt>Estado anterior</dt><dd>{{ proposal.before.label }}</dd><dt>Novo estado</dt><dd>{{ proposal_state }}</dd><dt>Justificação</dt><dd>{{ proposal.reason }}</dd><dt>Evidência</dt><dd>{{ proposal.evidence }}</dd></dl>
+<form method="post">{% csrf_token %}<input type="hidden" name="token" value="{{ token|unlocalize }}"><label><input type="checkbox" name="confirm" value="yes" required> Confirmo a decisão documental indicada.</label><button class="gf-btn">Confirmar e auditar</button></form>
+{% else %}<form method="post">{% csrf_token %}{{ form.as_p }}<button class="gf-btn">Pré-visualizar</button></form>{% endif %}<a class="gf-btn alt" href="{% url 'validation_index' %}?kind={{ kind|unlocalize }}">Voltar</a></section>{% endblock %}

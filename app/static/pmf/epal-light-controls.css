@@ -1,0 +1,21 @@
+/* Light native dropdowns and restrained selection/focus, matching code.html. */
+html.epal-reference select,html.epal-reference select.pmf-choice-set{color-scheme:light!important;background-color:#fff!important;color:#002b5c!important;border:1px solid rgba(144,193,218,.55)!important;box-shadow:0 2px 6px rgba(0,43,92,.04)!important;transition:border-color .2s,box-shadow .2s}
+html.epal-reference select option,html.epal-reference select optgroup{background:#fff!important;color:#002b5c!important;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px}
+html.epal-reference select option:disabled{color:#94a3b8!important}
+html.epal-reference :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea):is(:focus,:focus-visible){outline:none!important;outline-offset:0!important;border:1px solid #005bc0!important;box-shadow:0 0 0 2px rgba(46,110,174,.12)!important}
+html.epal-reference :is(.pmfe-suggest,.coverage-course-popup){background:rgba(255,255,255,.98)!important;color:#002b5c!important;border:1px solid rgba(144,193,218,.55)!important;border-radius:10px!important;box-shadow:0 8px 24px rgba(0,43,92,.12)!important}
+html.epal-reference :is(.pmfe-suggest,.coverage-course-popup) [role=option]{color:#002b5c!important;border-color:transparent!important;box-shadow:none!important}
+html.epal-reference [role=option][aria-selected=true],html.epal-reference [role=tab][aria-selected=true],html.epal-reference [aria-pressed=true]{background-color:#eaf2fb!important;color:#005bc0!important;box-shadow:none!important;border-color:#b0d2e4!important}
+html.epal-reference :is(.pmfe-suggest,.coverage-course-popup) [role=option]:hover{background:#f0f6fc!important;color:#002b5c!important;box-shadow:none!important}
+html.epal-reference [role=option]:focus-visible{outline:1px solid #005bc0!important;outline-offset:1px!important}
+html.epal-reference input:is([type=checkbox],[type=radio]){background-color:#fff!important;border:1px solid #90c1da!important;box-shadow:none!important}
+html.epal-reference input:is([type=checkbox],[type=radio]):is(:checked,:indeterminate){background-color:#005bc0!important;border-color:#005bc0!important;box-shadow:none!important}
+html.epal-reference input[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m4 10 4 4 8-9' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important}
+html.epal-reference input[type=radio]:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='4' fill='white'/%3E%3C/svg%3E")!important}
+html.epal-reference input[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10h12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E")!important}
+html.epal-reference input:is([type=checkbox],[type=radio]):focus-visible{outline:2px solid #005bc0!important;outline-offset:2px!important}
+html.epal-reference label:has(input:is([type=checkbox],[type=radio]):checked){color:#002b5c!important;background-color:#edf4fc!important}
+html.epal-reference tbody tr:has(input:is(.bulk-person,[data-person],.action-select):checked)>td{background-color:#edf4fc!important;color:#172b4d!important}
+html.epal-reference tbody tr:has(input:is(.bulk-person,[data-person],.action-select):checked)>td:first-child{box-shadow:inset 2px 0 #005bc0!important}
+html.epal-reference .pmf-selection-count{color:#005bc0!important}
+@media(forced-colors:active){html.epal-reference :is(input,select,textarea):focus-visible{outline:2px solid Highlight!important;box-shadow:none!important}html.epal-reference input:is([type=checkbox],[type=radio]){appearance:auto!important;-webkit-appearance:auto!important;forced-color-adjust:auto!important;background-image:none!important}html.epal-reference select option{forced-color-adjust:auto}}

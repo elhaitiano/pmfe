@@ -1,49 +1,87 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
-{% if source_trainings %}
-<section class="plan-panel">
-  <div class="plan-heading">
-    <h2>Formandos do histórico Excel</h2>
-    <p>Participações identificadas na fonte deste grupo; não são novas inscrições activas.</p>
-  </div>
-  <div class="batch-scroll">
-    <table class="batch-table">
-      <thead>
-        <tr><th>Formando / Nº Mec.</th><th>Direcção / Função</th><th>Estado histórico</th><th>Acção</th></tr>
-      </thead>
-      <tbody>
-        {% for participation in source_trainings %}
-        <tr>
-          <td>{{ participation.employee.name }}<small>{{ participation.employee.number }}</small></td>
-          <td>{{ participation.employee.direction }}<small>{{ participation.employee.function }}</small></td>
-          <td>{{ participation.status }}</td>
-          <td><a class="gf-btn alt" href="{% url 'employee_data' participation.employee.pk %}">Ver Ficha</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
+{% if user.is_staff and can_delete_group %}<div class="plan-actions"><a class="gf-btn alt" href="{% url 'group_delete' group.pk %}"><span class="material-symbols-outlined" aria-hidden="true">delete</span>Eliminar grupo</a></div>{% endif %}
+{% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}
+<div class="plan-actions"><a class="gf-btn" href="{% url 'group_validation' %}?group={% if historical_edition %}edition{% else %}group{% endif %}:{{ group.pk|unlocalize }}">Validar grupo</a></div>
 {% endif %}
-<section class="plan-panel">
+<section class="plan-panel" id="resumo-grupo"><h2><span class="plan-code">{{ group.code|unlocalize }}</span> {{ group.title }}</h2>
+<p><strong>{{ roster.display_state }} · {{ participant_count }} formando{{ participant_count|pluralize:"s" }} registado{{ participant_count|pluralize:"s" }}</strong></p>
+<p>{{ group.start|date:'d/m/Y' }} — {{ group.end|date:'d/m/Y' }} · {{ group.days|default_if_none:'Sem registo' }} dias · {{ group.hours_per_day|floatformat:1|default:'Sem registo' }} h/dia</p>
+<p>{{ group.location|default:'Local não registado' }} · {{ group.trainer|default:'Formador não registado' }}</p>
+<p>{{ roster.completed_count }} com conclusão registada · {{ roster.verified_present_count }} com presença comprovada · {{ roster.attendance_pending_count }} sem presenças documentadas.</p>
+{% if roster.historical_only %}<p>Participantes associados ao histórico existente. Para uma nova realização, crie o próximo grupo da acção.</p>{% endif %}
+</section>
+{% if not historical_edition and user.is_staff and perms.training.add_training and perms.training.add_enrollment and perms.training.change_traininggroup %}<div class="plan-actions"><a class="gf-btn" href="{% url 'attendance_import' group.pk %}">Importar assiduidade</a><a class="gf-btn alt" href="{% url 'attendance_template' group.pk %}">Modelo Excel de assiduidade</a></div>{% endif %}
+<section class="plan-panel" id="lista-presenca">
+  {% if historical_edition %}<div class="plan-actions"><a class="gf-btn" target="_blank" rel="noopener" href="{% url 'interface_historical_pdf' group.pk %}">Abrir lista histórica em PDF</a><a class="gf-btn alt" href="{% url 'interface_historical_excel' group.pk %}">Exportar lista histórica em Excel</a></div>{% endif %}
   <div class="plan-heading">
     <h2>
-      <span class="plan-code">{{ group.code }}</span>{{ group.title }}
+      <span class="material-symbols-outlined">print</span>Lista de presença dos formandos
     </h2>
     <p>
-      {{ group.state }} · {{ active_count }} / {{ group.capacity }} inscritos · {{ group.days|default_if_none:'Por confirmar' }} dias · {{ group.hours_per_day|floatformat:1|default_if_none:'—'|default:'—' }} h/dia
-    </p>
-    <p>
-      {{ group.location }} · {{ group.trainer }} · {{ group.provider|default:'Entidade por definir' }}
+      {% if roster.historical_only %}Consulta dos formandos e do período registado no histórico. As assinaturas ficam em branco nesta segunda via.{% else %}Escolha um dia efectivo. Hora de chegada e rubrica ficam em branco para assinatura presencial.{% endif %}
     </p>
   </div>
+  {% if source_trainings and attendance_open %}
   <div class="plan-actions">
-    {% if user.is_staff %}<a class="gf-btn alt" href="{% url 'group_logistics' group.pk %}">Avaliação logística</a>{% endif %}
-    {% if user.is_staff and group.state == 'Planeada' %}
+    <a class="gf-btn" target="_blank" rel="noopener" href="{% url 'attendance_pdf' group.pk %}?source=historical">Abrir lista anterior / histórica em PDF</a>
+    <a class="gf-btn alt" href="{% url 'attendance_excel' group.pk %}?source=historical">Exportar lista histórica em Excel</a>
+  </div>
+  <p class="plan-note">Utiliza os participantes e os períodos do histórico importado. Não exige novas inscrições nem sessões; não comprova presenças.</p>
+  {% endif %}
+  {% if attendance_second_copy %}<p class="plan-note"><strong>Segunda via / consulta.</strong> As assinaturas ficam em branco; imprimir não confirma presenças.</p>{% endif %}
+  {% if attendance_open and not roster.historical_only %}
+  {% if not sessions %}<p role="status">Faltam os dias efectivos de formação. Não existem sessões para seleccionar.</p>{% if user.is_staff and group.state == 'Planeada' and not attendance_second_copy and not roster.historical_only %}<a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Definir dias de formação</a>{% endif %}{% endif %}
+  {% if not participant_count %}<p role="status">Ainda não existem formandos registados neste grupo.</p>{% endif %}
+  {% if user.is_staff and group.state == 'Planeada' and not attendance_second_copy and not roster.historical_only %}
+  <div class="plan-actions">
+    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Seleccionar formandos para a lista</a>{% if user.is_staff and perms.training.authorize_training_repeat and perms.training.add_enrollment and perms.training.view_employee and perms.training.view_training %}<a class="gf-btn alt" href="{% url 'repeat_admission' group.pk %}">Preparar reciclagem autorizada</a>{% endif %}
+  </div>
+  {% endif %}
+  <form method="get" action="{% url 'attendance_pdf' group.pk %}" class="plan-search" target="_blank" rel="noopener">
+    <label>
+      Dia da formação
+      <select name="date" class="gf-field">
+        {% for session in sessions %}
+        <option value="{{ session.date|date:'Y-m-d'|unlocalize }}">
+          {{ session.date|date:'d/m/Y' }}
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <span class="plan-note">{{ group.start_time|time:'H:i' }} — {{ group.end_time|time:'H:i' }} · Pausas: {{ group.break_hours|floatformat:1 }} h/dia</span>
+    <button class="gf-btn"{% if not participant_count or not sessions %} disabled{% endif %}>
+      Abrir PDF para imprimir
+    </button>
+    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not participant_count or not sessions %} disabled{% endif %}>
+      Gerar lista dos formandos em Excel
+    </button>
+  </form>
+  {% elif not attendance_open %}
+  <p>
+    {% if group.state == 'Cancelada' %}Grupo cancelado: lista indisponível.{% elif historical_edition or roster.historical_only %}Registo histórico: consulte as listas históricas em PDF ou Excel. As assinaturas não são comprovadas por esta segunda via.{% else %}Lista operacional indisponível neste estado. Consulte os dados e o calendário do grupo.{% endif %}
+  </p>
+  {% endif %}
+</section>
+<section class="plan-panel">{% if not roster.historical_only %}<strong>Planeamento: {{ group.get_planning_confirmation_display }}</strong>{% else %}<strong>Dados do histórico</strong>{% endif %}<p>Local: {{ group.location|default:'Por definir' }}</p>
+{% if user.is_staff and not roster.historical_only %}{% for warning in planning_warnings %}<p role="status">{{ warning }}</p>{% endfor %}{% endif %}</section>
+{% if roster.members %}
+<section class="plan-panel" id="formandos-registados"><h2>Formandos registados — {{ participant_count }}</h2>
+<p>Cada trabalhador aparece uma vez. A inscrição, o resultado e a presença mantêm os respectivos estados documentados.</p>
+<div class="batch-scroll"><table class="batch-table"><thead><tr><th>Formando / Nº Mec.</th><th>Direcção / Função</th><th>Registo</th><th>Presenças</th><th>Acção</th></tr></thead><tbody>
+{% for member in roster.members %}<tr><td>{{ member.employee.name }}<small>{{ member.employee.number|unlocalize }}</small></td><td>{{ member.employee.direction }}<small>{{ member.employee.function|default:member.employee.category }}</small></td>
+<td>{% if member.training %}{{ member.training.status_label }}<small class="block">{% include 'certificate_delivery_cell.html' with participation=member.training %}{% if user.is_staff and perms.training.change_trainingdocumentstate and perms.training.view_training and perms.training.view_employee %}<a class="block no-print text-xs" href="{% url 'planning_certificate_delivery' member.training.pk %}?scope={% if historical_edition %}edition{% else %}group{% endif %}&amp;group={{ group.pk|unlocalize }}">Registar entrega</a>{% endif %}</small>{% elif member.enrollment %}Inscrição {{ member.enrollment.state|lower }}{% endif %}</td>
+<td>{% if member.training.attendance_confirmed %}{{ member.training.attendance }} / {{ member.training.days|default_if_none:'Sem registo' }} dias{% else %}Sem registo{% endif %}</td>
+<td><a class="gf-btn alt" href="{% url 'employee_data' member.employee.pk %}">Ver Ficha</a>{% if member.training and user.is_staff %} <a class="gf-btn alt" href="{% url 'evaluation_detail' member.training.pk %}">Avaliação</a>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div></section>{% endif %}
+<section class="plan-panel">
+  <h2>Gestão do grupo</h2>
+  <div class="plan-actions">
+    {% if user.is_staff and group.state == 'Planeada' and not roster.historical_only %}
 <a class="gf-btn alt" href="{% url 'group_edit' group.pk %}">Editar calendário</a>
     <form method="post" action="{% url 'group_transition' group.pk %}">
       {% csrf_token %}
-      <input type="hidden" name="revision" value="{{ group.revision }}">
+      <input type="hidden" name="revision" value="{{ group.revision|unlocalize }}">
       <button class="gf-btn" name="action" value="start">
         Iniciar grupo
       </button>
@@ -53,61 +91,23 @@
     <a class="gf-btn" href="{% url 'batch_edit' seed.pk %}">Presenças, notas e certificados</a>{% endif %}{% if user.is_staff and group.state == 'Em Curso' %}
     <form method="post" action="{% url 'group_transition' group.pk %}">
       {% csrf_token %}
-      <input type="hidden" name="revision" value="{{ group.revision }}">
+      <input type="hidden" name="revision" value="{{ group.revision|unlocalize }}">
       <button class="gf-btn alt" name="action" value="finish">
         Concluir grupo
       </button>
     </form>
     {% endif %}
   </div>
-  <p class="plan-note">
+  {% if not roster.historical_only %}<p class="plan-note">
     A inscrição prepara a lista. Ao iniciar o grupo, os registos são ligados ao histórico e à grelha existente, com zero presenças por confirmar e sem notas ou certificados presumidos.
-  </p>
+  </p>{% endif %}
 </section>
-<section class="plan-panel" id="lista-presenca">
-  <div class="plan-heading">
-    <h2>
-      <span class="material-symbols-outlined">print</span>Lista de presença dos formandos
-    </h2>
-    <p>
-      Escolha um dia efectivo. Hora de chegada e rubrica ficam em branco para assinatura presencial.
-    </p>
-  </div>
-  {% if attendance_open %}
-  {% if user.is_staff and group.state == 'Planeada' %}
-  <div class="plan-actions">
-    <a class="gf-btn" href="{% url 'group_enrol' group.pk %}">Seleccionar formandos para a lista</a>
-  </div>
-  {% endif %}
-  <form method="get" action="{% url 'attendance_pdf' group.pk %}" class="plan-search">
-    <label>
-      Dia da formação
-      <select name="date" class="gf-field">
-        {% for session in sessions %}
-        <option value="{{ session.date|date:'Y-m-d' }}">
-          {{ session.date|date:'d/m/Y' }}
-        </option>
-        {% endfor %}
-      </select>
-    </label>
-    <span class="plan-note">{{ group.start_time|time:'H:i' }} — {{ group.end_time|time:'H:i' }} · Pausas: {{ group.break_hours|floatformat:1 }} h/dia</span>
-    <button class="gf-btn"{% if not active_count or not sessions %} disabled{% endif %}>
-      Imprimir lista PDF
-    </button>
-    <button class="gf-btn alt" formaction="{% url 'attendance_excel' group.pk %}"{% if not active_count or not sessions %} disabled{% endif %}>
-      Gerar lista dos formandos em Excel
-    </button>
-  </form>
-  {% else %}
-  <p>
-    Preparação da lista encerrada: grupo concluído, cancelado ou com data de fim ultrapassada.
-  </p>
-  {% endif %}
-</section>
+
+{% if enrollments or not roster.members %}
 <section class="plan-panel">
   <div class="plan-heading">
     <h2>
-      Formandos e confirmação de participação
+      Inscrições e contactos
     </h2>
     <p>
       A confirmação do convite não é presença. As notas de contacto permanecem na plataforma e não ocupam a coluna E-mail da lista.
@@ -138,13 +138,13 @@
         {% for en in enrollments %}
         <tr>
           <td>
-            <a href="{% url 'employee_data' en.employee_id %}">{{ en.employee.name }}</a><small>{{ en.employee.number }}</small>
+            <a href="{% url 'employee_data' en.employee_id %}">{{ en.employee.name }}</a><small>{{ en.employee.number|unlocalize }}</small>
           </td>
           <td>
             {{ en.employee.direction|default:'—' }}<small>{{ en.employee.source_data.Função|default:en.employee.category }}</small>
           </td>
           <td>
-            {{ en.state }}<small>{{ en.confirmation }}</small>{% if en.training_id %}<small>Horas verificadas: {{ en.training.verified_hours|default_if_none:'Por verificar' }}</small>{% endif %}
+            {{ en.state }}<small>{{ en.confirmation }}</small>{% if en.training_id %}<small>Presenças: {{ en.training.attendance }}{% if not en.training.attendance_confirmed %} (sem prova documental){% endif %}</small>{% endif %}
           </td>
           <td>
             {{ en.employee.phone|default:'—' }}<small>{{ en.employee.email|default:'—' }}</small>{% if en.contact_note %}<small>{{ en.contact_note }}</small>{% endif %}
@@ -160,12 +160,12 @@
             <details><summary>Gerir inscrição</summary>
             <form method="post" action="{% url 'enrollment_edit' group.pk en.pk %}" class="plan-inline-form">
               {% csrf_token %}
-              <input type="hidden" name="revision" value="{{ group.revision }}">
+              <input type="hidden" name="revision" value="{{ group.revision|unlocalize }}">
               <label>
                 Convite
                 <select class="gf-field" name="confirmation">
-                  <option{% if en.confirmation == 'Por confirmar' %} selected{% endif %}>
-                    Por confirmar
+                  <option value="Por confirmar"{% if en.confirmation == 'Por confirmar' %} selected{% endif %}>
+                    Contacto sem registo
                   </option>
                   <option{% if en.confirmation == 'Confirmado' %} selected{% endif %}>
                     Confirmado
@@ -186,7 +186,7 @@
             {% if group.state == 'Planeada' %}
             <form method="post" action="{% url 'enrollment_edit' group.pk en.pk %}" class="plan-inline-form">
               {% csrf_token %}
-              <input type="hidden" name="revision" value="{{ group.revision }}"><input class="gf-field" name="reason" placeholder="Motivo da retirada" required maxlength="1000">
+              <input type="hidden" name="revision" value="{{ group.revision|unlocalize }}"><input class="gf-field" name="reason" placeholder="Motivo da retirada" required maxlength="1000">
               <button class="gf-btn alt" name="action" value="cancel">
                 Retirar da lista
               </button>
@@ -206,33 +206,28 @@
     </table>
   </div>
 </section>
-{% if user.is_staff and group.state == 'Planeada' %}
+{% endif %}
+{% if user.is_staff and group.state == 'Planeada' and not roster.historical_only %}
 <details class="plan-panel"><summary>Cancelar este grupo</summary>
 <p class="plan-note">
   Conserva o código e o histórico de inscrições. O próximo grupo recebe um número novo.
 </p>
 <form method="post" action="{% url 'group_transition' group.pk %}" class="plan-search">
   {% csrf_token %}
-  <input type="hidden" name="revision" value="{{ group.revision }}"><input class="gf-field" name="reason" required maxlength="1000" placeholder="Motivo do cancelamento">
+  <input type="hidden" name="revision" value="{{ group.revision|unlocalize }}"><input class="gf-field" name="reason" required maxlength="1000" placeholder="Motivo do cancelamento">
   <button name="action" value="cancel" class="gf-btn alt">
     Cancelar grupo
   </button>
 </form>
-</details>{% endif %}{% if user.is_staff %}
+</details>{% endif %}{% if user.is_staff and can_delete_group %}
 <section class="plan-panel">
   <h2>
-    Correcção de turma criada por engano
+    Correcção de grupo criado por engano
   </h2>
   <p class="plan-note">
-    Pode eliminar uma turma planeada ou cancelada sem registos de formação associados. Nas turmas iniciadas, o histórico fica preservado.
+    Pode eliminar um grupo planeado ou cancelado sem registos de formação associados. Nos grupos iniciados, o histórico fica preservado.
   </p>
-  <a class="gf-btn alt" href="{% url 'group_delete' group.pk %}">Eliminar turma criada por engano</a>
+
 </section>
 {% endif %}
-
-<section class="plan-panel"><h2>Sessões e horas previstas</h2>
-{% if user.is_staff %}<a class="gf-btn" href="{% url 'group_attendance' group.pk %}">Importar / corrigir presenças por sessão</a>{% endif %}
-{% if user.is_staff %}<a class="gf-btn" href="{% url 'session_create' group.pk %}">Adicionar sessão</a>{% endif %}
-<table><tr><th>Data</th><th>Sessão</th><th>Horas</th><th></th></tr>
-{% for session in sessions %}<tr><td>{{ session.date|date:'d/m/Y' }}</td><td>{{ session.code }}</td><td>{{ session.duration|default_if_none:'Por verificar' }}</td><td>{% if user.is_staff %}<a href="{% url 'session_edit' group.pk session.pk %}">Rever sessão</a>{% endif %}</td></tr>{% endfor %}</table></section>
 {% endblock %}

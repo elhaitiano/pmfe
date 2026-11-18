@@ -6,7 +6,7 @@
   <section class="gf-panel">
     <div class="gf-body space-y-4">
       <h2 class="text-xl font-bold">{{ employee }} — {{ training.title }}</h2>
-      <p>Nota final /20: {{ training.grade|default_if_none:'—' }} · Resultado: {{ training.result }}</p>
+      <p>Nota registada: {{ training.documented_grade_label }} · Resultado: {{ training.presentation_result }}</p>
       <p>Formação concluída não significa aprovação. Uma prova não substitui automaticamente a nota final.</p>
       <p>Logística /5: {{ evaluation.logistics|default_if_none:'—' }} · {{ evaluation.validation|default:'Sem registo' }}</p>
       <a class="gf-btn" href="{% url 'evaluation_edit' training.pk %}">Avaliação e nota final</a>
@@ -31,7 +31,7 @@
         <a class="gf-btn alt" href="{% url 'attempt_create' exam.pk %}">Autorizar tentativa</a>
         {% for attempt in exam.attempts.all %}
         <p>
-          <a class="text-secondary" href="{% url 'attempt_edit' attempt.pk %}">Tentativa {{ attempt.number }}</a>:
+          <a class="text-secondary" href="{% url 'attempt_edit' attempt.pk %}">Tentativa {{ attempt.number|unlocalize }}</a>:
           {{ attempt.result }}
           {% if attempt.finalized %}
           · {{ attempt.percent|floatformat:2 }}% · {{ attempt.grade20|floatformat:2 }}/20

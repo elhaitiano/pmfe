@@ -1,0 +1,4 @@
+{% extends "admin/base.html" %}{% load static %}
+{% block title %}{{ title }} | PMFE — Administração{% endblock %}
+{% block branding %}<div id="site-name"><a href="{% url 'admin:index' %}">PMFE · Administração e Definições</a></div>{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'pmf/epal-jakarta.css' %}"><link rel="stylesheet" href="{% static 'pmf/epal-admin.css' %}">{% endblock %}

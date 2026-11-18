@@ -11,6 +11,8 @@ from .analytics import statistics, distribution
 from .forms import TrainingForm
 from .models import Course, Employee, Enrollment, Training
 from .planning import create_group
+from .f6_test_helpers import confirm_fixture
+from .scheduling_guard import reservation_transaction
 
 
 class TrainingIntegrityTests(TestCase):
@@ -20,10 +22,11 @@ class TrainingIntegrityTests(TestCase):
         self.addCleanup(clock.stop)
         self.person = Employee.objects.create(number='INT01', name='Pessoa de teste')
         self.other = Employee.objects.create(number='INT02', name='Outra pessoa')
-        self.course = Course.objects.create(title='Curso de teste', code='INT')
+        self.course = Course.objects.create(validation_status='validated', title='Curso de teste', code='INT')
         self.group = create_group(self.course, dict(dates=[date(2025, 1, 1)], trainer='Formador',
             provider='', location='Sala', capacity=10, hours_per_day=Decimal('7'),
             break_hours=Decimal('1'), start_time=time(8), end_time=time(16)))
+        confirm_fixture(self.group)
         self.user = get_user_model().objects.create_user('editor_integrity', is_staff=True)
         self.client.force_login(self.user)
 
@@ -76,7 +79,8 @@ class TrainingIntegrityTests(TestCase):
 
     def test_finish_rejects_unlinked_enrolment(self):
         Enrollment.objects.create(group=self.group, employee=self.person)
-        self.group.state = 'Em Curso'; self.group.save(update_fields=['state'])
+        with reservation_transaction():
+            self.group.state = 'Em Curso'; self.group.save(update_fields=['state'])
         self.client.post(reverse('group_transition', args=[self.group.pk]),
             {'revision': self.group.revision, 'action': 'finish'})
         self.group.refresh_from_db()
@@ -115,7 +119,7 @@ class TrainingIntegrityTests(TestCase):
             row.full_clean()
 
     def test_history_form_and_reports_allow_unknown_duration(self):
-        payload = dict(title='Histórico desconhecido', start='2025-01-01', end='2025-01-01',
+        payload = dict(area='Técnica',title='Histórico desconhecido', start='2025-01-01', end='2025-01-01',
             days='', hours_per_day='', attendance=0, status='Concluído', result='Pendente',
             certified='unknown', plan_status='Fora do Plano', historical_name='Nome antigo',
             identity_quality='Rever', matching_method='Correspondência manual', source_row=12,
@@ -140,7 +144,7 @@ class TrainingIntegrityTests(TestCase):
 
     def test_course_link_and_unknown_group_duration_are_validated(self):
         Enrollment.objects.create(group=self.group, employee=self.person)
-        other_course = Course.objects.create(title='Outro curso')
+        other_course = Course.objects.create(validation_status='validated', title='Outro curso')
         row = self.training(group=self.group, course=other_course)
         with self.assertRaises(ValidationError): row.full_clean()
         row.course = self.course; row.days = None
@@ -149,8 +153,8 @@ class TrainingIntegrityTests(TestCase):
 
 class HistoryMigrationTests(TransactionTestCase):
     def test_preserves_source_identifiers_and_backfills_trace(self):
-        before = [('training', '0014_course_code')]
-        after = [('training', '0015_training_history_integrity')]
+        before = [('training', '0027_uniform_training_areas')]
+        after = [('training', '0028_stabilization_compatibility')]
         executor = MigrationExecutor(connection)
         executor.migrate(before)
         try:

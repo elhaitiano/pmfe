@@ -1,6 +1,6 @@
 {% extends 'planning/base.html' %}
 {% load static %}
-{% block plan_content %}
+{% block plan_content %}{% if course %}{% include 'planning/technical_status.html' with technical=course.technical %}{% endif %}{% if course.source_metadata %}<p class="plan-note">Valores originais preservados. As correcções exigem justificação e referência documental.</p>{% endif %}{% if form.total_hours is not None %}<p id="planTotalHours">{{ form.total_hours|floatformat:'-2' }} H</p>{% endif %}{% if user.is_staff and perms.training.change_course and course.source_action_id == 'AC-2026-015' %}<a class="gf-btn alt" href="{% url 'course_correct' course.pk %}">Corrigir dados</a>{% endif %}
 <datalist id="training-sites">
   <option value="CD Marçal"></option>
   <option value="ETA Kifangondo"></option>
@@ -21,15 +21,19 @@
     {{ form.non_field_errors }}{% for f in form.hidden_fields %}{{ f }}{{ f.errors }}{% endfor %}
     <div class="plan-form-grid">
       {% for field in form.visible_fields %}
+      {% if field.name == 'capacity' or field.name == 'break_hours' or field.name == 'planning_confirmation' %}
+      <details><summary>{{ field.label }}{% if field.value %}: {{ field.value }}{% endif %}</summary>
+      {% endif %}
       <label>
-        <span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        <span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>{{ field }}{% if field.name == 'location' %}<button class="gf-btn alt" type="button" id="add-location">+ Novo local</button>{% endif %}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
       </label>
+      {% if field.name == 'capacity' or field.name == 'break_hours' or field.name == 'planning_confirmation' %}</details>{% endif %}
       {% endfor %}
     </div>
     {% if form.start %}
     <div class="plan-note">
       <strong>Duração: <output id="planDuration" aria-live="polite">—</output></strong>
-      <p>Contagem automática do início ao fim, incluindo ambos os dias, fins de semana e feriados.</p>
+      <p>Apenas os dias expressamente seleccionados contam. Sábados, domingos e feriados seleccionados são preservados.</p>
     </div>
     {% endif %}
     <div class="plan-actions">
@@ -43,5 +47,19 @@
 </section>
 {% endblock %}
 {% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const location = document.getElementById('id_location');
+  const extra = document.getElementById('id_new_location');
+  if (!location || !extra) return;
+  const label = extra.closest('label');
+  function update() { label.hidden = location.value !== '__new__'; }
+  location.addEventListener('change', update);
+  document.getElementById('add-location').addEventListener('click', function () {
+    location.value = '__new__'; update(); extra.focus();
+  });
+  update();
+});
+</script>
 <script src="{% static 'pmf/planning.js' %}" defer></script>
 {% endblock %}

@@ -1,0 +1,1 @@
+{% if user.is_superuser %}<section class="content p-10"><div class="glass-panel rounded-2xl p-7"><h2>Cópia de segurança</h2><form action="{% url 'backup' %}" method="post">{% csrf_token %}<button class="gf-btn" type="submit"><span class="material-symbols-outlined" aria-hidden="true">backup</span>Criar cópia de segurança</button></form></div></section>{% endif %}

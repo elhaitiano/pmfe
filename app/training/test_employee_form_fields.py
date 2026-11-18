@@ -7,14 +7,17 @@ from .models import Employee
 
 class EmployeeFormFieldsTests(TestCase):
     def test_edit_roundtrip_and_pages_use_columns(self):
-        self.client.force_login(get_user_model().objects.create_user('editor', is_staff=True))
+        from django.contrib.auth.models import Permission
+        editor=get_user_model().objects.create_user('editor', is_staff=True)
+        editor.user_permissions.set(Permission.objects.filter(content_type__app_label='training',codename__in=['view_employee','change_employee']))
+        self.client.force_login(editor)
         employee = Employee.objects.create(number='E123', name='Teste',
             source_data={'Sexo': 'Antigo', 'Nº do BI': 'Antigo', 'Validação Cadastro EPAL': 'Antigo', 'extra': 'keep'})
         data = dict(number='E123', name='Teste', gender='F', identity_number='000123LA045',
             social_security_number='0012345', marital_status='Casado(A)', company='EPAL',
             direction='Direcção técnica', function='Operadora', category='Técnica',
             area='Zona Norte', cost_center='CC-002', registration_origin='Mapa EPAL',
-            review_status='Apto', registration_validation='Cadastro validado para teste', source_row=20,
+            review_status='Apto', registration_validation='Confirmado', source_row=20,
             phone_secondary='923456789')
         response = self.client.post(reverse('employee_edit', args=[employee.pk]), data)
         self.assertEqual(response.status_code, 302)
@@ -32,7 +35,7 @@ class EmployeeFormFieldsTests(TestCase):
             response = self.client.get(reverse(route, args=[employee.pk]))
             self.assertContains(response, '000123LA045')
             self.assertContains(response, 'Operadora')
-            for value in ['0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Cadastro validado para teste']:
+            for value in ['0012345', 'CC-002', 'Zona Norte', 'Mapa EPAL', 'Confirmado']:
                 self.assertNotContains(response, value)
         response = self.client.get(reverse('employee_edit', args=[employee.pk]))
         for name in form.fields:

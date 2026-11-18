@@ -28,6 +28,8 @@ class DayMonthYearInput(forms.DateInput):
     def __init__(self, attrs=None):
         attributes = {
             'placeholder': 'dd/mm/aaaa',
+            'data-pmf-calendar': '1',
+            'aria-description': 'Data no formato dia/mês/ano. Abra o calendário pelo botão ou Alt+Seta para baixo.',
             'maxlength': '10',
             'pattern': '[0-9]{2}/[0-9]{2}/[0-9]{4}',
         }
@@ -45,7 +47,10 @@ class DayMonthYearInput(forms.DateInput):
 
 
 def date_widgets(fields):
-    for field in fields.values():
+    for name,field in fields.items():
+        if isinstance(field,forms.ChoiceField) and not isinstance(field,forms.ModelChoiceField):
+            label='Conclusão não documentada' if name=='status' else 'Sem informação validada'
+            field.choices=[(value,label if str(text).strip().casefold()=='por confirmar' else text) for value,text in field.choices]
         if isinstance(field, forms.DateField) and not isinstance(field, forms.DateTimeField):
             field.input_formats = ['%d/%m/%Y', '%Y-%m-%d']
             if not isinstance(field.widget, forms.HiddenInput):

@@ -55,6 +55,19 @@ BatchFormSet = modelformset_factory(Training, form=BatchForm, formset=EditionFor
 
 
 def edition_queryset(seed):
+    edition=(seed.source_data or {}).get('_EPAL_CONSOLIDATED_FACTS',{}).get('edition')
+    if edition:return Training.objects.filter(source_data___EPAL_CONSOLIDATED_FACTS__edition=edition).select_related('employee').order_by('employee__name','pk')
+    # Explicit group bindings take precedence over a guessed edition tuple.
+    from .group_roster import source_keys, group_trainings
+    from .models import TrainingGroup
+    group_id = seed.group_id
+    if not group_id and seed.source_key:
+        groups = list(TrainingGroup.objects.all())
+        matches = [pk for pk, keys in source_keys([g.pk for g in groups]).items() if seed.source_key in keys]
+        if len(matches) == 1:
+            group_id = matches[0]
+    if group_id:
+        return group_trainings(TrainingGroup.objects.get(pk=group_id))
     return Training.objects.filter(**{key: getattr(seed, key) for key in EDITION_FIELDS})\
         .select_related('employee').order_by('employee__name', 'employee__number', 'pk')
 
@@ -73,7 +86,7 @@ def batch_index(request):
     if query:
         rows = rows.filter(Q(title__icontains=query) | Q(trainer__icontains=query)
                            | Q(location__icontains=query) | Q(provider__icontains=query))
-    editions = rows.values(*EDITION_FIELDS, 'group__number').annotate(seed=Min('pk'), participants=Count('pk'))\
+    editions = rows.values(*EDITION_FIELDS, 'group__number','source_data___EPAL_CONSOLIDATED_FACTS__edition').annotate(seed=Min('pk'), participants=Count('pk'))\
         .order_by('-start', 'title', 'seed')
     return render(request, 'batch_index.html', {'page': Paginator(editions, 20).get_page(request.GET.get('page')),
         'q': query})
@@ -98,7 +111,7 @@ def batch_edit(request, pk):
     error = ''
     if request.method == 'POST' and formset.is_valid():
         if any(f.cleaned_data['revision'] != versions.get(f.instance.pk) for f in formset):
-            error = 'Há alterações mais recentes nesta turma. Reabra a grelha para evitar substituir dados atualizados.'
+            error = 'Há alterações mais recentes neste grupo. Reabra a grelha para evitar substituir dados actualizados.'
         else:
             modified = [f for f in formset if any(f.cleaned_data[k] != before[f.instance.pk][k] for k in UPDATE_FIELDS)]
             digest = payload_digest(formset)
