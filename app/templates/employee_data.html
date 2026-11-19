@@ -183,7 +183,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
         <div class="ficha-history-frame">
           <table class="ficha-history-table">
             <colgroup>
-              <col style="width:5%"><col style="width:26%"><col style="width:20%"><col style="width:10%"><col style="width:17%"><col style="width:6%"><col style="width:6%"><col style="width:10%">
+              <col style="width:5%"><col style="width:32%"><col style="width:18%"><col style="width:10%"><col style="width:13%"><col style="width:6%"><col style="width:6%"><col style="width:10%">
             </colgroup>
             <thead class="text-[11px] uppercase tracking-[.16em] text-slate-500 border-b border-white/10">
               <tr>
@@ -229,7 +229,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ t.area|default:'—' }}
                 </td>
                 <td class="py-5 text-slate-300 whitespace-nowrap period">
-                  {{ t.start|date:'d/m/Y' }} – {{ t.end|date:'d/m/Y' }}
+                  {{ t.start|date:'d/m/y' }} – {{ t.end|date:'d/m/y' }}
                 </td>
                 <td class="py-5 text-center font-semibold text-primary">
                   {% if t.ux_hours is not None %}{{ t.ux_hours|floatformat:'-2' }} h{% else %}—{% endif %}

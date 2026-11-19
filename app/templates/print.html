@@ -70,7 +70,7 @@
               <div class="card-half">
                 <div class="card-title"> 1. HORAS FREQUENTADAS</div>
                 <div class="card-value">
-                  {% if stats.verified_hours_records %}{{ stats.hours|floatformat:0 }} H{% else %}Sem registo{% endif %}{% if stats.certified_hours_records %}<small style="display:block;font-size:12px;font-weight:500;margin-top:6px">{{ stats.certified_hours|floatformat:'-2' }} h certificadas</small>{% endif %}
+                  {% if stats.verified_hours_records %}{{ stats.hours|floatformat:0 }} H{% else %}Sem registo{% endif %}
                 </div>
               </div>
               <div class="card-divider">
@@ -130,7 +130,7 @@
 
         <div class="table-section">
           <table>
-            <colgroup><col style="width:7%"><col style="width:27%"><col style="width:15%"><col style="width:13%"><col style="width:17%"><col style="width:9%"><col style="width:12%"></colgroup>
+            <colgroup><col style="width:6%"><col style="width:34%"><col style="width:15%"><col style="width:11%"><col style="width:12%"><col style="width:9%"><col style="width:13%"></colgroup>
             <thead><tr class="history-title-row"><th colspan="7">HIST&#211;RICO DE FORMA&#199;&#213;ES</th></tr><tr><th>ANO</th><th>FORMA&#199;&#195;O</th><th>FORMADOR(A)</th><th>CATEGORIA</th><th>PER&#205;ODO</th><th>HORAS</th><th>ASSIDUIDADE</th></tr></thead>
             <tbody>
               {% for t in trainings %}
@@ -139,7 +139,7 @@
                   {{ t.start|date:'Y' }}
                 </td>
                 <td>
-                  {{ t.title }}<small class="block">{% include 'certificate_delivery_cell.html' with participation=t %}</small>
+                  {{ t.title }}
                 </td>
                 <td>
                   {{ t.trainer|default:'-' }}
@@ -148,10 +148,10 @@
                   {{ t.area|default:'-' }}
                 </td>
                 <td>
-                  <span class="period-dates">{{ t.start|date:'d/m/Y' }} <br> {{ t.end|date:'d/m/Y' }}</span>
+                  <span class="period-dates">{{ t.start|date:'d/m/y' }} <br> {{ t.end|date:'d/m/y' }}</span>
                 </td>
                 <td>
-                  {% include 'hours_cell.html' %}
+                  {% if t.completed_hours is not None %}{{ t.completed_hours|floatformat:'-2' }} h{% else %}Sem registo{% endif %}
                 </td>
                 <td>
                   {% if t.attendance_percent is not None %}{{ t.attendance_percent|floatformat:-1 }}%{% else %}&mdash;{% endif %}

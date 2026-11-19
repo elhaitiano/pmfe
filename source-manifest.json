@@ -1,5 +1,5 @@
 {
-  "release": "PMFE-8088-confirmacao-entregas-20261119",
+  "release": "PMFE-8088-ficha-compacta-20261119",
   "origin_main": "8c126d7ae7be82c11bc260800227b4e7343ac0fb",
   "source": "8088 consolidada; sem bases ou dados pessoais",
   "files": {
@@ -183,7 +183,7 @@
     "app/templates/documentary_kpis.html": "03a23088fe4a6c75a76ba0ce84e7aeac0d222da40ac8eb4785663543a606eaf5",
     "app/templates/documents.html": "4a8934f19f573951eb23d0431f1bf6e00a2f8ffbfd73f1c1d0f63d8371299e43",
     "app/templates/employee.html": "046267913ba8bdb78ca68c09e6e4a381379ae616456487f31867067ef2f1fcb9",
-    "app/templates/employee_data.html": "7dc1a0f6469ca338aecaeebe942e4bf67628e0035e4c1c7ec942ca3becba3e2b",
+    "app/templates/employee_data.html": "82730373810a2177fe30d1286670f5a19f7bb9aa50d9818cfca9af8d7791a0de",
     "app/templates/employee_files.html": "62b45139c25e2114824d2b491097d3dd1c96e12ceeab1e176bc006cd9828e5c4",
     "app/templates/employee_selector.html": "0bebcaddfb692f6d33bd74a6cfee3a967d64e1ce6a3323f244a2d85520885d43",
     "app/templates/employee_selector_legacy.html": "33016759ef86ae087ca3fa1ee4f96fc992bc770047a66b5e3f61da5c9e246e07",
@@ -255,7 +255,7 @@
     "app/templates/planning/resource_form.html": "0f59a3bf72989d950c8024ad01dfaad042ac19ec0a4f3651a946d40cbc35741c",
     "app/templates/planning/resources.html": "a1ac1feff7356426162e0121eaf67e6b34c5368081ae8ed6ca243efd773a2b8d",
     "app/templates/planning/technical_status.html": "bf15439ec14523f494ce6e4f47a0069b2350b626abb0f6b86dc325210764d913",
-    "app/templates/print.html": "c2ab017c1e494cd903d83978f0e593f256da0450a906d1963fb47c6913233636",
+    "app/templates/print.html": "782351e3c367f9efd6eed4d8661ec86d58ab9a79e2ed9968aee2be96d7d9b35e",
     "app/templates/professional_navigation.html": "64b3b052befaee2224b37cc899c0f7ac9df96c9bf3e9e15c5f47e687dcdab6c8",
     "app/templates/professional_shell.html": "7001ad8f6d3faabb7f862c4245ac52dcafc63109a6f86c2a37a41a2616f8646c",
     "app/templates/reference_filters.html": "e0c58b6b7d91171a1755b1b6db014abf35b8630cad6d44603beaee780b1a9336",
