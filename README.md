@@ -139,3 +139,9 @@ A correcção de formações e dados cadastrais conserva a lista ou grupo de ori
 O percurso usa parâmetros locais por ligação, sem partilhar a origem entre separadores. A posição na lista é reposta quando há JavaScript; os enlaces de grupo/ficha/histórico/correcção e os formulários também conservam a origem sem JavaScript. O retorno completo não é interceptado pelos painéis sobrepostos. URLs antigas de correcção de uma participação ligada a um grupo recuperam esse grupo como alternativa.
 
 Os destinos são validados; confirmação de sucesso assinada, limitada no tempo e associada ao utilizador. Não há alterações de esquema, cálculos ou permissões. **156 testes locais aprovados**, incluindo 14 testes de navegação. A gravação e o regresso foram ensaiados no Edge numa cópia independente; a instalação real foi verificada por consulta, sem alterações a participações reais. O resultado da CI remota deve ser consultado no GitHub.
+
+## Correcção de entrega após confirmação em lote
+
+Uma correcção explícita para **Certificado entregue: Não** prevalece sobre a confirmação anterior de entrega em lote e sobre o contador importado. A obtenção e a emissão permanecem independentes. O resumo de certificados é calculado a partir do estado actual; a evidência anterior continua preservada no JSON e na auditoria, sem ser usada como contador imutável. Dashboard, ficha, histórico e exportações aplicam esta mesma regra. A posterior alteração para Sim pode voltar a contar a entrega, respeitando as validações existentes.
+
+Esta correcção não exige migrações, regravação dos dados, documentos anexados ou alterações do design. **160 testes locais aprovados**, incluindo quatro regressões sobre a prioridade do Não, os dados compactados do Dashboard, a independência da obtenção e a conservação das evidências anteriores.

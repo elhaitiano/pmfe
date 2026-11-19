@@ -85,7 +85,14 @@ def reuse_archived_hours():
     return changes
 
 def row_summary(row):
-    return (row.indicator_source_data or {}).get('_certificate_summary') or {}
+    summary=dict((row.indicator_source_data or {}).get('_certificate_summary') or {})
+    # Imported summaries are evidence of the earlier state, not immutable
+    # counters. Keep their evidence, but respect the current explicit decision.
+    if row.certified is False:summary['delivered_count']=0
+    elif summary.get('handover'):summary['delivered_count']=int(row.delivery_reported)
+    elif row.certified is True and not summary.get('same_certificate_as'):
+        summary['delivered_count']=max(1,summary.get('delivered_count',0))
+    return summary
 
 def stamp_projection(row):
     """Evidence imports are already reconciled, not pending manual user edits."""

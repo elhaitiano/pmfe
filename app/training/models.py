@@ -233,6 +233,8 @@ class Training(models.Model):
 
     @property
     def delivery_reported(self):
+        # A later explicit correction must supersede an earlier batch receipt.
+        if self.certified is False:return False
         if self.certified is True or self.declared_delivery_date is not None:return True
         from .recovery_import import approved_handover
         return approved_handover(self)

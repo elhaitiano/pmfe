@@ -128,5 +128,5 @@ def certificate_cards(rows,user):
                 for doc in cert.get('documents',[]):
                     if doc.get('sha256'):
                         urls.append(reverse('certificate_source_pdf',args=[t.pk,doc['sha256']])+'?view=1')
-            cards.append({'title':getattr(t,'ux_title',t.title),'number':cert.get('number') or '—','url':urls[0] if urls else None,'delivered':cert.get('delivered') is True})
+            cards.append({'title':getattr(t,'ux_title',t.title),'number':cert.get('number') or '—','url':urls[0] if urls else None,'delivered':t.certified is not False and cert.get('delivered') is True})
     return cards

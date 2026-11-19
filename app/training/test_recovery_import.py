@@ -121,3 +121,38 @@ class RecoveryImportTests(TestCase):
         self.assertTrue(a.delivery_reported)
         a._dashboard_source['_certificate_summary']['handover']['authority_digest']='forged'
         self.assertFalse(a.delivery_reported)
+
+    def test_explicit_no_overrides_earlier_batch_handover_without_losing_obtained(self):
+        self.run_import();self.handovers();a=Training.objects.get(employee=self.a)
+        before=deepcopy(a.source_data);a.certified=False;a.full_clean();a.save(update_fields=['certified'])
+        self.assertFalse(a.delivery_reported)
+        from .analytics import statistics,document_value
+        from .certificate_register import row_summary
+        stats=statistics(list(Training.objects.all()))
+        self.assertEqual(stats['certificates_obtained'],2);self.assertEqual(stats['certificates_issued'],2)
+        self.assertEqual(stats['certificates_reported'],1);self.assertEqual(stats['certificates_reported_pending'],1)
+        self.assertEqual(stats['certificate_holders'],1);self.assertEqual(row_summary(a)['delivered_count'],0)
+        self.assertIs(document_value(a,'learner_delivered'),False)
+        a.refresh_from_db();self.assertEqual(a.source_data,before)
+        self.assertEqual(a.completed_hours,14)
+
+    def test_compact_dashboard_and_profile_agree_after_negative_delivery_correction(self):
+        self.run_import();self.handovers();a=Training.objects.get(employee=self.a);a.certified=False
+        from .analytics import statistics
+        profile=statistics([a]);a._dashboard_source={k:v for k,v in a.source_data.items() if k in ['_certificate_summary','_attendance_import_v1']}
+        dashboard=statistics([a]);self.assertEqual(profile['certificates_reported'],0)
+        self.assertEqual(dashboard['certificates_reported'],0);self.assertEqual(dashboard['certificates_obtained'],1)
+        self.assertEqual(a.certificate_label,'Não entregue')
+
+    def test_positive_correction_can_count_again_without_mutating_batch_evidence(self):
+        self.run_import();self.handovers();a=Training.objects.get(employee=self.a)
+        from .certificate_register import certificate_statistics
+        a.certified=False;self.assertEqual(certificate_statistics([a])['certificates_reported'],0)
+        a.certified=True;self.assertEqual(certificate_statistics([a])['certificates_reported'],1)
+        self.assertTrue(a.delivery_reported)
+
+    def test_negative_correction_still_applies_if_summary_has_multiple_old_deliveries(self):
+        self.run_import();a=Training.objects.get(employee=self.a);a.certified=False
+        a.source_data['_certificate_summary']['delivered_count']=2
+        from .certificate_register import certificate_statistics
+        self.assertEqual(certificate_statistics([a])['certificates_reported'],0)

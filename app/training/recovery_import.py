@@ -13,6 +13,7 @@ KIND='assisted-recovery'
 
 def approved_handover(training):
     """Delivery to learner OR HR; never presume which recipient or its date."""
+    if training.certified is False:return False
     marker=((training.indicator_source_data or {}).get('_certificate_summary') or {}).get('handover')
     if not isinstance(marker,dict) or training.certificate_issued is not True:return False
     from .models import DocumentaryRecord

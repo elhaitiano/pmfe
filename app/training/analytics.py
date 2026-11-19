@@ -111,6 +111,8 @@ def documentary_states(rows):
             row._state.fields_cache['document_state'] = states.get(row.pk)
 
 def document_value(row, field):
+    if field=='learner_delivered' and row.certified is False and ((row.indicator_source_data or {}).get('_certificate_summary') or {}).get('handover'):
+        return False
     from .data_validation import fact
     if not fact(row, field):
         return None
