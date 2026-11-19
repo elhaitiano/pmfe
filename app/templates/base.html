@@ -87,7 +87,7 @@
     {% if user.is_authenticated %}
     {% include 'help_assistant.html' %}
     {% endif %}
-    {% include 'professional_shell.html' %}{{ pmfe_ui_config|json_script:'pmfe-ui-config' }}<script src="{% static 'pmf/professional-ui.js' %}" defer></script>
+    {% include 'professional_shell.html' %}{{ pmfe_ui_config|json_script:'pmfe-ui-config' }}<script src="{% static 'pmf/professional-ui.js' %}?v=20261119-flow1" defer></script>
     <script src="{% static 'pmf/card-effects.js' %}?v=20261117-1" defer></script>
 <script src="{% static 'pmf/epal-fidelity.js' %}" defer></script>
     <script src="{% static 'pmf/epal-sidebar-exact.js' %}?v=20261117-avaliacao" defer></script>

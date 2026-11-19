@@ -102,7 +102,10 @@ def navigation(request):
         parsed=urlsplit(candidate)
         if parsed.path.startswith('/') and not parsed.path.startswith('//') and chr(92) not in parsed.path and parsed.path!=request.path and parsed.path not in ['/entrar/','/sair/']:
             back=parsed.path+('?' + parsed.query if parsed.query else '')
-    return {'ux_admin_visible':staff_tools,'ux_can_validate':validate,'ux_can_audit':audit,'ux_can_upload':documents,'ux_back_url':back,'ux_section':section,'ux_crumbs':crumbs}
+    from .edit_navigation import context as edit_context
+    flow=edit_context(request)
+    if flow['origin'] and flow['origin'].split('#')[0]!=request.get_full_path() and (name in ['training_edit','employee_edit','evaluation_edit','reaction_edit'] or request.GET.get('return_to')):back=flow['origin']
+    return {'ux_admin_visible':staff_tools,'ux_can_validate':validate,'ux_can_audit':audit,'ux_can_upload':documents,'ux_back_url':back,'ux_section':section,'ux_crumbs':crumbs,'edit_navigation':flow}
 
 from django.views.decorators.http import require_GET
 

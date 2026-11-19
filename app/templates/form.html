@@ -9,6 +9,7 @@
     <div class="gf-body">
       <form method="post" id="trainingForm">
         {% csrf_token %}
+        {% include 'edit_return_field.html' %}
         {{ form.non_field_errors }}
         {% if form.instance.participation_id %}
         <p class="text-xs text-slate-400">ID de origem: {{ form.instance.participation_id|unlocalize }}</p>
@@ -25,7 +26,7 @@
                 {{ employee.name }}
               </div>
             </div>
-            <a class="gf-btn alt !py-2" href="{% if employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'home' %}{% endif %}">Cancelar
+            <a class="gf-btn alt !py-2" data-pmfe-full href="{% if edit_navigation.origin %}{{ edit_navigation.origin }}{% elif employee %}{% url 'employee_detail' employee.pk %}{% else %}{% url 'home' %}{% endif %}">Cancelar
             </a>
           </div>
           {% for group_title, fields in form.design_groups %}
@@ -71,6 +72,7 @@
           <button class="gf-btn mt-4{% if not form.number %} w-full{% endif %}">
             <span class="material-symbols-outlined text-base">save</span>Guardar
           </button>
+          {% if edit_navigation.origin and edit_navigation.editing %}<button class="gf-btn alt mt-4" name="after_save" value="return">Guardar e {% if edit_navigation.label == 'Voltar ao grupo' %}voltar ao grupo{% else %}voltar à lista{% endif %}</button>{% endif %}
         </div>
       </form>
     </div>

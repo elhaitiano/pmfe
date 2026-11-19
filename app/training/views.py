@@ -1,4 +1,6 @@
 from .professional_ui import person_ids
+from .edit_navigation import saved_response
+from django.urls import reverse
 from .training_areas import AREAS
 from . import data_validation as validation
 from contextlib import closing
@@ -108,7 +110,7 @@ def employee_edit(request, pk):
         with transaction.atomic():
             employee = form.save()
             record(request, 'EDIT_EMPLOYEE', str(employee))
-        return redirect('employee_data', pk=employee.pk)
+        return saved_response(request,reverse('employee_data',args=[employee.pk]))
     return render(request, 'form.html', {'form': form, 'title': 'Editar dados do formando', 'employee': employee})
 
 @login_required
@@ -190,6 +192,10 @@ def training_create(request, pk):
 @staff_required
 def training_edit(request, pk):
     training = get_object_or_404(Training, pk=pk)
+    from .edit_navigation import context as navigation_context,label as navigation_label
+    flow=navigation_context(request)
+    group_return=reverse('group_detail',args=[training.group_id]) if training.group_id else ''
+    if not flow['origin'] and group_return:flow.update(origin=group_return,label=navigation_label(group_return))
     before = str(model_to_dict(training))
     form = TrainingForm(request.POST or None, instance=training, initial={'revision': training.version})
     if request.method == 'POST' and form.is_valid():
@@ -198,10 +204,9 @@ def training_edit(request, pk):
             changed = Training.objects.filter(pk=pk, version=form.cleaned_data['revision']).update(**values, version=training.version + 1)
             if changed:
                 record(request, 'UPDATE_TRAINING', f'#{pk} BEFORE {before}\nAFTER {model_to_dict(form.instance)}')
-                messages.success(request, 'Formação actualizada.')
-                return redirect('employee_detail', pk=training.employee_id)
+                return saved_response(request,reverse('employee_detail',args=[training.employee_id]),default_target=group_return)
         form.add_error(None, 'Este registo foi alterado noutra janela. Reabra a página antes de editar.')
-    return render(request, 'form.html', {'form': form, 'title': 'Corrigir formação', 'employee': training.employee})
+    return render(request, 'form.html', {'form': form, 'title': 'Corrigir formação', 'employee': training.employee,'edit_navigation':flow})
 
 @login_required
 @staff_required

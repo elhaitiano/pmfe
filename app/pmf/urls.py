@@ -62,3 +62,6 @@ urlpatterns += [path('historico/', history_navigation.index, name='history_index
 
 from training import direct_assessments
 urlpatterns += [path('avaliacao/resultados/', direct_assessments.index, name='direct_assessments')]
+
+from training import edit_navigation
+urlpatterns += [path('navegacao/guardado/',edit_navigation.saved,name='edit_saved')]

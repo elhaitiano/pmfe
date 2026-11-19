@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count,Q
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render,redirect
+from django.urls import reverse
+from .edit_navigation import saved_response
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from . import group_validation as service
@@ -32,7 +34,7 @@ def review(request):
             # No unsigned or altered groups are accepted after a failed confirmation.
         else:
             messages.success(request,f'Validação concluída: {len(changed)} participação(ões). Notas e certificados preservados.')
-            return redirect('group_validation')
+            return saved_response(request,reverse('group_validation'))
     elif keys or request.GET.get('course'):
         try:
             if keys and request.GET.get('course'):raise ValidationError('Escolha grupos ou uma formação, não ambos.')

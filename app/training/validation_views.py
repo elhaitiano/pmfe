@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied,ValidationError
 from django.http import Http404
 from django.shortcuts import render,redirect,get_object_or_404
+from django.urls import reverse
+from .edit_navigation import saved_response
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from django.db import OperationalError
@@ -61,7 +63,7 @@ def decision(request,kind,pk):
                 if request.POST.get('confirm')!='yes':raise ValidationError('Confirme expressamente a decisão.')
                 payload=signing.loads(request.POST['token'],salt=service.ACTION,max_age=600)
                 if payload['kind']!=kind or payload['pk']!=pk:raise ValidationError('Registo divergente da proposta.')
-                service.confirm(request.user,request.POST['token']);return redirect('validation_index')
+                service.confirm(request.user,request.POST['token']);return saved_response(request,reverse('validation_index'))
             if form.is_valid():
                 token,payload=service.preview(request.user,kind,pk,**form.cleaned_data)
                 context.update(token=token,proposal=payload,proposal_state=service.STATES[payload['state']],dimension_label=LABELS[payload['dimension']])

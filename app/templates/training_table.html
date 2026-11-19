@@ -57,7 +57,7 @@
         </td>
         {% if user.is_staff and not print_mode %}
         <td class="no-print">
-          <a href="{% url 'training_edit' t.pk %}">Corrigir</a><a href="{% url 'training_delete' t.pk %}">Eliminar</a>
+          <a href="{% url 'training_edit' t.pk %}{% if edit_navigation.origin %}?return_to={{ edit_navigation.origin|urlencode }}{% endif %}">Corrigir</a><a href="{% url 'training_delete' t.pk %}">Eliminar</a>
         </td>
         {% endif %}
       </tr>

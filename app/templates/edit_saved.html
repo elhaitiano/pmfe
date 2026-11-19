@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block heading %}Guardado com sucesso{% endblock %}
+{% block content %}
+<section class="content p-10 space-y-6"><section class="gf-panel"><div class="gf-body">
+  <p role="status" class="font-bold text-secondary">As alterações foram guardadas com sucesso.</p>
+  <p class="mt-3">O que pretende fazer a seguir?</p>
+  <div class="flex flex-wrap gap-3 mt-4">
+    <a class="gf-btn" id="saved-return" data-pmfe-full href="{{ saved_navigation.target }}">{{ return_label }}</a>
+    <a class="gf-btn alt" id="saved-edit" href="{{ saved_navigation.edit }}">Continuar a corrigir este registo</a>
+    <a class="gf-btn alt" href="{{ saved_navigation.profile }}">Ver ficha ou histórico</a>
+  </div>
+</div></section></section>
+{% endblock %}

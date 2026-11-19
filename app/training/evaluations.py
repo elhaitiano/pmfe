@@ -12,6 +12,8 @@ from django.db.models import F, Q
 from django.forms import inlineformset_factory, model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from .edit_navigation import saved_response
 from django.utils import timezone
 from .forms import StyledModelForm
 from .models import Employee, Training, TrainingEvaluation, ReactionEvaluation, Exam, ExamQuestion, ExamAttempt, ExamAnswer
@@ -136,7 +138,7 @@ def record_edit(request, pk, kind):
                 audited(request, 'UPDATE_EVALUATION', obj, before, form.cleaned_data['correction_reason'])
                 if kind == 'learning':
                     record(request, 'UPDATE_FINAL_RESULT', f"Participação {pk}; BEFORE {before}; AFTER nota={training.grade}, resultado={training.result}; motivo={form.cleaned_data['correction_reason']}")
-            return redirect('evaluation_detail', pk=pk)
+            return saved_response(request,reverse('evaluation_detail',args=[pk]),reverse('employee_detail',args=[training.employee_id]))
     return render(request, 'evaluation_form.html', {'form': form, 'training': training, 'title': 'Avaliação da formação' if kind == 'learning' else 'Reacção do participante'})
 
 @login_required

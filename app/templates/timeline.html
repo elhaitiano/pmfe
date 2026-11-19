@@ -52,7 +52,7 @@
     <div class="mt-4 flex flex-wrap gap-3 text-xs no-print">
       <a class="text-primary hover:text-white" href="{% url 'certificate_edit' t.pk %}">Arquivo e entrega ao trabalhador</a>
       <a class="text-primary hover:text-white" href="{% url 'evaluation_detail' t.pk %}">Avaliação e provas</a>
-      <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Actualizar grupo</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
+      <a class="text-primary hover:text-white" href="{% url 'training_edit' t.pk %}{% if edit_navigation.origin %}?return_to={{ edit_navigation.origin|urlencode }}{% endif %}">Corrigir</a><a class="text-primary hover:text-white" href="{% url 'batch_edit' t.pk %}">Actualizar grupo</a><a class="text-slate-400 hover:text-white" href="{% url 'training_delete' t.pk %}">Eliminar</a>
     </div>
     {% endif %}
   </article>

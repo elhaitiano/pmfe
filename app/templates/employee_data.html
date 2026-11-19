@@ -178,7 +178,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
           <span class="material-symbols-outlined text-primary">history</span>HISTÓRICO RECENTE DE FORMAÇÃO
         </h3>
         <p class="text-xs text-slate-500 mt-2">
-          Últimas cinco participações · <a class="text-primary" href="{% url 'employee_detail' employee.pk %}">Consultar o histórico completo ({{ history_total }})</a>
+          Últimas cinco participações · <a class="text-primary" href="{% url 'employee_detail' employee.pk %}{% if edit_navigation.origin %}?return_to={{ edit_navigation.origin|urlencode }}{% endif %}">Consultar o histórico completo ({{ history_total }})</a>
         </p>
         <div class="ficha-history-frame">
           <table class="ficha-history-table">
@@ -220,7 +220,7 @@ FICHA INDIVIDUAL DO FORMANDO{% endblock %}
                   {{ t.start|date:'Y' }}
                 </td>
                 <td class="py-5 font-medium text-slate-200">
-                  <a href="{% url 'employee_detail' employee.pk %}#participation-{{ t.pk|unlocalize }}">{{ t.ux_title|default:t.title }}</a>
+                  <a href="{% url 'employee_detail' employee.pk %}{% if edit_navigation.origin %}?return_to={{ edit_navigation.origin|urlencode }}{% endif %}#participation-{{ t.pk|unlocalize }}">{{ t.ux_title|default:t.title }}</a>
                 </td>
                 <td class="py-5 text-slate-400">
                   {{ t.trainer|default:'—' }}
