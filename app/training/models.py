@@ -198,6 +198,12 @@ class Training(models.Model):
                 errors.pop('grade', None)
             if self.attendance == previous.attendance and self.days == previous.days:
                 errors.pop('attendance', None)
+        if self.certified is True:
+            from .recovery_import import approved_undated_receipt
+            if approved_undated_receipt(self):
+                errors.pop('certificate_delivery_date', None)
+                if errors.get('certified', '').startswith('Finalize'):
+                    errors.pop('certified', None)
         if errors:
             for name in list(errors):
                 if name.startswith('certificate_') and name not in ('certificate_delivery_date', 'certificate_reference'):

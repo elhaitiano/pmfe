@@ -2,7 +2,7 @@
 
 Plataforma de Monitorização da Formação EPAL / PROÁGUA.
 
-**Branch de trabalho:** `integracao/pmfe-8088-consolidada-20261118`.
+**Branch de trabalho:** `funcionalidade/recuperacao-assistida-20261119`.
 Esta branch reúne a estrutura funcional e o design aprovado da 8088, o catálogo simplificado e os cálculos seleccionados do GitHub adaptados à estrutura existente. O `main` anterior permanece preservado. Para trabalhar nesta versão, ambos os colaboradores devem seleccionar esta branch.
 
 ## O que está incluído
@@ -31,7 +31,7 @@ No repositório, seleccionar a branch:
 
 ```sh
 git fetch origin
-git switch --track origin/integracao/pmfe-8088-consolidada-20261118
+git switch --track origin/funcionalidade/recuperacao-assistida-20261119
 ```
 
 Criar um ambiente virtual e instalar as dependências. Em Windows/PowerShell:
@@ -121,3 +121,11 @@ Os quatro valores de Colaboradores & Formação eram calculados e renderizados c
 As consultas e regras de cálculo não foram alteradas. A suite seleccionada passa a incluir `training.test_home_card_values`: **124 testes locais aprovados**, incluindo oito testes de valores sem anexos, universo de 1.510 sem histórico, contagem distinta por pessoa, filtros e registos legados/inactivos. A verificação visual da instalação local é registada separadamente, sem publicar capturas com dados pessoais.
 
 O botão **Voltar** do Dashboard foi também restaurado: uma regra de `epal-fidelity.css` ocultava a navegação existente nesse ecrã. Foi removida essa regra e renovada a versão do CSS. O destino seguro de regresso permanece igual, assim como a navegação própria dos painéis sobrepostos. Verificado no Edge após actualizar a página, por teclado, sem JavaScript e em ecrã móvel, sem alteração dos dados.
+
+## Recuperação assistida de dados aprovados
+
+O serviço interno `training.recovery_import` reutiliza o cadastro, grupos, sessões, inscrições, participações e auditoria existentes. Exige um plano explicitamente aprovado, com identificadores mecanográficos e hashes; não acrescenta uma rota pública nem torna anexos obrigatórios. A execução é atómica e a repetição do mesmo lote não cria participações duplicadas. Dados privados e lotes locais não são publicados.
+
+Horas e assiduidade usam as marcações diárias e as horas efectivas. Presença não atribui conclusão, nota ou aprovação: também a importação habitual conserva o estado individual «Por confirmar». Emissão, obtenção e entrega do certificado continuam distintas. Uma entrega administrativa expressamente confirmada, cuja data se desconhece, pode ser conservada sem inventar uma data; a excepção fica vinculada à participação e a um registo de autorização com hash verificado, sem dispensar as regras das restantes entregas.
+
+O serviço não altera o esquema da base ou o design. Validação local: **138 testes aprovados**, incluindo 14 testes de recuperação, repetição, conflitos, reversão atómica e horários de 6 e 7 horas. A verificação da instalação 8088 com dados privados é registada separadamente.
