@@ -233,7 +233,9 @@ class Training(models.Model):
 
     @property
     def delivery_reported(self):
-        return self.certified is True or self.declared_delivery_date is not None
+        if self.certified is True or self.declared_delivery_date is not None:return True
+        from .recovery_import import approved_handover
+        return approved_handover(self)
 
     @property
     def validated_certificates(self):

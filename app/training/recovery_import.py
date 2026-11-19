@@ -10,6 +10,51 @@ import re
 from django.core.exceptions import ValidationError
 
 KIND='assisted-recovery'
+
+def approved_handover(training):
+    """Delivery to learner OR HR; never presume which recipient or its date."""
+    marker=((training.indicator_source_data or {}).get('_certificate_summary') or {}).get('handover')
+    if not isinstance(marker,dict) or training.certificate_issued is not True:return False
+    from .models import DocumentaryRecord
+    authority=DocumentaryRecord.objects.filter(pk=marker.get('authority_id'),kind='assisted-handover',state='applied').first()
+    if not authority or digest(authority.payload)!=authority.payload_sha256 or marker.get('authority_digest')!=authority.payload_sha256:return False
+    entry=authority.payload.get('entries',{}).get(str(training.pk))
+    return bool(entry and entry.get('employee')==training.employee_id and entry.get('group')==training.group_id
+        and entry.get('certificate_sha256')==marker.get('certificate_sha256') and entry.get('confirmed') is True
+        and entry.get('recipient')=='learner_or_hr' and authority.payload.get('authorization'))
+
+def confirm_handovers(bindings,authorization,actor):
+    """Atomic, audited supplement to an existing reviewed recovery import."""
+    if not bindings or not authorization.strip():raise ValidationError('Falta a confirmação explícita da entrega.')
+    from copy import deepcopy
+    from .models import Training,DocumentaryRecord,AuditEvent
+    from .scheduling_guard import reservation_transaction
+    request=dict(bindings={str(k):v for k,v in bindings.items()},authorization=authorization)
+    logical=digest(request);key='handover:'+logical
+    with reservation_transaction():
+        if DocumentaryRecord.objects.filter(source_key=key,kind='assisted-handover',state='applied').exists():return dict(updated=0,already_applied=True)
+        rows=list(Training.objects.filter(pk__in=bindings).order_by('pk'))
+        if len(rows)!=len(bindings):raise ValidationError('Participação em falta.')
+        entries={};old={}
+        for t in rows:
+            cert=(t.source_data or {}).get('_recovery_import_v1',{}).get('certificate') or {}
+            if not cert.get('sha256') or cert['sha256']!=bindings[t.pk] or t.certificate_issued is not True:raise ValidationError('Certificado divergente ou não identificado; não confirmar.')
+            if t.certified is False or t.certificate_hr_delivered is False:raise ValidationError('Existe uma declaração negativa; conferir antes de substituir.')
+            entries[str(t.pk)]=dict(employee=t.employee_id,group=t.group_id,certificate_sha256=cert['sha256'],confirmed=True,recipient='learner_or_hr',delivery_date=None)
+            old[str(t.pk)]=deepcopy(t.source_data)
+        payload=dict(authorization=authorization,request_digest=logical,entries=entries)
+        authority=DocumentaryRecord.objects.create(source_key=key,kind='assisted-handover',state='applied',payload=payload,payload_sha256=digest(payload),package_sha256=logical)
+        for t in rows:
+            data=deepcopy(t.source_data);summary=data.setdefault('_certificate_summary',{})
+            summary['delivered_count']=1
+            summary['handover']=dict(authority_id=authority.pk,authority_digest=authority.payload_sha256,certificate_sha256=bindings[t.pk])
+            # Explicit handover confirms the certificate exists/was obtained,
+            # without converting attendance into academic completion.
+            data['_attendance_import_v1']['row']['certificate']=True
+            t.source_data=data;t.full_clean();t.save(update_fields=['source_data'])
+        AuditEvent.objects.create(actor=str(actor)[:150],action='CERTIFICATE_HANDOVERS_CONFIRMED',detail=json.dumps(dict(
+            authority_id=authority.pk,authorization=authorization,entries=entries,before=old,recipient_not_inferred=True,delivery_dates_not_invented=True),ensure_ascii=False))
+        return dict(updated=len(rows),already_applied=False,authority_id=authority.pk)
 def digest(value):
     return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 

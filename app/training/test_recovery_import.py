@@ -85,3 +85,39 @@ class RecoveryImportTests(TestCase):
         self.run_import();p=deepcopy(self.payload);p['groups'][0]['dates']=['2026-01-06','2026-01-07']
         with self.assertRaises(ValidationError):self.run_import(p)
         self.assertEqual(Training.objects.count(),3)
+
+    def handovers(self):
+        from .recovery_import import confirm_handovers
+        bindings={t.pk:t.source_data['_recovery_import_v1']['certificate']['sha256'] for t in Training.objects.filter(certificate_issued=True)}
+        return confirm_handovers(bindings,'Todos entregues ao formando ou RH, conforme confirmação expressa.','Operador')
+
+    def test_handover_unknown_recipient_does_not_invent_learner_hr_or_date(self):
+        self.run_import();self.assertEqual(self.handovers()['updated'],2)
+        a=Training.objects.get(employee=self.a);b=Training.objects.get(employee=self.b);c=Training.objects.get(employee=self.c)
+        self.assertTrue(a.delivery_reported);self.assertTrue(b.delivery_reported);self.assertFalse(c.delivery_reported)
+        self.assertIsNone(a.certified);self.assertIsNone(a.certificate_hr_delivered);self.assertIsNone(a.certificate_delivery_date)
+        self.assertIsNone(a.certificate_hr_delivery_date);self.assertEqual(a.completed_hours,14);self.assertEqual(a.status,'Por confirmar')
+        self.assertTrue(b.certified);self.assertIsNone(b.certificate_delivery_date)
+        from .analytics import statistics
+        stats=statistics(list(Training.objects.all()));self.assertEqual(stats['certificates_reported'],2);self.assertEqual(stats['certificates_obtained'],2)
+        self.assertEqual(stats['certificates_reported_pending'],0)
+
+    def test_handover_repetition_is_idempotent(self):
+        self.run_import();self.handovers();count=AuditEvent.objects.count()
+        self.assertEqual(self.handovers()['updated'],0);self.assertEqual(AuditEvent.objects.count(),count)
+
+    def test_handover_rejects_missing_certificate_and_rolls_back_audit_failure(self):
+        from .recovery_import import confirm_handovers
+        self.run_import();c=Training.objects.get(employee=self.c)
+        with self.assertRaises(ValidationError):confirm_handovers({c.pk:'a'*64},'Confirmado','Operador')
+        before=list(Training.objects.values_list('pk','source_data'))
+        with patch('training.models.AuditEvent.objects.create',side_effect=RuntimeError('Audit unavailable')):
+            with self.assertRaises(RuntimeError):self.handovers()
+        self.assertEqual(list(Training.objects.values_list('pk','source_data')),before)
+
+    def test_handover_needs_valid_authority_even_with_compact_dashboard_data(self):
+        self.run_import();self.handovers();a=Training.objects.get(employee=self.a)
+        a._dashboard_source={'_certificate_summary':a.source_data['_certificate_summary']}
+        self.assertTrue(a.delivery_reported)
+        a._dashboard_source['_certificate_summary']['handover']['authority_digest']='forged'
+        self.assertFalse(a.delivery_reported)
