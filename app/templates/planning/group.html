@@ -1,5 +1,6 @@
 {% extends 'planning/base.html' %}
 {% block plan_content %}
+{% if not historical_edition and perms.training.view_formationsurvey %}<div class="plan-actions">{% if group.formation_survey %}<a class="gf-btn alt" href="{% url 'formation_survey_detail' group.formation_survey.pk %}">Avaliação da Formação</a>{% elif perms.training.add_formationsurvey %}<a class="gf-btn alt" href="{% url 'formation_survey_create' %}?group={{ group.pk|unlocalize }}">Avaliar a formação</a>{% endif %}</div>{% endif %}
 {% if not historical_edition and perms.training.view_employee and perms.training.view_training and perms.training.view_traininggroup %}<div class="plan-actions"><a class="gf-btn alt" href="{% url 'direct_assessments' %}?group={{ group.pk|unlocalize }}">Testes e satisfação</a></div>{% endif %}
 {% if user.is_staff and can_delete_group %}<div class="plan-actions"><a class="gf-btn alt" href="{% url 'group_delete' group.pk %}"><span class="material-symbols-outlined" aria-hidden="true">delete</span>Eliminar grupo</a></div>{% endif %}
 {% if perms.training.validate_training_group and perms.training.view_training and perms.training.view_employee %}

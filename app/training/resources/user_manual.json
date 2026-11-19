@@ -3,6 +3,31 @@
   "intro": "Guia da versão isolada em 8088. Os módulos e acções disponíveis dependem das permissões da sua conta. Os exemplos são de ensaio e não constituem registos de formação reais.",
   "sections": [
     {
+      "id": "avaliacao-formacao",
+      "title": "Avaliação da Formação — questionário oficial",
+      "image": "avaliacao-formacao.png",
+      "image_alt": "Formulário digital do questionário oficial, com código de ficha fictício e sem identificação nominal.",
+      "steps": [
+        "Abra Gestão de Formações → Avaliação → Avaliação da Formação. Também pode usar Avaliar a formação ou Avaliação da Formação no resumo de um grupo.",
+        "Em Registar avaliação, escolha o grupo existente, o questionário e a data efectiva da avaliação. O grupo fornece a formação, o local, as datas, o formador e os participantes; não precisa de voltar a escrevê-los.",
+        "Escolha Fichas individuais ou Contagens agregadas. Há um único conjunto por grupo para impedir somar as mesmas fichas duas vezes. A folha Geral de um Excel que já soma G1+G2 nunca constitui um terceiro conjunto.",
+        "Active Avaliação anónima se não pretende identificar respondentes. Nesse regime não existe campo nem vínculo oculto ao funcionário. Use um código de ficha administrativo, por exemplo F001, sem colocar o nome ou mecanográfico nesse código, nas sugestões ou no motivo da correcção. O mesmo código não pode ser reintroduzido no grupo.",
+        "Em Registar ficha, preencha as quatro secções. A escala é 1 Insuficiente, 2 Suficiente, 3 Bom, 4 Muito Bom e 5 Excelente. A recomendação aceita apenas Não=1 ou Sim=5. Deixe sem resposta o que não foi preenchido; não substitua por zero.",
+        "Pode concluir uma ficha com perguntas sem resposta. As médias usam apenas respostas válidas. Guardar como rascunho exige permissão própria; os rascunhos não alimentam indicadores. Para continuar, abra Corrigir, complete os dados, indique o motivo e conclua.",
+        "Nas contagens agregadas, registe Fichas recebidas e, por pergunta, as quantidades de respostas 1–5. Na recomendação introduza apenas Não e Sim. Introduza zero quando essa categoria teve zero respostas; deixe uma linha inteiramente vazia se não há respostas. Linhas parcialmente preenchidas só podem permanecer em rascunho. As contagens não podem exceder as fichas recebidas.",
+        "Se as fichas recebidas excederem os participantes registados, justifique a diferença e confira-a. O sistema sinaliza a divergência, mas não cria funcionários nem distribui automaticamente respostas anónimas por pessoas. Dois códigos diferentes com respostas iguais podem representar duas fichas legítimas; não use as respostas como identificação.",
+        "Em Consultar resultados, filtre formação, grupo, data de avaliação, formador e versão. Veja as médias e contagens por dimensão/pergunta. A média de dimensão é a soma dos pontos válidos dividida pelas respostas válidas; a consolidação soma pontos/contagens de todos os grupos antes de dividir.",
+        "Satisfação com a formação usa as três perguntas 1–5 da secção global. Recomendação é a percentagem de Sim entre Sim+Não e fica separada. Logística, metodologia e formador são dimensões distintas. A percentagem da escala é média /5 ×100, não percentagem de participantes satisfeitos. Não se misturam estes resultados com testes, assiduidade, aproveitamento ou a satisfação simples anteriormente registada.",
+        "No Dashboard, o período utiliza o início da formação, como os restantes indicadores. Na consulta deste questionário, o período utiliza a data da avaliação. Para comparar os mesmos números, escolha os mesmos grupos/datas correspondentes. Respostas anónimas/agregadas não são atribuídas a Direcção, categoria, género ou formando num filtro nominal; a exclusão é indicada.",
+        "Em Imprimir ficha, escolha Em branco, Pré-preenchida do grupo, Um formando ou Lote. O modelo tem duas páginas por ficha e mantém perguntas sem marcas. A impressão nominal exige permissão adicional e confirmação expressa; contactos exigem opção própria. Uma avaliação anónima não permite impressão identificada. Campos desconhecidos ficam vazios. A data 10/07/2025 no cabeçalho pertence ao modelo oficial e não substitui a data da avaliação no campo DATA.",
+        "Para seleccionar um formando na impressão, escolha o grupo e use Actualizar participantes do grupo; depois escolha o formando e Gerar PDF. Pode imprimir um lote sem dados pessoais. Cada ficha conserva a paginação 1/2 e 2/2, mesmo em lote.",
+        "Excel e PDF de resultados utilizam os mesmos cálculos da consulta. O Excel inclui contagens, resultados calculados e fórmulas verificáveis. As sugestões não são acompanhadas por nomes, códigos de ficha ou mecanográficos; contactos em texto aberto são omitidos. Reveja textos livres antes de os divulgar para evitar identificações escritas pelo próprio respondente.",
+        "Use Configuração da avaliação para corrigir a data ou o método antes de começar a registar fichas. Depois da primeira ficha, método, anonimato e versão ficam protegidos. Correcções exigem motivo e revisão actual; se outro utilizador tiver gravado, reabra a página. Uma nova versão não altera questionários já utilizados.",
+        "Se vir Sem dados, ainda não existem respostas válidas nesse filtro; não significa zero satisfação. Nenhum destes registos exige anexos. As permissões de consulta, preenchimento, rascunho, correcção, impressão nominal e exportação são independentes."
+      ],
+      "important": "Os documentos de referência e os dados de demonstração não constituem aprovação dos resultados. O questionário não altera certificados, notas, testes ou assiduidade. Em regime anónimo, não registe identificadores em texto livre."
+    },
+    {
       "id": "testes-satisfacao",
       "title": "Testes e satisfação — registo directo",
       "steps": [

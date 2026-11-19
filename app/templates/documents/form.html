@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block heading %}{{ title }}{% endblock %}
+{% block content %}<section class="content p-10 space-y-6"><div class="gf-panel"><div class="gf-body">
+<p>{{ employee.name }} · {{ employee.number|unlocalize }}</p>
+<details><summary>Valores actuais e origem preservada</summary><p>Categoria profissional: {{ employee.category|default:'Sem registo' }} · Função exercida: {{ employee.function|default:'Sem registo' }}</p><p>Função no documento de origem: {{ employee.source_data.Função|default:'Sem registo' }}. Os metadados de origem não são substituídos por esta correcção local.</p></details>
+<p class="text-slate-400">Seleccione a formação e o PDF correspondente. Anexar um documento não confirma automaticamente a emissão, a entrega ou a aprovação.</p>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}
+{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+{% for field in form.visible_fields %}<div class="mt-4"><label for="{{ field.id_for_label|unlocalize }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label><div>{{ field }}</div>{{ field.errors }}{% if field.help_text %}<p>{{ field.help_text }}</p>{% endif %}</div>{% endfor %}
+<div class="mt-5 flex gap-3 flex-wrap"><button class="gf-btn" type="submit">{% if request.resolver_match.url_name == 'document_upload' %}Confirmar associação{% else %}Guardar{% endif %}</button><a class="gf-btn alt" href="{% url 'employee_data' employee.pk %}">Cancelar</a></div>
+</form></div></div></section>{% endblock %}

@@ -2,7 +2,9 @@
 
 Plataforma de Monitorização da Formação EPAL / PROÁGUA.
 
-**Branch de trabalho:** `funcionalidade/recuperacao-assistida-20261119`.
+**Branch candidata:** `funcionalidade/avaliacao-formacao-20261119`.
+
+**Avaliação da Formação em protótipo independente. A activação na 8088 real exige validação e autorização do responsável.** A base funcional anterior, na branch `funcionalidade/recuperacao-assistida-20261119`, permanece preservada. Para ensaiar esta candidata, utilizar uma pasta de dados isolada e uma porta livre, por exemplo 8094; não substituir a base real pela base de demonstração.
 Esta branch reúne a estrutura funcional e o design aprovado da 8088, o catálogo simplificado e os cálculos seleccionados do GitHub adaptados à estrutura existente. O `main` anterior permanece preservado. Para trabalhar nesta versão, ambos os colaboradores devem seleccionar esta branch.
 
 ## O que está incluído
@@ -31,7 +33,7 @@ No repositório, seleccionar a branch:
 
 ```sh
 git fetch origin
-git switch --track origin/funcionalidade/recuperacao-assistida-20261119
+git switch --track origin/funcionalidade/avaliacao-formacao-20261119
 ```
 
 Criar um ambiente virtual e instalar as dependências. Em Windows/PowerShell:
@@ -145,3 +147,19 @@ Os destinos são validados; confirmação de sucesso assinada, limitada no tempo
 Uma correcção explícita para **Certificado entregue: Não** prevalece sobre a confirmação anterior de entrega em lote e sobre o contador importado. A obtenção e a emissão permanecem independentes. O resumo de certificados é calculado a partir do estado actual; a evidência anterior continua preservada no JSON e na auditoria, sem ser usada como contador imutável. Dashboard, ficha, histórico e exportações aplicam esta mesma regra. A posterior alteração para Sim pode voltar a contar a entrega, respeitando as validações existentes.
 
 Esta correcção não exige migrações, regravação dos dados, documentos anexados ou alterações do design. **160 testes locais aprovados**, incluindo quatro regressões sobre a prioridade do Não, os dados compactados do Dashboard, a independência da obtenção e a conservação das evidências anteriores.
+
+## Avaliação da Formação — candidata em revisão
+
+Disponível em Gestão de Formações → Avaliação → **Avaliação da Formação** e nos grupos operacionais. Não cria um novo menu principal. O questionário PROÁGUA v1 contém as 15 perguntas oficiais, as duas perguntas abertas e a escala original. Recomendação aceita apenas Não=1 ou Sim=5. O PDF oficial em branco está incluído em `app/training/resources/formation-evaluation-v1.pdf`; o pré-preenchimento reutiliza as próprias páginas, sem redesenhar logótipos ou marcar respostas. Um lote conserva duas páginas por participante. Impressão nominal e contactos são opções expressas com permissões próprias; uma avaliação anónima não permite impressão identificada.
+
+As migrações `0030` e `0031` acrescentam quatro tabelas e a versão oficial do questionário. Não reescrevem tabelas ou registos de formação existentes. A versão do instrumento fica fixada e é verificada por hash; alterações retroactivas são recusadas. Um conjunto por grupo impede misturar fichas individuais e contagens agregadas das mesmas fichas. Há rascunhos com permissão própria, correcção com motivo/revisão e auditoria. Uma resposta anónima não guarda funcionário, inscrição, IP ou conta de respondente.
+
+Médias usam pontos e respostas válidas, ponderados também entre grupos; brancos não são zeros. Satisfação usa as três perguntas 1–5 da secção global; logística, metodologia e formador permanecem separados. A recomendação é uma taxa de Sim entre respostas válidas. A percentagem da escala é média/5 ×100, não percentagem de pessoas satisfeitas. Não se somam estes resultados aos testes ou à satisfação simples anterior. O período da consulta usa a data da avaliação; o Dashboard conserva a data de início da formação. Um filtro nominal não atribui respostas anónimas/agregadas a uma Direcção, género, categoria ou funcionário.
+
+Excel e PDF partilham o serviço de cálculo da consulta; o Dashboard acrescenta apenas um resumo secundário, conservando os quatro cartões principais. O Manual inclui os percursos, exemplos, impressão, fórmulas e resolução de problemas. Foram repostos sem alteração de conteúdo três templates `app/templates/documents/*.html` que a regra genérica de exclusão de documentos retirava do checkout Git; a excepção inclui apenas código de templates, não arquivos privados.
+
+**Validação local: 211 testes aprovados, dos quais 51 específicos do novo módulo.** Edge: preenchimento anónimo, rascunho/conclusão, erro de duplicação, contagens, impressão, Excel/PDF, permissões, Manual, quatro cartões e ecrã móvel. Comparação PDF: modelo em branco idêntico ao ficheiro fornecido; pré-preenchidos de duas páginas; lote de 22 páginas; logótipos, perguntas, escala e paginação idênticos pixel a pixel nas regiões preservadas. A CI inclui os testes novos; o seu resultado remoto deve ser consultado separadamente.
+
+O Excel de referência não é publicado nem automaticamente importado. Tem 13 fichas no G2 para 12 participantes EPAL e algumas médias com denominador fixo apesar de perguntas sem resposta. A folha Geral soma G1+G2 e não pode constituir um terceiro conjunto. Estas divergências devem ser conferidas antes de introduzir resultados reais. Os dados de demonstração e a base real dos 1.510 funcionários permanecem fora do Git. A instalação da candidata usa apenas as migrações; nunca se deve copiar a base de ensaio para a 8088 operacional.
+
+Os hashes do manifesto desta candidata são calculados sobre os blobs Git, evitando diferenças de LF/CRLF entre sistemas. O PDF incluído é exclusivamente o modelo oficial em branco; os pré-preenchidos e resultados locais não são publicados.

@@ -98,6 +98,8 @@ def dashboard(request):
     from .executive import selection, analyse
     form, selected, start, end, label, rows, employees, base, valid = selection(request, compact=request.GET.get('export') != 'csv')
     data = analyse(rows, employees, selected, start, end, label, base)
+    from .formation_survey_service import attach_context
+    attach_context(request,data)
     data.update(filter_form=form, export_query=data['query'])
     if request.GET.get('export')=='xlsx' and valid:
         from .man_days import workbook

@@ -830,3 +830,4 @@ class TrainingAreaIssue(models.Model):
         constraints = [models.UniqueConstraint(fields=['model_name', 'object_id'], name='unique_training_area_issue')]
 from .area_sync import bind as _bind_training_areas
 _bind_training_areas(Course, Training, TrainingGroup, PlanningDraft)
+from .formation_survey_models import FormationQuestionnaire, FormationSurvey, FormationSurveyResponse, FormationSurveyAggregate

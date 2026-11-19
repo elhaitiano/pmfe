@@ -74,6 +74,6 @@ class InterfaceSyncMiddleware:
         if request.method!='POST':return self.get_response(request)
         with transaction.atomic():
             response=self.get_response(request)
-            if not getattr(request,'group_validation_managed',False) and response.status_code in [200,201,302,303] and getattr(request,'user',None) and request.user.is_authenticated and request.user.is_staff:
+            if not getattr(request,'group_validation_managed',False) and not getattr(request,'formation_survey_managed',False) and response.status_code in [200,201,302,303] and getattr(request,'user',None) and request.user.is_authenticated and request.user.is_staff:
                 reconcile(request.user.username)
             return response

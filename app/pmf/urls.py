@@ -65,3 +65,14 @@ urlpatterns += [path('avaliacao/resultados/', direct_assessments.index, name='di
 
 from training import edit_navigation
 urlpatterns += [path('navegacao/guardado/',edit_navigation.saved,name='edit_saved')]
+
+from training import formation_survey_views as formation_surveys
+urlpatterns += [
+    path('avaliacao/formacao/',formation_surveys.index,name='formation_survey_index'),
+    path('avaliacao/formacao/nova/',formation_surveys.create,name='formation_survey_create'),
+    path('avaliacao/formacao/imprimir/',formation_surveys.printing,name='formation_survey_print'),
+    path('avaliacao/formacao/grupos/<int:pk>/',formation_surveys.detail,name='formation_survey_detail'),
+    path('avaliacao/formacao/grupos/<int:pk>/configurar/',formation_surveys.configure,name='formation_survey_configure'),
+    path('avaliacao/formacao/grupos/<int:pk>/fichas/nova/',formation_surveys.entry,name='formation_survey_entry'),
+    path('avaliacao/formacao/grupos/<int:pk>/fichas/<int:entry_pk>/',formation_surveys.entry,name='formation_survey_entry_edit'),
+]

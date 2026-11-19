@@ -1,4 +1,5 @@
 <nav class="evaluation-sections" aria-label="Secções da avaliação">
+  {% if user.is_staff and perms.training.view_formationsurvey %}<a class="evaluation-section" href="{% url 'formation_survey_index' %}"><span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">rate_review</span><span>Avaliação da Formação</span><span class="material-symbols-outlined evaluation-section-arrow" aria-hidden="true">arrow_forward</span></a>{% endif %}
   {% if user.is_staff %}
   <a class="evaluation-section" href="{% url 'evaluation_index' %}" {% if request.resolver_match.url_name == 'evaluation_index' %}aria-current="page"{% endif %}>
     <span class="material-symbols-outlined evaluation-section-icon" aria-hidden="true">analytics</span>

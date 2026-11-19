@@ -109,6 +109,9 @@ def index(request):
     else:
         rows, cycles = rows.none(), cycles.none()
     summary = analyse_indicators(rows)
+    if request.user.has_perm('training.view_formationsurvey'):
+        from .formation_survey_service import for_trainings
+        summary['formation_evaluation']=for_trainings(rows,nominal=bool(form.is_valid() and form.cleaned_data.get('employee')))
     competency_rows = [{'cycle':c, 'result':cycle_results(c)} for c in cycles]
     usable = [r['result']['overall'] for r in competency_rows if r['result']['available']]
     summary.update(form=form, competency_rows=competency_rows, competency_average=mean(usable),

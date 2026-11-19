@@ -162,5 +162,8 @@ def render_report(data,report_id='Pré-visualização',actor=''):
     story.append(para('A distribuição temporal é feita pela data de início; não é uma repartição diária das horas. O indicador de dias efectivos utiliza as datas diárias disponíveis nas importações, sem alterar esta agregação temporal. Cada grupo segue a identificação da grelha de actualização em lote.'))
     archive_note = 'Pré-visualização não arquivada. Utilize Gerar, arquivar e descarregar PDF para conservar o documento.' if report_id == 'Pré-visualização' else 'O arquivo conserva este PDF e os filtros utilizados, mesmo que os registos sejam corrigidos posteriormente.'
     story.append(para(f'Identificador: {report_id}. Responsável pela geração: {actor or "Utilizador autenticado"}. {archive_note}','ExecSmall'))
+    if data.get('formation_evaluation_export_allowed') and data.get('formation_evaluation',{}).get('received'):
+        survey=data['formation_evaluation'];story.extend([Spacer(1,14),para('Avaliação da Formação — questionário oficial','ExecHeading'),para(f"Fichas recebidas: {survey['received']}; respostas válidas: {survey['valid_responses']}. Médias ponderadas por respostas; percentagens são conversões da escala /5.")])
+        story.append(table(['Dimensão','Respostas','Média /5'],[[d['title'],str(d['n']),fmt(d['average'])] for d in survey['dimensions']],[WIDTH*.65,WIDTH*.15,WIDTH*.2]))
     doc.build(story,onFirstPage=header,onLaterPages=header,canvasmaker=lambda *a,**kw:PagedCanvas(*a,**kw))
     return output.getvalue()

@@ -72,6 +72,7 @@
         </form>
       </header>
       <div class="epal-page-heading"><div class="epal-title-copy"><span class="epal-page-eyebrow">PROÁGUA EPAL</span><h1 id="topbarTitle">{% block heading %}GESTÃO DE FORMAÇÃO{% endblock %}</h1><p class="epal-page-subtitle">{% block page_subtitle %}{% endblock %}</p></div><div class="epal-title-actions">{% block page_actions %}{% endblock %}</div></div>
+      {% if formation_survey_prototype %}<p class="mx-10 mt-4 glass-accent rounded-xl p-4 text-secondary" role="status">Protótipo isolado · Dados de ensaio · A 8088 não foi alterada</p>{% endif %}
       {% for message in messages %}
       <div class="mx-10 mt-4 glass-accent rounded-xl p-4 text-secondary" role="status">
         {{ message }}

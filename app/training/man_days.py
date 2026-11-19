@@ -68,6 +68,10 @@ def workbook(data):
     sheet.append(['Emissão por confirmar',cert['issue_unknown']])
     sheet.append(['Taxa de emissão (%)',cert['issue_rate']['value']])
     sheet.append(['Taxa de entrega (%)',cert['delivery_rate']['value']])
+    if data.get('formation_evaluation_export_allowed'):
+        survey=data['formation_evaluation'];sheet.append(['Questionário de avaliação — fichas recebidas',survey['received']])
+        for d in survey['dimensions']:
+            sheet.append([d['title']+' — questionário /5',d['average']]);sheet.append([d['title']+' — respostas válidas',d['n']])
     filters=book.create_sheet('Filtros');filters.append(['Filtro','Valor'])
     for key,value in data['selected'].items():filters.append([key,str(value) if value is not None else ''])
     filters.append(['Período',data['period_label']]);filters.append(['Critério temporal','Data de início da formação, como no Dashboard'])

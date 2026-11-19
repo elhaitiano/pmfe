@@ -104,3 +104,4 @@ CSRF_COOKIE_NAME = 'pmfe_clean_csrftoken' if DATA_DIR.name == 'base-limpa' else 
 # Same-origin internal panels; external framing remains blocked.
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 TEMPLATES[0]['OPTIONS']['context_processors'].append('training.professional_ui.shell_context')
+TEMPLATES[0]['OPTIONS']['context_processors'].append('training.formation_survey_service.prototype_context')

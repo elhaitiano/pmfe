@@ -87,6 +87,9 @@ Plataforma/
 *.backup*
 *.bak
 *.pdf
+!app/training/resources/formation-evaluation-v1.pdf
+!app/templates/documents/
+!app/templates/documents/*.html
 app/catalogue-*.json
 app/PHASE*.json
 app/presentation-*.json

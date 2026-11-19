@@ -18,6 +18,8 @@ from .views import staff_required, record
 def context(request):
     form, selected, start, end, label, rows, employees, base, valid=selection(request)
     data=analyse(rows,employees,selected,start,end,label,base)
+    from .formation_survey_service import attach_context
+    attach_context(request,data)
     from .models import HistoricalReviewSnapshot
     counts=HistoricalReviewSnapshot.objects.order_by('-pk').values_list('report__certificate_folder_regularization__counts',flat=True).first()
     data['certificate_regularization']={'counts':counts} if counts else None
